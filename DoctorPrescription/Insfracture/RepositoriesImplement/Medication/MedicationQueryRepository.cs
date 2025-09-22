@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Medication.Domain.Repositories.Medication;
+using Medication.Dtos.ResponseDto.MedicationDto;
 using Medication.Utility;
 using Microsoft.AspNetCore.Http;
 using Utility.ApiResponse;
@@ -38,6 +39,43 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
                 response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
                 ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
             }
+            return response;
+        }
+
+        public async Task<Response<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber, int pageSize)
+        {
+            var response = new Response<List<MedicationMostUsedDto>>();
+
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<MedicationMostUsedDto, dynamic>(
+                    "Medication_GetMostUsed",
+                    new { PageNumber = pageNumber, PageSize = pageSize }
+                );
+
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+
+                ResponseHelper.SetSuccessResponse(
+                    response,
+                    response.Result,
+                    MedicationResponseMessage.common_get_all_success,
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status400BadRequest
+                );
+            }
+
             return response;
         }
 

@@ -1,5 +1,6 @@
 ﻿using Entities.EntityClass;
 using Medication.Domain.Repositories.Medication;
+using Medication.Dtos.ResponseDto.MedicationDto;
 using Medication.Dtos.RquestDto.MedicatonDto;
 using Microsoft.AspNetCore.Http;
 using SharedService.MapService;
@@ -51,6 +52,65 @@ namespace Medication.Application.Services
 
             return response;
         }
+        public async Task<Response<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber = 1, int pageSize = 10)
+        {
+            var response = new Response<List<MedicationMostUsedDto>>();
+
+            try
+            {
+                // Call repository method
+                var medication = await _medicationQueryRepository.GetAllMedicineMostUsed(pageNumber, pageSize);
+
+                if (medication == null || medication.Result == null || medication.Result.Count == 0)
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        "No medications found.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status404NotFound
+                    );
+                }
+                else
+                {
+                    // Just reuse what repository returned
+                    ResponseHelper.SetSuccessResponse(
+                        response,
+                        medication.Result,
+                        "Medications retrieved successfully.",
+                        StatusResponseMessage.success,
+                        StatusCodes.Status200OK
+                    );
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the medications.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+
+            return response;
+        }
+
+
+
         public async Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetBookMarks(int doctorId)
         {
             var response = new Response<List<Entities.EntityClass.MedicineEntity.Medication>>();

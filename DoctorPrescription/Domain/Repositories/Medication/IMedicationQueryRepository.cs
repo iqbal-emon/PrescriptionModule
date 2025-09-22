@@ -1,4 +1,5 @@
 ﻿using Entities.EntityClass;
+using Medication.Dtos.ResponseDto.MedicationDto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace Medication.Domain.Repositories.Medication
     {
         Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetMedicationByName(string name,string uniCode);
         Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetBookMarks(int doctorId);
-        
+        Task<Response<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber,int pagesize);
+
+
     }
 }
