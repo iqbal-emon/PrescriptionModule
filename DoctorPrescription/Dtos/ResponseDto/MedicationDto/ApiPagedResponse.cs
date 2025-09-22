@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Utility.ApiResponse;
 
 namespace Medication.Dtos.ResponseDto.MedicationDto
 {
-    public class PagedResponse<T>
+    public class ApiPagedResponse<T> : ApiResponse<T>
     {
-        public List<T> Results { get; set; } = new List<T>();
         public int TotalCount { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
     }
 
 }
