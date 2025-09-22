@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Diseases.Dtos.ResponseDto.DiseasesDto
+{
+    public class DiseasesApiResponseDto
+    {
+        public int DiseaseId { get; set; }
+
+        public int TenantId { get; set; }
+
+        public string DiseaseName { get; set; }
+
+        public string Description { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+
+        public bool IsDeleted { get; set; }
+
+    }
+}

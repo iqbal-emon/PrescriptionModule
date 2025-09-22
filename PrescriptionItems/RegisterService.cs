@@ -1,0 +1,32 @@
+﻿using DataAccess.DatabaseAccessLayer;
+using DoctorPrescription.Application.Services;
+using DoctorPrescription.Insfracture.RepositoriesImplement.PrescriptionItem;
+using Microsoft.Extensions.DependencyInjection;
+using PluginDIService.PluginDependencyRepository;
+using PrescriptionItems.Domain.Repositories.PrescriptionItem;
+using SharedService.CommonService;
+using SharedService.JWTTokenService;
+using SharedService.MapService;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DoctorPrescription
+{
+    public class RegisterService : IPlugin
+    {
+        public void RegisterServices(IServiceCollection services)
+        {
+            // Register services specific to DoctorPrescription
+            services.AddScoped<SharedCommonService>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IPrescriptionItemQueryRepository, PrescriptionItemQueryRepository>();
+            services.AddScoped<IPrescriptionItemCommandRepository, PrescriptionItemCommandRepository>();
+            services.AddScoped<ISqlDataAccessLayer, SqlDataAccessLayer>();
+            services.AddScoped<MapperService>();
+            services.AddScoped<PrescriptionItemService>();
+        }
+    }
+}

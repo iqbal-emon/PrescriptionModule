@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>D:\soowgood\SWCoreSystem\SWCoreSystem\AuthenticationSystem\bin\Debug\net8.0\Plugins</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+    <ProjectReference Include="..\DIService\DIService.csproj" />
+    <ProjectReference Include="..\Entities\Entities.csproj" />
+    <ProjectReference Include="..\PluginDIService\PluginDIService.csproj" />
+    <ProjectReference Include="..\SharedService\SharedService.csproj" />
+    <ProjectReference Include="..\Utility\Utility.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dtos\ReturnDto\" />
+    <Folder Include="Insfracture\Services\" />
+  </ItemGroup>
+
+</Project>

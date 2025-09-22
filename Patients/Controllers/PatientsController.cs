@@ -1,0 +1,223 @@
+﻿using Entities.EntityClass.PatientEntity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using PatienFolowUp.Application.Services;
+using PatienFolowUp.Dtos.RequestDto.Patients;
+using PatienFolowUp.Dtos.RequestDto.PatientsDto;
+using PatienFolowUp.Dtos.ResponseDto.Patients;
+using PatienFolowUp.Utility;
+using SharedService.CommonService;
+using SharedService.MapService;
+using Utility.ApiResponse;
+using Utility.Permission;
+
+namespace PatienFolowUp.Controllers
+{
+    [ApiController]
+    [Route("api/2025-02/")]
+    public class PatientsController : ControllerBase
+    {
+        private readonly SharedCommonService _sharedCommonService;
+        private readonly MapperService _mapperService;
+        private readonly PatientsService _patientService;
+        public PatientsController(
+            SharedCommonService sharedCommonService,
+            MapperService mapperService,
+            PatientsService patientsService)
+        {
+            _sharedCommonService = sharedCommonService;
+            _mapperService = mapperService;
+            _patientService = patientsService;
+        }
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        [HttpGet("gets-all-patients")]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetAllPatients()
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                var patients = await _patientService.GetAll();
+
+                var mappedPatients = await _mapperService.MapList<Patient, PatientsApiResponseDto>(patients.Result);
+
+                if (patients.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = mappedPatients;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        [HttpGet("get-patients-by-id")]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetPatientsById(int PatientId)
+        {
+            var apiResponse = new ApiResponse<PatientsApiResponseDto>();
+            try
+            {
+                var patients = await _patientService.GetById(PatientId);
+                var mappedPatients = await _mapperService.MapSingle<Patient, PatientsApiResponseDto>(patients.Result);
+                if (patients.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = mappedPatients;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        [HttpGet("get-patient-by-user-id")]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetPatientsByReferenceId(int patientUserId)
+        {
+            var apiResponse = new ApiResponse<PatientsApiResponseDto>();
+            try
+            {
+                var patients = await _patientService.GetByRoleAndReferenceId(patientUserId);
+                var mappedPatients = await _mapperService.MapSingle<Patient, PatientsApiResponseDto>(patients.Result);
+                if (patients.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = mappedPatients;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+
+
+
+        [Authorize(Policy = PermissionConstants.PatientsCreate)]
+        [HttpPost("create-patients")]
+        public async Task<ActionResult<ApiResponse<int>>> CreatePatients(PatientsInsertRequestDto request)
+        {
+            var apiResponse = new ApiResponse<int>();
+
+            try
+            {
+
+                if (ModelState.IsValid)
+                {
+                    var response = await _patientService.Insert(request);
+                   
+                    if (response.IsSuccess)
+                    {
+                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, PatientsApiConstantsResponseMessage.patients_insert_success_message);
+                        return Ok(apiResponse);
+                    }
+                    else
+                    {
+                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
+                        return Ok(apiResponse);
+                    }
+                }
+                else
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, PatientsApiConstantsResponseMessage.patients_inserted_failed_message);
+                }
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+                return Ok(apiResponse);
+            }
+
+            return Ok(apiResponse);
+        }
+        [Authorize(Policy = PermissionConstants.PatientsUpdate)]
+        [HttpPut("update-patients")]
+        public async Task<ActionResult<ApiResponse<int>>> UpdatePatients(PatientsUpdateRequestDto request)
+        {
+            var apiResponse = new ApiResponse<int>();
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var response = await _patientService.Update(request);
+
+                    if (response.IsSuccess)
+                    {
+                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, PatientsApiConstantsResponseMessage.patients_update_success_message);
+                        return Ok(apiResponse);
+                    }
+                    else
+                    {
+                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
+                        return Ok(apiResponse);
+                    }
+                }
+                else
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, PatientsApiConstantsResponseMessage.patients_update_failed_message);
+                }
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+                return Ok(apiResponse);
+            }
+
+            return Ok(apiResponse);
+        }
+        [Authorize(Policy = PermissionConstants.PatientsDelete)]
+        [HttpDelete("delete-patients")]
+        public async Task<ActionResult<ApiResponse<bool>>> DeletePatients(int PatientId)
+        {
+            var apiResponse = new ApiResponse<bool>();
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var response = await _patientService.Delete(PatientId);
+
+                    if (response.IsSuccess)
+                    {
+                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, PatientsApiConstantsResponseMessage.patients_delete_success_message);
+                        return Ok(apiResponse);
+                    }
+                    else
+                    {
+                        ApiResponseHelper.SetFailedResponse(apiResponse, false, response.Message);
+                        return Ok(apiResponse);
+                    }
+                }
+                else
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, PatientsApiConstantsResponseMessage.patients_deleted_failed_message);
+                }
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, false, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+                return Ok(apiResponse);
+            }
+
+            return Ok(apiResponse);
+        }
+
+    }
+}
