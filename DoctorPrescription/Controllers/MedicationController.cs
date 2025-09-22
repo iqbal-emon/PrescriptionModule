@@ -74,7 +74,8 @@ public async Task<IActionResult> GetAllMedicationMostUsed([FromQuery] int pageNu
 
         apiResponse.Results = medications.Result;
                 // If your MedicationMostUsedDto includes TotalCount, use it:
-                apiResponse.TotalCount = medications.Result.FirstOrDefault()?.TotalCount ?? 0;
+                apiResponse.TotalCount = medications.Result?.FirstOrDefault()?.TotalCount ?? 0;
+
 
 
                 ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, MedicationApiConstantsResponseMessage.medication_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
