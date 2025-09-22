@@ -218,8 +218,10 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableS
 app.UseFileServer(new FileServerOptions
 {
     FileProvider = new PhysicalFileProvider(
+        builder.Configuration["AppSettings:PDFCREATEDPATH"] ??
         Path.Combine(Directory.GetCurrentDirectory(), "Prescriptions")),
-    RequestPath = $"/Prescriptions"
+    RequestPath = "/Prescriptions",
+    EnableDirectoryBrowsing = false
 });
 
 // Apply CORS globally
