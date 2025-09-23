@@ -668,9 +668,11 @@ namespace Prescription.Controllers
                                 <!-- Patient Info Section -->
                                 <table style=""width: 100%; border-collapse: collapse; background-color: #fff8f8; border-bottom: 1px solid #ccc;"">
                                     <tr>
-                                        <td style=""padding: 5px 25px; font-size: 14px; font-weight: bold;"">Name: {request.Patient.PatientName}</td>
-                                        <td style=""padding: 5px 25px; font-size: 14px; font-weight: bold;"">Age: {request.Patient.PatientAge}</td>
-                                        <td style=""padding: 5px 25px; font-size: 14px; font-weight: bold;"">Blood Group: {request.Patient.patientBloodGroup}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Name: {request.Patient.PatientName}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Age: {request.Patient.PatientAge}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Blood Group: {request.Patient.patientBloodGroup}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Gender: {request.gender}</td>
+
                                     </tr>
                                 </table>
 
