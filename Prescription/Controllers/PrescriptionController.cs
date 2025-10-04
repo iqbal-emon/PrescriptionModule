@@ -449,9 +449,6 @@ namespace Prescription.Controllers
                     {
                         chamberHtml += @"
 
-    <h2 style=""color: #00aaff; margin: 0;"">Soowgood Online</h2>
-    <p style=""margin: 5px 0; font-size: 16px; color: #555;"">+880 1605-144633</p>
-    <p style=""margin: 5px 0; font-size: 16px; color: #555;"">info@soowgood.com</p>
 ";
 
                     }
