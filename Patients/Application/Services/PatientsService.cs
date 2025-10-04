@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Http;
 using PatienFolowUp.Domain.Repositories.Patients;
 using PatienFolowUp.Dtos.RequestDto.Patients;
 using PatienFolowUp.Dtos.RequestDto.PatientsDto;
+using PatienFolowUp.Dtos.ResponseDto.Patients;
+using PatienFolowUp.Utility;
+using Patients.Dtos.ResponseDto.PatientsDto;
 using SharedService.MapService;
 using System.Data.SqlClient;
 using Utility.ApiResponse;
@@ -22,36 +25,39 @@ namespace PatienFolowUp.Application.Services
             _patientsCommandRepository = patientsCommandRepository;
             _mapperService = mapperService;
         }
-        public async Task<Response<List<Patient>>> GetAll()
+        public async Task<Response<List<PatientDataDto>>> GetAllPatients(int pageNumber = 1, int pageSize = 10, string searchTerm = "",int? doctorId=null)
         {
-            var response = new Response<List<Patient>>();
+            var response = new Response<List<PatientDataDto>>();
 
-            try
-            {
-                var patients = await _patientsQueryRepository.GetAll();
+            var patientsResponse = await _patientsQueryRepository.GetAll(pageNumber, pageSize, searchTerm, doctorId);
 
-                if (patients == null)
-                {
-                    ResponseHelper.SetFailedResponse(response, patients.Result, patients.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
-                }
-                else
-                {
-                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message, StatusResponseMessage.success, patients.StatusCode);
-                }
-            }
-            catch (SqlException sqlEx)
+            if (!patientsResponse.IsSuccess || patientsResponse.Result == null)
             {
-                response.Message = "A database error occurred while retrieving the patients.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    patientsResponse.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status400BadRequest
+                );
+                return response;
             }
-            catch (Exception ex)
-            {
-                response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
-            }
+
+            // Map Patient -> DTO
+            var mappedPatients =  patientsResponse.Result;
+
+            response.Result = mappedPatients;
+            ResponseHelper.SetSuccessResponse(
+                response,
+                mappedPatients,
+                PatientsResponseMessage.common_get_all_success,
+                StatusResponseMessage.success,
+                StatusCodes.Status200OK
+            );
 
             return response;
         }
+
         public async Task<Response<Patient>> GetById(int id)
         {
             var response = new Response<Patient>();

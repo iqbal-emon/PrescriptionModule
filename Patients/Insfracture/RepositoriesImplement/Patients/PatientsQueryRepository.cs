@@ -1,11 +1,13 @@
 ﻿using DataAccess.DatabaseAccessLayer;
-using PatienFolowUp.Domain.Repositories.Patients;
+using Entities.EntityClass.PatientEntity;
 using Microsoft.AspNetCore.Http;
+using PatienFolowUp.Domain.Repositories.Patients;
+using PatienFolowUp.Utility;
+using Patients.Dtos.ResponseDto.PatientsDto;
+using System.Data.SqlClient;
 using Utility.ApiResponse;
 using Utility.Response;
 using Utility.SqlErrorMessgae;
-using PatienFolowUp.Utility;
-using Entities.EntityClass.PatientEntity;
 
 namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
 {
@@ -21,29 +23,61 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
             throw new NotImplementedException();
         }
 
-        public async Task<Response<List<Patient>>> GetAll()
+        public async Task<Response<List<PatientDataDto>>> GetAll(int pageNumber = 1, int pageSize = 10, string searchTerm = "", int? doctorId = null)
         {
-            var response = new Response<List<Patient>>();
+            var response = new Response<List<PatientDataDto>>();
             try
             {
-                var result = await _dataAccess.LoadDataUsingProcedure<Patient, dynamic>("Patients_GetAll", new
-                {
-                });
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientDataDto, dynamic>(
+                    "Patients_GetAll",
+                    new
+                    {
+                        PageNumber = pageNumber,
+                        PageSize = pageSize,
+                        SearchTerm = searchTerm,
+                        doctorId= doctorId
+                    });
+
                 response.Result = result.ToList();
                 response.IsSuccess = true;
-                ResponseHelper.SetSuccessResponse(response, result, PatientsResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+
+                ResponseHelper.SetSuccessResponse(
+                    response,
+                    result,
+                    PatientsResponseMessage.common_get_all_success,
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the patients.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
             }
             catch (Exception ex)
             {
-                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
             }
+
             return response;
         }
-        
 
 
-              public async Task<Response<Patient>> GetByRoleAndReferenceId(int userId)
+
+        public async Task<Response<Patient>> GetByRoleAndReferenceId(int userId)
         {
             var response = new Response<Patient>();
             try
@@ -84,6 +118,11 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
                 ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
             }
             return response;
+        }
+
+        public Task<Response<List<Patient>>> GetAll()
+        {
+            throw new NotImplementedException();
         }
     }
 }
