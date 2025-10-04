@@ -9,6 +9,7 @@ using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 
 namespace Medication.Controllers
 {
@@ -57,36 +58,52 @@ namespace Medication.Controllers
 
       [Authorize(Policy = PermissionConstants.MedicationGetAll)]
 [HttpGet("gets-most-used-medication")]
-public async Task<IActionResult> GetAllMedicationMostUsed([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-{
-    var apiResponse = new ApiPagedResponse<List<MedicationMostUsedDto>>();
-
-    try
-    {
-        var medications = await _medicationService.GetAllMedicineMostUsed(pageNumber, pageSize);
-
-        if (medications?.Result == null || medications.Result.Count == 0)
+        public async Task<IActionResult> GetAllMedicationMostUsed([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            apiResponse.TotalCount = 0;
-            ApiResponseHelper.SetFailedResponse(apiResponse, null, MedicationApiConstantsResponseMessage.medication_null_of_get_list);
-            return Ok(apiResponse);
+            var apiResponse = new PagedWithResponse<List<MedicationMostUsedDto>>();
+
+            try
+            {
+                var medications = await _medicationService.GetAllMedicineMostUsed(pageNumber, pageSize);
+
+                if (medications?.Result == null && medications?.TotalCount == 0)
+                {
+                    apiResponse.TotalCount = 0;
+                    ResponseHelper.SetFailedResponse(
+                        apiResponse,
+                        apiResponse.TotalCount,
+                        null,
+                        MedicationApiConstantsResponseMessage.medication_null_of_get_list
+                    );
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Result = medications.Result;
+                apiResponse.TotalCount = medications.TotalCount;
+
+                ResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                     apiResponse.TotalCount,
+                    apiResponse.Result,
+                   
+                    MedicationApiConstantsResponseMessage.medication_get_all_success,
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+
+                return Ok(apiResponse);
+            }
+            catch (Exception)
+            {
+                ResponseHelper.SetFailedResponse(
+                    apiResponse,
+                    apiResponse.TotalCount,
+                    null,
+                    MedicationApiConstantsResponseMessage.medication_see_try_catch
+                );
+                return Ok(apiResponse);
+            }
         }
-
-        apiResponse.Results = medications.Result;
-                // If your MedicationMostUsedDto includes TotalCount, use it:
-                apiResponse.TotalCount = medications.Result?.FirstOrDefault()?.TotalCount ?? 0;
-
-
-
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, MedicationApiConstantsResponseMessage.medication_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
-    }
-    catch (Exception)
-    {
-        ApiResponseHelper.SetFailedResponse(apiResponse, null, MedicationApiConstantsResponseMessage.medication_see_try_catch);
-    }
-
-    return Ok(apiResponse);
-}
 
 
         [Authorize(Policy = PermissionConstants.MedicationGetAll)]

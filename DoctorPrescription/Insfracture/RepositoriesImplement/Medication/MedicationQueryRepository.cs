@@ -3,6 +3,7 @@ using Medication.Domain.Repositories.Medication;
 using Medication.Dtos.ResponseDto.MedicationDto;
 using Medication.Utility;
 using Microsoft.AspNetCore.Http;
+using System.Data.SqlClient;
 using Utility.ApiResponse;
 using Utility.Response;
 using Utility.SqlErrorMessgae;
@@ -42,42 +43,68 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
             return response;
         }
 
-        public async Task<Response<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber, int pageSize)
+        public async Task<PagedWithResponse<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber = 1, int pageSize = 10)
         {
-            var response = new Response<List<MedicationMostUsedDto>>();
+            var response = new PagedWithResponse<List<MedicationMostUsedDto>>();
 
             try
             {
-                var result = await _dataAccess.LoadDataUsingProcedure<MedicationMostUsedDto, dynamic>(
+                // 1️⃣ TotalCount SP
+                var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
+                    "Medication_GetMostUsed_TotalCount",
+                    new { }
+                );
+                response.TotalCount = totalCount;
+
+                // 2️⃣ PagedData SP
+                var pagedData = await _dataAccess.LoadDataUsingProcedure<MedicationMostUsedDto, dynamic>(
                     "Medication_GetMostUsed",
-                    new { PageNumber = pageNumber, PageSize = pageSize }
+                    new
+                    {
+                        PageNumber = pageNumber,
+                        PageSize = pageSize
+                    }
                 );
 
-                response.Result = result.ToList();
-                response.IsSuccess = true;
+                response.Result = pagedData.ToList();
 
                 ResponseHelper.SetSuccessResponse(
                     response,
+                    totalCount,
                     response.Result,
                     MedicationResponseMessage.common_get_all_success,
                     StatusResponseMessage.success,
                     StatusCodes.Status200OK
                 );
             }
-            catch (Exception ex)
+            catch (SqlException sqlEx)
             {
-                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                response.Message = "A database error occurred while retrieving the medications.";
                 ResponseHelper.SetFailedResponse(
                     response,
+                    response.TotalCount,
                     null,
                     response.Message,
                     StatusResponseMessage.failed,
-                    StatusCodes.Status400BadRequest
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    response.TotalCount,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
                 );
             }
 
             return response;
         }
+
 
 
         public async Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetBookMarks(int doctorId)

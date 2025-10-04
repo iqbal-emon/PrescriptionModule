@@ -52,19 +52,21 @@ namespace Medication.Application.Services
 
             return response;
         }
-        public async Task<Response<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedWithResponse<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber = 1, int pageSize = 10)
         {
-            var response = new Response<List<MedicationMostUsedDto>>();
+            var response = new PagedWithResponse<List<MedicationMostUsedDto>>();
 
             try
             {
-                // Call repository method
-                var medication = await _medicationQueryRepository.GetAllMedicineMostUsed(pageNumber, pageSize);
 
-                if (medication == null || medication.Result == null || medication.Result.Count == 0)
+                // 2️⃣ PagedData SP
+                var pagedData = await _medicationQueryRepository.GetAllMedicineMostUsed(pageNumber, pageSize);
+
+                if (pagedData.Result == null && pagedData?.TotalCount== 0)
                 {
                     ResponseHelper.SetFailedResponse(
                         response,
+                        response.TotalCount,
                         null,
                         "No medications found.",
                         StatusResponseMessage.failed,
@@ -73,10 +75,15 @@ namespace Medication.Application.Services
                 }
                 else
                 {
-                    // Just reuse what repository returned
+                    // Set paged data and success
+                    response.Result = pagedData.Result;
+                    response.TotalCount = pagedData.TotalCount;
+
                     ResponseHelper.SetSuccessResponse(
                         response,
-                        medication.Result,
+                         response.TotalCount,
+                        response.Result,
+                       
                         "Medications retrieved successfully.",
                         StatusResponseMessage.success,
                         StatusCodes.Status200OK
@@ -88,6 +95,7 @@ namespace Medication.Application.Services
                 response.Message = "A database error occurred while retrieving the medications.";
                 ResponseHelper.SetFailedResponse(
                     response,
+                    response.TotalCount,
                     null,
                     response.Message,
                     StatusResponseMessage.failed,
@@ -99,6 +107,7 @@ namespace Medication.Application.Services
                 response.Message = "An unexpected error occurred.";
                 ResponseHelper.SetFailedResponse(
                     response,
+                    response.TotalCount,
                     null,
                     response.Message,
                     StatusResponseMessage.failed,
@@ -108,6 +117,7 @@ namespace Medication.Application.Services
 
             return response;
         }
+
 
 
 
