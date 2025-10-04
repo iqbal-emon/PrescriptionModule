@@ -1,4 +1,5 @@
-﻿using DataAccess.DatabaseAccessLayer;
+﻿using Dapper;
+using DataAccess.DatabaseAccessLayer;
 using Entities.EntityClass.PatientEntity;
 using Microsoft.AspNetCore.Http;
 using PatienFolowUp.Domain.Repositories.Patients;
@@ -23,37 +24,53 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
             throw new NotImplementedException();
         }
 
-        public async Task<Response<List<PatientDataDto>>> GetAll(int pageNumber = 1, int pageSize = 10, string searchTerm = "", int? doctorId = null)
+        public async Task<PagedWithResponse<List<PatientDataDto>>> GetAll(
+      int pageNumber = 1,
+      int pageSize = 10,
+      string searchTerm = "",
+      int? doctorId = null)
         {
-            var response = new Response<List<PatientDataDto>>();
+            var response = new PagedWithResponse<List<PatientDataDto>>();
+
             try
             {
-                var result = await _dataAccess.LoadDataUsingProcedure<PatientDataDto, dynamic>(
+                // 1️⃣ TotalCount SP
+                var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
+                    "Patients_GetTotalCount",
+                    new { SearchTerm = searchTerm, DoctorID = doctorId }
+                );
+                response.TotalCount = totalCount;
+
+                // 2️⃣ PagedData SP
+                var pagedData = await _dataAccess.LoadDataUsingProcedure<PatientDataDto, dynamic>(
                     "Patients_GetAll",
                     new
                     {
                         PageNumber = pageNumber,
                         PageSize = pageSize,
                         SearchTerm = searchTerm,
-                        doctorId= doctorId
-                    });
+                        DoctorID = doctorId
+                    }
+                );
 
-                response.Result = result.ToList();
+                response.Result = pagedData.ToList();
                 response.IsSuccess = true;
 
                 ResponseHelper.SetSuccessResponse(
-                    response,
-                    result,
-                    PatientsResponseMessage.common_get_all_success,
-                    StatusResponseMessage.success,
-                    StatusCodes.Status200OK
-                );
+         response,                  // apiResponse
+         totalCount,                // totalCount
+         pagedData,            // result
+         PatientsResponseMessage.common_get_all_success,
+         StatusResponseMessage.success,
+         StatusCodes.Status200OK
+     );
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the patients.";
                 ResponseHelper.SetFailedResponse(
                     response,
+                    0,
                     null,
                     response.Message,
                     StatusResponseMessage.failed,
@@ -65,6 +82,7 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
                 response.Message = "An unexpected error occurred.";
                 ResponseHelper.SetFailedResponse(
                     response,
+                    0,
                     null,
                     response.Message,
                     StatusResponseMessage.failed,
@@ -74,7 +92,6 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
 
             return response;
         }
-
 
 
         public async Task<Response<Patient>> GetByRoleAndReferenceId(int userId)

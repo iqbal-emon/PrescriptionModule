@@ -8,11 +8,11 @@ using PatienFolowUp.Dtos.RequestDto.PatientsDto;
 using PatienFolowUp.Dtos.ResponseDto.Patients;
 using PatienFolowUp.Utility;
 using Patients.Dtos.ResponseDto.PatientsDto;
-using Patients.Utility;
 using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 
 namespace PatienFolowUp.Controllers
 {
@@ -35,52 +35,55 @@ namespace PatienFolowUp.Controllers
         [Authorize(Policy = PermissionConstants.PatientsGetAll)]
         [HttpGet("gets-all-patients")]
 
-        public async Task<ActionResult<PagedApiResponse<List<PatientDataDto>>>> GetAllPatients(
-            int pageNumber = 1,
-            int pageSize = 10,
-              int? doctorId = null,
-            string searchTerm = "")
+        public async Task<ActionResult<PagedWithResponse<List<PatientDataDto>>>> GetAllPatients(
+    int pageNumber = 1,
+    int pageSize = 10,
+    int? doctorId = null,
+    string searchTerm = "")
         {
-            var apiResponse = new PagedApiResponse<List<PatientDataDto>>();
+            var apiResponse = new PagedWithResponse<List<PatientDataDto>>();
 
             try
             {
-                var patients = await _patientService.GetAllPatients(pageNumber, pageSize, searchTerm,doctorId);
+                // Call service to get paged patients
+                var patients = await _patientService.GetAllPatients(pageNumber, pageSize, searchTerm, doctorId);
 
-                if (patients.Result == null || patients.Result.Count == 0)
+                if (patients.Result == null && patients.TotalCount == 0)
                 {
+                    // Failed response with empty list and total count 0
                     ApiResponseHelper.SetFailedResponse(
                         apiResponse,
-                        null,
-                        PatientsApiConstantsResponseMessage.patients_null_of_get_list
+                        result: new List<PatientDataDto>(),
+                        totalCount: patients.TotalCount,
+                        message: PatientsApiConstantsResponseMessage.patients_null_of_get_list
                     );
                     return Ok(apiResponse);
                 }
 
-                // Map List<PatientDataDto> to List<PatientsApiResponseDto>
-
-                apiResponse.TotalCount = patients?.Result?.FirstOrDefault()?.TotalCount ?? 0;
-
-                apiResponse.Results = patients.Result;
+                // Success response
                 ApiResponseHelper.SetSuccessResponse(
                     apiResponse,
-                    apiResponse.Results,
-                    PatientsApiConstantsResponseMessage.patients_get_all_success,
-                    StatusResponseMessage.success,
-                    StatusCodes.Status200OK
+                    result: patients.Result,
+                    totalCount: patients.TotalCount,
+                    message: PatientsApiConstantsResponseMessage.patients_get_all_success,
+                    status: StatusResponseMessage.success,
+                    statusCode: StatusCodes.Status200OK
                 );
             }
             catch (Exception ex)
             {
+                // Failed response in case of exception
                 ApiResponseHelper.SetFailedResponse(
                     apiResponse,
-                    null,
-                    PatientsApiConstantsResponseMessage.patients_see_try_catch
+                    result: new List<PatientDataDto>(),
+                    totalCount: 0,
+                    message: PatientsApiConstantsResponseMessage.patients_see_try_catch
                 );
             }
 
             return Ok(apiResponse);
         }
+
 
         [Authorize(Policy = PermissionConstants.PatientsGetId)]
         [HttpGet("get-patients-by-id")]

@@ -25,35 +25,41 @@ namespace PatienFolowUp.Application.Services
             _patientsCommandRepository = patientsCommandRepository;
             _mapperService = mapperService;
         }
-        public async Task<Response<List<PatientDataDto>>> GetAllPatients(int pageNumber = 1, int pageSize = 10, string searchTerm = "",int? doctorId=null)
+        public async Task<PagedWithResponse<List<PatientDataDto>>> GetAllPatients(int pageNumber = 1, int pageSize = 10, string searchTerm = "",int? doctorId=null)
         {
-            var response = new Response<List<PatientDataDto>>();
+            var response = new PagedWithResponse<List<PatientDataDto>>();
 
             var patientsResponse = await _patientsQueryRepository.GetAll(pageNumber, pageSize, searchTerm, doctorId);
 
-            if (!patientsResponse.IsSuccess || patientsResponse.Result == null)
-            {
-                ResponseHelper.SetFailedResponse(
-                    response,
-                    null,
-                    patientsResponse.Message,
-                    StatusResponseMessage.failed,
-                    StatusCodes.Status400BadRequest
-                );
-                return response;
-            }
+           if (!patientsResponse.IsSuccess || patientsResponse.Result == null)
+{
+    ResponseHelper.SetFailedResponse(
+        response,
+        patientsResponse.TotalCount,
+        null,
+        patientsResponse.Message,
+        StatusResponseMessage.failed,
+        StatusCodes.Status400BadRequest
+    );
+    return response;
+}
+
 
             // Map Patient -> DTO
-            var mappedPatients =  patientsResponse.Result;
+            var mappedPatients = patientsResponse.Result;
+            var totalCount = patientsResponse.TotalCount;
 
             response.Result = mappedPatients;
+
             ResponseHelper.SetSuccessResponse(
-                response,
-                mappedPatients,
+                response,               // ✅ apiResponse
+                totalCount,             // ✅ totalCount
+                mappedPatients,         // ✅ result
                 PatientsResponseMessage.common_get_all_success,
                 StatusResponseMessage.success,
                 StatusCodes.Status200OK
             );
+
 
             return response;
         }
