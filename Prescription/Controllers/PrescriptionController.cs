@@ -668,7 +668,7 @@ namespace Prescription.Controllers
                                         <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Name: {request.Patient.PatientName}</td>
                                         <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Age: {request.Patient.PatientAge}</td>
                                         <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Blood Group: {request.Patient.patientBloodGroup}</td>
-                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Gender: {request.gender}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Gender: {request.Patient.patientGender}</td>
 
                                     </tr>
                                 </table>
@@ -1114,7 +1114,7 @@ namespace Prescription.Controllers
                         PatientReferenceID = request.Patient.PatientProfileId,
                         BloodGroup = request.Patient.patientBloodGroup,
                         PatientAge = request.Patient.PatientAge,
-                        Gender=request.gender
+                        Gender=request.Patient.patientGender
 
                     };
 
