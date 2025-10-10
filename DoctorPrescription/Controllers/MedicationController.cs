@@ -58,35 +58,29 @@ namespace Medication.Controllers
 
       [Authorize(Policy = PermissionConstants.MedicationGetAll)]
 [HttpGet("gets-most-used-medication")]
-        public async Task<IActionResult> GetAllMedicationMostUsed([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAllMedicationMostUsed(
+    [FromQuery] string? searchTerm = null,
+    [FromQuery] string? companyName = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
         {
             var apiResponse = new PagedWithResponse<List<MedicationMostUsedDto>>();
 
             try
             {
-                var medications = await _medicationService.GetAllMedicineMostUsed(pageNumber, pageSize);
+                var medications = await _medicationService.GetAllMedicineMostUsed(pageNumber, pageSize, searchTerm, companyName);
 
-                if (medications?.Result == null && medications?.TotalCount == 0)
+                if (medications?.Result == null || medications.TotalCount == 0)
                 {
-                    apiResponse.TotalCount = 0;
-                    ResponseHelper.SetFailedResponse(
-                        apiResponse,
-                        apiResponse.TotalCount,
-                        null,
-                        MedicationApiConstantsResponseMessage.medication_null_of_get_list
-                    );
+                    ResponseHelper.SetFailedResponse(apiResponse, 0, null, "No medication found");
                     return Ok(apiResponse);
                 }
 
-                apiResponse.Result = medications.Result;
-                apiResponse.TotalCount = medications.TotalCount;
-
                 ResponseHelper.SetSuccessResponse(
                     apiResponse,
-                     apiResponse.TotalCount,
-                    apiResponse.Result,
-                   
-                    MedicationApiConstantsResponseMessage.medication_get_all_success,
+                    medications.TotalCount,
+                    medications.Result,
+                    "Medications retrieved successfully.",
                     StatusResponseMessage.success,
                     StatusCodes.Status200OK
                 );
@@ -95,12 +89,7 @@ namespace Medication.Controllers
             }
             catch (Exception)
             {
-                ResponseHelper.SetFailedResponse(
-                    apiResponse,
-                    apiResponse.TotalCount,
-                    null,
-                    MedicationApiConstantsResponseMessage.medication_see_try_catch
-                );
+                ResponseHelper.SetFailedResponse(apiResponse, 0, null, "Error occurred while fetching medications.");
                 return Ok(apiResponse);
             }
         }

@@ -43,67 +43,30 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
             return response;
         }
 
-        public async Task<PagedWithResponse<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedWithResponse<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(
+     int pageNumber,
+     int pageSize,
+     string? searchTerm = null,
+     string? companyName = null)
         {
             var response = new PagedWithResponse<List<MedicationMostUsedDto>>();
 
-            try
-            {
-                // 1️⃣ TotalCount SP
-                var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
-                    "Medication_GetMostUsed_TotalCount",
-                    new { }
-                );
-                response.TotalCount = totalCount;
+            var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
+                "Medication_GetMostUsed_TotalCount",
+                new { SearchTerm = searchTerm, CompanyName = companyName }
+            );
 
-                // 2️⃣ PagedData SP
-                var pagedData = await _dataAccess.LoadDataUsingProcedure<MedicationMostUsedDto, dynamic>(
-                    "Medication_GetMostUsed",
-                    new
-                    {
-                        PageNumber = pageNumber,
-                        PageSize = pageSize
-                    }
-                );
+            var data = await _dataAccess.LoadDataUsingProcedure<MedicationMostUsedDto, dynamic>(
+                "Medication_GetMostUsed",
+                new { PageNumber = pageNumber, PageSize = pageSize, SearchTerm = searchTerm, CompanyName = companyName }
+            );
 
-                response.Result = pagedData.ToList();
-
-                ResponseHelper.SetSuccessResponse(
-                    response,
-                    totalCount,
-                    response.Result,
-                    MedicationResponseMessage.common_get_all_success,
-                    StatusResponseMessage.success,
-                    StatusCodes.Status200OK
-                );
-            }
-            catch (SqlException sqlEx)
-            {
-                response.Message = "A database error occurred while retrieving the medications.";
-                ResponseHelper.SetFailedResponse(
-                    response,
-                    response.TotalCount,
-                    null,
-                    response.Message,
-                    StatusResponseMessage.failed,
-                    StatusCodes.Status500InternalServerError
-                );
-            }
-            catch (Exception ex)
-            {
-                response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse(
-                    response,
-                    response.TotalCount,
-                    null,
-                    response.Message,
-                    StatusResponseMessage.failed,
-                    StatusCodes.Status500InternalServerError
-                );
-            }
+            response.TotalCount = totalCount;
+            response.Result = data.ToList();
 
             return response;
         }
+
 
 
 
