@@ -3,6 +3,7 @@ using Medication.Domain.Repositories.MedicationManufacturer;
 using Medication.Utility;
 using Microsoft.AspNetCore.Http;
 using Utility.ApiResponse;
+using Utility.BaseInterface;
 using Utility.Response;
 using Utility.SqlErrorMessgae;
 
@@ -21,25 +22,47 @@ namespace Medication.Insfracture.RepositoriesImplement.MedicationManufacturer
             throw new NotImplementedException();
         }
 
-        public async Task<Response<List<Entities.EntityClass.MedicineEntity.MedicationManufacturer>>> GetAll()
+        public async Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetAll(string? manufacturerName)
         {
-            var response = new Response<List<Entities.EntityClass.MedicineEntity.MedicationManufacturer>>();
+            var response = new Response<List<Entities.EntityClass.MedicineEntity.Medication>>();
             try
             {
-                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.MedicineEntity.MedicationManufacturer, dynamic>("MedicationManufacturer_GetAll", new
-                {
+                var result = await _dataAccess.LoadDataUsingProcedure<
+                    Entities.EntityClass.MedicineEntity.Medication,
+                    dynamic>(
+                        "Medication_GetManufacturers",
+                        new { ManufacturerName = manufacturerName } // pass parameter here
+                );
 
-                });
                 response.Result = result.ToList();
                 response.IsSuccess = true;
-                ResponseHelper.SetSuccessResponse(response, result, MedicationManufacturerReponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+
+                ResponseHelper.SetSuccessResponse(
+                    response,
+                    result,
+                    MedicationManufacturerReponseMessage.common_get_all_success,
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
             }
             catch (Exception ex)
             {
                 response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status400BadRequest
+                );
             }
+
             return response;
+        }
+
+        public Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetAll()
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<Response<Entities.EntityClass.MedicineEntity.MedicationManufacturer>> GetById(int id)
@@ -61,6 +84,11 @@ namespace Medication.Insfracture.RepositoriesImplement.MedicationManufacturer
                 ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
             }
             return response;
+        }
+
+        Task<Response<Entities.EntityClass.MedicineEntity.Medication>> IBaseCommonQueryMethodRepository<Entities.EntityClass.MedicineEntity.Medication>.GetById(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

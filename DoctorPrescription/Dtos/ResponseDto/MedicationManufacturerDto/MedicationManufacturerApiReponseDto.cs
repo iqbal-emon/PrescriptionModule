@@ -8,10 +8,7 @@ namespace Medication.Dtos.ReponseDto.MedicationManufacturerDto
 {
     public class MedicationManufacturerApiReponseDto
     {
-        public int ManufacturerId { get; set; }
-        public string Name { get; set; } // Manufacturer name
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public bool IsDeleted { get; set; }
+        public string? Manufacturer { get; set; } // Manufacturer name
+
     }
 }

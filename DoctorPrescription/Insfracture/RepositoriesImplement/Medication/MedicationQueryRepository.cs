@@ -47,18 +47,18 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
      int pageNumber,
      int pageSize,
      string? searchTerm = null,
-     string? companyName = null)
+     string? manufacturerName = null)
         {
             var response = new PagedWithResponse<List<MedicationMostUsedDto>>();
 
             var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
                 "Medication_GetMostUsed_TotalCount",
-                new { SearchTerm = searchTerm, CompanyName = companyName }
+                new { SearchTerm = searchTerm, CompanyName = manufacturerName }
             );
 
             var data = await _dataAccess.LoadDataUsingProcedure<MedicationMostUsedDto, dynamic>(
                 "Medication_GetMostUsed",
-                new { PageNumber = pageNumber, PageSize = pageSize, SearchTerm = searchTerm, CompanyName = companyName }
+                new { PageNumber = pageNumber, PageSize = pageSize, SearchTerm = searchTerm, CompanyName = manufacturerName }
             );
 
             response.TotalCount = totalCount;

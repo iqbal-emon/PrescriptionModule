@@ -23,13 +23,13 @@ namespace Medication.Application.Services
                 _mapperService = mapperService;
             }
 
-            public async Task<Response<List<Entities.EntityClass.MedicineEntity.MedicationManufacturer>>> GetAll()
+            public async Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetAll(string? manufacturerName)
             {
-                var response = new Response<List<Entities.EntityClass.MedicineEntity.MedicationManufacturer>>();
+                var response = new Response<List<Entities.EntityClass.MedicineEntity.Medication>>();
 
                 try
                 {
-                    var manufacturers = await _medicationManufacturerQueryRepository.GetAll();
+                    var manufacturers = await _medicationManufacturerQueryRepository.GetAll(manufacturerName);
 
                     if (manufacturers == null)
                     {
@@ -64,11 +64,11 @@ namespace Medication.Application.Services
 
                     if (manufacturer == null)
                     {
-                        ResponseHelper.SetFailedResponse(response, manufacturer.Result, manufacturer.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                        //ResponseHelper.SetFailedResponse(response, manufacturer.Result, manufacturer.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                     }
                     else
                     {
-                        ResponseHelper.SetSuccessResponse(response, manufacturer.Result, manufacturer.Message, StatusResponseMessage.success, manufacturer.StatusCode);
+                        //ResponseHelper.SetSuccessResponse(response, manufacturer.Result, manufacturer.Message, StatusResponseMessage.success, manufacturer.StatusCode);
                     }
                 }
                 catch (SqlException sqlEx)

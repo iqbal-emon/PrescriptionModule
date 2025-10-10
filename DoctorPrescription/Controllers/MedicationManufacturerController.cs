@@ -33,14 +33,14 @@ namespace Medication.Controllers
 
             [Authorize(Policy = PermissionConstants.MedicationManufacturerGetAll)]
             [HttpGet("gets-all-medication-manufacturers")]
-            public async Task<ActionResult<ApiResponse<List<MedicationManufacturerApiReponseDto>>>> GetAllMedicationManufacturers()
+            public async Task<ActionResult<ApiResponse<List<MedicationManufacturerApiReponseDto>>>> GetAllMedicationManufacturers(string? manufacturerName)
             {
                 var apiResponse = new ApiResponse<List<MedicationManufacturerApiReponseDto>>();
                 try
                 {
-                    var manufacturers = await _medicationManufacturerService.GetAll();
+                    var manufacturers = await _medicationManufacturerService.GetAll(manufacturerName);
 
-                    var mappedManufacturers = await _mapperService.MapList<Entities.EntityClass.MedicineEntity.MedicationManufacturer, MedicationManufacturerApiReponseDto>(manufacturers.Result);
+                    var mappedManufacturers = await _mapperService.MapList<Entities.EntityClass.MedicineEntity.Medication, MedicationManufacturerApiReponseDto>(manufacturers.Result);
 
                     if (manufacturers.Result.Count == 0)
                     {
