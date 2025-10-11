@@ -34,6 +34,7 @@ namespace Prescription.Dtos.RequestDto.PrescriptionDto
 
         public bool IsArchived { get; set; } = false;
         public int? AppointmentRefId { get; set; }
+        public string PrescriptionCode { get; set; }
 
 
     }

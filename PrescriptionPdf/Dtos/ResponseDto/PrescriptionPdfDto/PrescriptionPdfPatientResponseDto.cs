@@ -28,5 +28,6 @@ namespace PrescriptionPdf.Dtos.ResponseDto.PrescriptionPdfDto
 
         public int PatientUserId { get; set; } // Patient's UserId
         public string PatientName { get; set; } // Patient's FirstName (from Users table)
+        public string PatientCode { get; set; }
     }
 }

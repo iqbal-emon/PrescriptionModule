@@ -8,7 +8,7 @@ namespace PrescriptionPdf.Domain.Repositories.PrescriptionPdf
     public interface IPrescriptionPdfQueryRepository : IBaseCommonQueryMethodRepository<Entities.EntityClass.PrescriptionEntity.PrescriptionPdf>
     {
         Task<Response<List<PrescriptionPdfPatientResponseDto>>> GetByPatientDoctorId(int patientId,int doctorId);
-        Task<Response<List<PrescriptionPdfPatientResponseDto>>> GetPrehandByDoctorId(int doctorId);
+        Task<Response<List<PrescriptionPdfPatientResponseDto>>> GetPrehandByDoctorId(int? doctorId,string? prescriptionCode,string? patientName,string? patientCode);
 
 
         

@@ -63,12 +63,12 @@ namespace PrescriptionPdfControllers
 
         [Authorize(Policy = PermissionConstants.PrescriptionPdfsGetAll)]
         [HttpGet("get-pdf-prescriptions-by-doctor-prehand-id")]
-        public async Task<ActionResult<ApiResponse<List<PrescriptionPdfPatientResponseDto>>>> GetAllPrescriptionsByDoctorIdPrehandPdf(int doctorId)
+        public async Task<ActionResult<ApiResponse<List<PrescriptionPdfPatientResponseDto>>>> GetAllPrescriptionsByDoctorIdPrehandPdf(int? doctorId,string? prescriptionCode,string? patientName,string? patientCode)
         {
             var apiResponse = new ApiResponse<List<PrescriptionPdfPatientResponseDto>>();
             try
             {
-                var prescriptions = await _prescriptionPdfService.GetPrehandByDoctorId(doctorId);
+                var prescriptions = await _prescriptionPdfService.GetPrehandByDoctorId(doctorId, prescriptionCode, patientName, patientCode);
 
                 if (prescriptions.Result.Count == 0)
                 {

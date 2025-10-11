@@ -313,6 +313,7 @@ namespace Prescription.Controllers
                     }
 
                     userResult2 = await InsertPatient(request, commonDto, userResult2);
+                    var prescriptionCode = "PS" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
 
                     var prescription = new PrescriptionInsertRequestDto
                     {
@@ -323,9 +324,10 @@ namespace Prescription.Controllers
                         DoctorId = commonDto?.DoctorId,
                         isHeader = request.isHeader,
                         isPreHand = request.isPreHand,
-
                         AppointmentRefId =request.appointmentId,
-                        FollowUpDate = !string.IsNullOrEmpty(request.FollowUp) ? DateTime.Parse(request.FollowUp) : DateTime.Today
+                        FollowUpDate = !string.IsNullOrEmpty(request.FollowUp) ? DateTime.Parse(request.FollowUp) : DateTime.Today,
+                        PrescriptionCode = prescriptionCode
+
                     };
 
                     var prescriptionResult = await _prescriptionService.Insert(prescription);
@@ -360,7 +362,7 @@ namespace Prescription.Controllers
                         }
                         else
                         {
-                            pdfInsertResult = await GeneratePdfPrescription(request, commonDto, prescriptionResult.Result);
+                            pdfInsertResult = await GeneratePdfPrescription(request, commonDto, prescriptionResult.Result, prescriptionCode);
                             pdfResult.FilePath = pdfInsertResult;
 
 
@@ -389,7 +391,7 @@ namespace Prescription.Controllers
 
 
 
-        private async Task<string> GeneratePdfPrescription(PrescriptionRequestDto request,Common commonDto,int PrescriptionId)
+        private async Task<string> GeneratePdfPrescription(PrescriptionRequestDto request,Common commonDto,int PrescriptionId,string prescriptionCode)
         {
             try
             {
@@ -663,7 +665,7 @@ namespace Prescription.Controllers
                         </div>
 
                                 <!-- Patient Info Section -->
-                                <table style=""width: 100%; border-collapse: collapse; background-color: #fff8f8; border-bottom: 1px solid #ccc;"">
+                                <table style=""width: 100%; border-collapse: collapse; border-bottom: 1px solid #ccc;"">
                                     <tr>
                                         <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Name: {request.Patient.PatientName}</td>
                                         <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Age: {request.Patient.PatientAge}</td>
@@ -678,7 +680,7 @@ namespace Prescription.Controllers
                                 <table style=""width: 100%; border-collapse: collapse;height: 93%;"">
                                     <!-- Left Section - Patient History -->
                                     <tr>
-                                        <td style=""width: 30%; background-color: #00c2a8; padding: 10px; border-right: 1px solid #ccc; vertical-align: top;padding-left:20px;"">
+                                        <td style=""width: 30%; padding: 10px; border-right: 1px solid #ccc; vertical-align: top;padding-left:20px;"">
                                             <h4 style=""margin: 5px 0;padding-bottom: 5px;"">Chief Complaint</h4>
                                             {complaintsHtml}
                                             <h4 style=""margin: 5px 0; padding-bottom: 5px;"">History</h4>
@@ -735,6 +737,7 @@ namespace Prescription.Controllers
 
                           <div style=""display: inline-block; width: 49%; vertical-align: top; text-align: right;"">
                                       <p style=""margin: 5px 0 0 0;"">Powered By</p>
+                                      <p>PrescriptionCode:{prescriptionCode}</p>
                       
 
 

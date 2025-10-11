@@ -42,6 +42,7 @@ namespace Entities.EntityClass.PatientEntity
 
         public bool IsDeleted { get; set; } = false;
         public int PatientReferenceID { get; set; }
+        public string PatientCode { get; set; }
         // Navigation property
         //public virtual User User { get; set; }
     }

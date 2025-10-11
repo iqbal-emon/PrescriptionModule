@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Entities.EntityClass;
+using Microsoft.AspNetCore.Http;
 using PrescriptionPdf.Domain.Repositories;
 using PrescriptionPdf.Domain.Repositories.PrescriptionPdf;
 using PrescriptionPdf.Dtos.RequestDto;
@@ -59,13 +60,13 @@ namespace PrescriptionPdf.Application.Services
             return response;
         }
 
-        public async Task<Response<List<PrescriptionPdfPatientResponseDto>>> GetPrehandByDoctorId(int doctorId)
+        public async Task<Response<List<PrescriptionPdfPatientResponseDto>>> GetPrehandByDoctorId(int? doctorId,string? prescriptionCode,string? patientName,string? patientCode)
         {
             var response = new Response<List<PrescriptionPdfPatientResponseDto>>();
 
             try
             {
-                var prescriptions = await _prescriptionPdfQueryRepository.GetPrehandByDoctorId(doctorId);
+                var prescriptions = await _prescriptionPdfQueryRepository.GetPrehandByDoctorId(doctorId, prescriptionCode, patientName, patientCode);
 
                 if (prescriptions == null)
                 {

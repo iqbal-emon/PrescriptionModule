@@ -50,5 +50,6 @@ namespace Entities.EntityClass.PrescriptionEntity
         public bool IsDeleted { get; set; } = false;
 
         public int? AppointmentRefId { get; set; }
+        public string PrescriptionCode { get; set; }
     }
 }

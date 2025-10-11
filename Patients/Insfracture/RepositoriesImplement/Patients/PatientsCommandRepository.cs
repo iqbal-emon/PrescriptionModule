@@ -40,6 +40,7 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
         public async Task<Response<int>> Insert(Patient entity)
         {
             var response = new Response<int>();
+            entity.PatientCode = "PA" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
             try
             {
                 var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Patient>("Patients_Insert", entity);

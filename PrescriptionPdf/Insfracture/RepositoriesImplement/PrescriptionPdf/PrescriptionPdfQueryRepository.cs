@@ -1,13 +1,14 @@
 ﻿using DataAccess.DatabaseAccessLayer;
-using PrescriptionPdf.Domain.Repositories.PrescriptionPdf;
+using Entities.EntityClass;
+using Entities.EntityClass.PatientEntity;
+using Entities.EntityClass.PrescriptionEntity;
 using Microsoft.AspNetCore.Http;
+using prescriptionPdf.Utility;
+using PrescriptionPdf.Domain.Repositories.PrescriptionPdf;
+using PrescriptionPdf.Dtos.ResponseDto.PrescriptionPdfDto;
 using Utility.ApiResponse;
 using Utility.Response;
 using Utility.SqlErrorMessgae;
-using Entities.EntityClass.PrescriptionEntity;
-using prescriptionPdf.Utility;
-using Entities.EntityClass.PatientEntity;
-using PrescriptionPdf.Dtos.ResponseDto.PrescriptionPdfDto;
 
 namespace PrescriptionPdf.Infrastructure.RepositoriesImplement.PrescriptionPdf
 {
@@ -47,14 +48,17 @@ namespace PrescriptionPdf.Infrastructure.RepositoriesImplement.PrescriptionPdf
             return response;
         }
 
-        public async Task<Response<List<PrescriptionPdfPatientResponseDto>>> GetPrehandByDoctorId(int doctorId)
+        public async Task<Response<List<PrescriptionPdfPatientResponseDto>>> GetPrehandByDoctorId(int? doctorId,string? prescriptionCode,string? patientName,string? patientCode)
         {
             var response = new Response<List<PrescriptionPdfPatientResponseDto>>();
             try
             {
                 var result = await _dataAccess.LoadDataUsingProcedure<PrescriptionPdfPatientResponseDto, dynamic>("PrescriptionPdf_GetPrehandByDoctorId", new
                 {
-                    doctorId = doctorId
+                    doctorId = doctorId,
+                    prescriptionCode= prescriptionCode,
+                    patientName= patientName,
+                    patientCode= patientCode
 
                 });
                 response.Result = result.ToList();
