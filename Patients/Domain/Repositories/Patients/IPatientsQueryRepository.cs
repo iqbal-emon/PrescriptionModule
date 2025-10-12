@@ -10,6 +10,10 @@ namespace PatienFolowUp.Domain.Repositories.Patients
     public interface IPatientsQueryRepository : IBaseCommonQueryMethodRepository<Patient>
     {
         Task<Response<Entities.EntityClass.PatientEntity.Patient>> GetByRoleAndReferenceId(int referenceId);
+        Task<Response<List<PatientAgeDistributionResponseDto>>> GetAgeDistribution();
+
+
+
         Task<PagedWithResponse<List<PatientDataDto>>> GetAll(int pageNumber = 1, int pageSize = 10, string searchTerm = "", int? doctorId = null);
     }
 }

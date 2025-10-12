@@ -136,6 +136,49 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
             }
             return response;
         }
+        public async Task<Response<List<PatientAgeDistributionResponseDto>>> GetAgeDistribution()
+        {
+            var response = new Response<List<PatientAgeDistributionResponseDto>>();
+
+            try
+            {
+                // Load data from stored procedure
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientAgeDistributionResponseDto, dynamic>(
+                    "Patients_GetAgeDistribution", new { });
+
+                // Calculate total and percentages
+                var total = result.Sum(r => r.PatientCount);
+
+                foreach (var item in result)
+                {
+                    item.Percentage = total > 0
+                        ? Math.Round((item.PatientCount / (double)total) * 100, 2)
+                        : 0;
+                }
+
+                // ✅ Set success response
+                ResponseHelper.SetSuccessResponse(
+                    response,
+                    result,
+                    "Age distribution fetched successfully.",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status400BadRequest
+                );
+            }
+
+            return response;
+        }
 
         public Task<Response<List<Patient>>> GetAll()
         {

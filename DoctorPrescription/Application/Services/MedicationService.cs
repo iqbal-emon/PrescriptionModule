@@ -56,14 +56,15 @@ namespace Medication.Application.Services
       int pageNumber = 1,
       int pageSize = 10,
       string? searchTerm = null,
-      string? manufacturerName = null)
+     
+      string? manufacturerName = null, string? days = null)
         {
             var response = new PagedWithResponse<List<MedicationMostUsedDto>>();
 
             try
             {
                 // ✅ Call repository (which will execute both SPs with filters)
-                var pagedData = await _medicationQueryRepository.GetAllMedicineMostUsed(pageNumber, pageSize, searchTerm, manufacturerName);
+                var pagedData = await _medicationQueryRepository.GetAllMedicineMostUsed(pageNumber, pageSize, searchTerm, manufacturerName, days);
 
                 if (pagedData.Result == null || pagedData.TotalCount == 0)
                 {

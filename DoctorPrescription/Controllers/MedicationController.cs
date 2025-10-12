@@ -61,6 +61,7 @@ namespace Medication.Controllers
         public async Task<IActionResult> GetAllMedicationMostUsed(
     [FromQuery] string? searchTerm = null,
     [FromQuery] string? manufacturerName = null,
+    [FromQuery] string? days=null,
     [FromQuery] int pageNumber = 1,
     [FromQuery] int pageSize = 10)
         {
@@ -68,7 +69,7 @@ namespace Medication.Controllers
 
             try
             {
-                var medications = await _medicationService.GetAllMedicineMostUsed(pageNumber, pageSize, searchTerm, manufacturerName);
+                var medications = await _medicationService.GetAllMedicineMostUsed(pageNumber, pageSize, searchTerm, manufacturerName,days);
 
                 if (medications?.Result == null || medications.TotalCount == 0)
                 {

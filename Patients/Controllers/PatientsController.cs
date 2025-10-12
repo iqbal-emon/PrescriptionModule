@@ -109,6 +109,45 @@ namespace PatienFolowUp.Controllers
             }
             return Ok(apiResponse);
         }
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        [HttpGet("get-age-distribution")]
+        public async Task<ActionResult<ApiResponse<List<PatientAgeDistributionResponseDto>>>> GetAgeDistribution()
+        {
+            var apiResponse = new ApiResponse<List<PatientAgeDistributionResponseDto>>();
+
+            try
+            {
+                var result = await _patientService.GetAgeDistribution();
+
+                if (result == null || !result.IsSuccess)
+                {
+                    // Setting a failed response with a descriptive message
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Failed to load patient age distribution.");
+                    return Ok(apiResponse);  // Return the API response with the failure message
+                }
+
+                // On success, populate the response with the results and return a success status
+                apiResponse.Results = result.Result.ToList();
+                ApiResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                    apiResponse.Results,
+                    "Patient age distribution retrieved successfully.",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if needed for debugging purposes (e.g., _logger.LogError(ex, "Error retrieving age distribution"))
+
+                // Setting a failed response in case of an error during the process
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, "Error retrieving patient age distribution.");
+            }
+
+            return Ok(apiResponse);
+        }
+
+
 
         [Authorize(Policy = PermissionConstants.PatientsGetId)]
         [HttpGet("get-patient-by-user-id")]

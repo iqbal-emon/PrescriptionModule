@@ -18,7 +18,8 @@ namespace Medication.Domain.Repositories.Medication
          int pageNumber,
          int pageSize,
          string? searchTerm = null,
-         string? manufacturerName = null);
+         string? manufacturerName = null,
+         string? days=null);
 
 
 

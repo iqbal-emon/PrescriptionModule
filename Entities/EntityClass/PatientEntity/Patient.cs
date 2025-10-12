@@ -34,7 +34,8 @@ namespace Entities.EntityClass.PatientEntity
         [MaxLength(50)] // Max length for NVARCHAR(50)
         public string InsurancePolicyNumber { get; set; }
 
-        public string PatientAge { get; set; }
+        public double? PatientAge { get; set; }
+
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

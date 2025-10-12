@@ -184,6 +184,12 @@ namespace PatienFolowUp.Application.Services
             return response;
 
         }
+        public async Task<Response<List<PatientAgeDistributionResponseDto>>> GetAgeDistribution()
+        {
+            return await _patientsQueryRepository.GetAgeDistribution();
+        }
+
+
         public Task<Response<bool>> Delete(int id)
         {
             return _patientsCommandRepository.Delete(id);
