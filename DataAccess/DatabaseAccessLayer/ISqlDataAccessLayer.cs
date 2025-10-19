@@ -11,6 +11,9 @@ namespace DataAccess.DatabaseAccessLayer
 {
     public interface ISqlDataAccessLayer
     {
+        Task<(T1 FirstResult, List<T2> SecondResult)> LoadMultipleResultUsingProcedure<T1, T2, U>(
+    string storedProcedure, U parameters);
+
         Task<List<T>> LoadDataUsingProcedure<T, U>(string storedProcedure, U paramiters);
         Task<T?> LoadSingleDataUsingProcedure<T, U>(string storedProcedure, U paramiters);
         Task<List<T>> LoadDataUsingProcedure<T>(string storedProcedure, T model);

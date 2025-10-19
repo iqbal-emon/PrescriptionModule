@@ -70,6 +70,46 @@ namespace DataAccess.DatabaseAccessLayer
             }
 
         }
+        // DataAccess/DatabaseAccessLayer/SqlDataAccessLayer.cs
+        // DataAccess/DatabaseAccessLayer/SqlDataAccessLayer.cs
+        public async Task<(T1 FirstResult, List<T2> SecondResult)> LoadMultipleResultUsingProcedure<T1, T2, U>(
+       string storedProcedure, U parameters)
+        {
+            using IDbConnection connection = new SqlConnection(_connectionString);
+
+            using var multi = await connection.QueryMultipleAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+
+            // প্রথম রেজাল্টটা যদি COUNT বা Single Row হয়:
+            var firstResultList = await multi.ReadAsync<T1>();
+            var firstResult = firstResultList.FirstOrDefault(); // নিরাপদভাবে নাও
+
+            // দ্বিতীয় রেজাল্ট লিস্ট
+            var secondResult = (await multi.ReadAsync<T2>()).ToList();
+
+            return (firstResult, secondResult);
+        }
+
+
+
+        // DataAccess layer - নতুন method তৈরি করুন
+        public async Task<(int TotalCount, List<T> Data)> LoadPagedDataUsingProcedure<T, U>(
+            string storedProcedure, U parameters)
+        {
+            using IDbConnection connection = new SqlConnection(_connectionString);
+
+            using var multi = await connection.QueryMultipleAsync(
+                storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+
+            // প্রথম result set থেকে TotalCount read করুন
+            var totalCountResult = await multi.ReadFirstOrDefaultAsync<dynamic>();
+            int totalCount = totalCountResult?.TotalCount ?? 0;
+
+            // দ্বিতীয় result set থেকে data read করুন
+            var data = (await multi.ReadAsync<T>()).ToList();
+
+            return (totalCount, data);
+        }
+
         /// <summary>
         /// Here received model for parameter
         /// </summary>
