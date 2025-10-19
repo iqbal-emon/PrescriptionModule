@@ -8,7 +8,7 @@ namespace Prescription.Dtos.RequestDto.PrescriptionCreateDto
 {
     public class DoctorDto
     {
-        
+
         public string? DoctorName { get; set; }
         public int? DoctorProfileId { get; set; }
         public string? DoctorCode { get; set; }

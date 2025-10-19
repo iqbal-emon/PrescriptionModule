@@ -14,6 +14,5 @@ namespace Prescription.Dtos.RequestDto.PrescriptionCreateDto
         public int? PatientProfileId { get; set; }
         public string? PatientCode { get; set; }
         public string? patientPhoneNo { get; set; }
-        public string? patientGender { get; set; }
     }
 }

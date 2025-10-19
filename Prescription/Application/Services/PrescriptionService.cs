@@ -88,39 +88,6 @@ namespace Prescription.Application.Services
         }
 
 
-        public async Task<Response<PrescriptionAnalyticsDto>> GetAnalytics()
-        {
-            var response = new Response<PrescriptionAnalyticsDto>();
-
-            try
-            {
-                var prescription = await _prescriptionQueryRepository.GetAnalytics();
-
-                if (prescription == null)
-                {
-                    ResponseHelper.SetFailedResponse(response, prescription.Result, prescription.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
-                }
-                else
-                {
-                    ResponseHelper.SetSuccessResponse(response, prescription.Result, prescription.Message, StatusResponseMessage.success, prescription.StatusCode);
-                }
-            }
-            catch (SqlException sqlEx)
-            {
-                response.Message = "A database error occurred while retrieving the prescription.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
-            }
-            catch (Exception ex)
-            {
-                response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
-            }
-
-            return response;
-        }
-
-
-
         public async Task<Response<int>> Insert(PrescriptionInsertRequestDto prescription)
         {
             var response = new Response<int>();

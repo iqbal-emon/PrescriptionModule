@@ -1,7 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
 using Prescription.Domain.Repositories.Prescription;
-using Prescription.Dtos.ResponseDto.PrescriptionDto;
 using Prescription.Utility;
 using System;
 using System.Collections.Generic;
@@ -46,46 +45,6 @@ namespace Prescription.Insfracture.RepositoriesImplement.Prescription
             }
             return response;
         }
-
-        public async Task<Response<PrescriptionAnalyticsDto>> GetAnalytics()
-        {
-            var response = new Response<PrescriptionAnalyticsDto>();
-
-            try
-            {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<PrescriptionAnalyticsDto, dynamic>(
-                    "Prescription_GetAnaytics",
-                    new { }
-                );
-
-                //var analytics = result.FirstOrDefault();
-
-                response.Result = result;
-                response.IsSuccess = true;
-
-                ResponseHelper.SetSuccessResponse(
-                    response,
-                    result,
-                    PrescriptionResponseMessage.common_get_all_success,
-                    StatusResponseMessage.success,
-                    StatusCodes.Status200OK
-                );
-            }
-            catch (Exception ex)
-            {
-                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(
-                    response,
-                    null,
-                    response.Message,
-                    StatusResponseMessage.failed,
-                    StatusCodes.Status400BadRequest
-                );
-            }
-
-            return response;
-        }
-
 
         public async Task<Response<Entities.EntityClass.PrescriptionEntity.Prescription>> GetById(int id)
         {

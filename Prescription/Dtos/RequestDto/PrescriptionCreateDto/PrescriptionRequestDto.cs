@@ -11,7 +11,7 @@ namespace Prescription.Dtos.RequestDto.PrescriptionCreateDto
     {
         public int? appointmentId { get; set; }
         public string? uploadImage { get; set; }
-        
+
         public string? appointmentCode { get; set; }
         
         public bool isHeader { get; set; }
