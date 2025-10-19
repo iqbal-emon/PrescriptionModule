@@ -8,6 +8,7 @@ namespace Prescription.Dtos.RequestDto.PrescriptionCreateDto
 {
     public class DegreeDto
     {
+        public int Id { get;set; }
         public string? DegreeName { get; set; }
         public string? InstituteName { get; set; }
         public string? InstituteCity { get; set; }

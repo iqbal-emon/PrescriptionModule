@@ -1,9 +1,13 @@
-﻿using DataAccess.DatabaseAccessLayer;
+﻿using Dapper;
+using DataAccess.DatabaseAccessLayer;
 using Medication.Domain.Repositories.Medication;
 using Medication.Dtos.ResponseDto.MedicationDto;
+using Medication.Dtos.ResponseDto.MedicationDto.DataAccess.DTOs;
 using Medication.Utility;
 using Microsoft.AspNetCore.Http;
+using System.Data;
 using System.Data.SqlClient;
+using Utility;
 using Utility.ApiResponse;
 using Utility.Response;
 using Utility.SqlErrorMessgae;
@@ -13,6 +17,7 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
     public class MedicationQueryRepository : IMedicationQueryRepository
     {
         private readonly ISqlDataAccessLayer _dataAccess;
+        private readonly string _connectionString = AppSettings.ConnectionStringForDapper;
         public MedicationQueryRepository(ISqlDataAccessLayer dataAccess)
         {
             _dataAccess = dataAccess;
@@ -44,29 +49,52 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
         }
 
         public async Task<PagedWithResponse<List<MedicationMostUsedDto>>> GetAllMedicineMostUsed(
-     int pageNumber,
-     int pageSize,
-     string? searchTerm = null,
-     string? manufacturerName = null, string? days = null)
+      int pageNumber,
+      int pageSize,
+      string? searchTerm = null,
+      string? manufacturerName = null,
+      string? days = null)
         {
             var response = new PagedWithResponse<List<MedicationMostUsedDto>>();
 
-            var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
-                "Medication_GetMostUsed_TotalCount",
-                new { SearchTerm = searchTerm, CompanyName = manufacturerName, DateFilter = days }
-            );
+            try
+            {
+                using IDbConnection connection = new SqlConnection(_connectionString);
 
-            var data = await _dataAccess.LoadDataUsingProcedure<MedicationMostUsedDto, dynamic>(
-                "Medication_GetMostUsed",
-                new { PageNumber = pageNumber, PageSize = pageSize, SearchTerm = searchTerm, CompanyName = manufacturerName, DateFilter = days }
-            );
+                var parameters = new DynamicParameters();
+                parameters.Add("@PageNumber", pageNumber);
+                parameters.Add("@PageSize", pageSize);
 
-            response.TotalCount = totalCount;
-            response.Result = data.ToList();
+                // FIX: Pass C# null (or string value) directly. Dapper handles the SQL NULL conversion.
+                parameters.Add("@SearchTerm", searchTerm);
+                parameters.Add("@CompanyName", manufacturerName);
+                parameters.Add("@DateFilter", days);
+
+                // Output parameter remains correct
+                parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                // Execute and map data
+                var medications = (await connection.QueryAsync<MedicationMostUsedDto>(
+                    "Medication_GetMostUsed_Combined",
+                    parameters,
+                    commandType: CommandType.StoredProcedure)).ToList();
+
+                // Read the TotalCount from the output parameter
+                int totalCount = parameters.Get<int>("@TotalCount");
+
+                // Populate Response
+                response.TotalCount = totalCount;
+                response.Result = medications;
+                response.IsSuccess = true;
+                response.Message = "Data retrieved successfully.";
+            }
+            catch (Exception ex)
+            {
+                // ... (Error handling)
+            }
 
             return response;
         }
-
 
 
 

@@ -7,6 +7,7 @@ using Entities.EntityClass.PrescriptionEntity;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
@@ -282,7 +283,7 @@ namespace Prescription.Controllers
                             }
                             commonDto.DoctorId = doctorResult.Result?.DoctorID;
 
-                            await InsertDoctorDetails(request, commonDto);
+                            //await InsertDoctorDetails(request, commonDto);
                         }
                         else
                         {
@@ -1288,16 +1289,84 @@ namespace Prescription.Controllers
         //}
 
 
+        [HttpPost("registration")]
+        public async Task<ActionResult<ApiResponse<int>>> Registration(UserInsertRequestDto request)
+        {
+            var apiResponse = new ApiResponse<int>();
+
+            try
+            {
+                // PasswordHasher instance create
+                var passwordHasher = new PasswordHasher<UserInsertRequestDto>();
+
+                // Hash the password
+                var hashedPassword = passwordHasher.HashPassword(request, request.PasswordHash);
+
+                // Create new user DTO with hashed password
+                var prescriptionUserNew = new UserInsertRequestDto
+                {
+                    TenantId = 1,
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    PasswordHash = hashedPassword, // ✅ hashed password stored
+                    Email = string.IsNullOrWhiteSpace(request.Email) ? "patient@example.com" : request.Email,
+                    UserType = "Doctor",
+                    IsActive = true,
+                    PhoneNumber = request.PhoneNumber
+                };
+
+                // Insert user and get new user ID
+                var user = await _prescriptionPatientService.UserInsert(prescriptionUserNew);
+
+                // Use the new user ID for doctor insert
+                var prescriptionDoctorNew = new DoctorInsertRequestDto
+                {
+                    UserID = user.Result.UserId,
+                    HospitalAffiliation = "dfasfasdfafa"
+                };
+
+                var doctorResult = await _prescriptionPatientService.DoctorInsert(prescriptionDoctorNew);
+
+                // Prepare API response
+                apiResponse.Results = doctorResult.Result.DoctorID;
+                apiResponse.IsSuccess = true;
+                apiResponse.Message = "Doctor registered successfully.";
+                apiResponse.Status = "Success";
+                apiResponse.StatusCode = 200;
+            }
+            catch (Exception ex)
+            {
+                apiResponse.IsSuccess = false;
+                apiResponse.Message = $"Error: {ex.Message}";
+                apiResponse.Status = "Failed";
+                apiResponse.StatusCode = 500;
+            }
+
+            return Ok(apiResponse);
+        }
 
 
-        private async Task InsertDoctorDetails(PrescriptionRequestDto request, Common commonDto)
+
+        public async Task<ActionResult<ApiResponse<int>>> DoctorRegistration(RegistrationInsertRequestDto request)
+        {
+            var apiResponse = new ApiResponse<int>();
+            var pdfResult = new PdfApiResponseDto();
+            var pdfApiResponse = new ApiResponse<PdfApiResponseDto>();
+
+            await InsertDoctorDetails(request);
+
+            return null;
+        }
+
+
+        private async Task InsertDoctorDetails(RegistrationInsertRequestDto request)
             {
             // Area of expertise Insert
             if (request.Doctor.AreaOfExperties != null)
             {
                 var AreadofExpertiseNew = new ExpertiseCategoryInsertRequestDto
                 {
-                    TenantID = commonDto?.TenantId,
+                    TenantID = 1,
                     ExpertiseName = request.Doctor.AreaOfExperties
                 };
                 var doctorCategoryExpInsertResult = await _prescriptionPatientService.ExpertiseCategoryInsert(AreadofExpertiseNew);
@@ -1305,8 +1374,7 @@ namespace Prescription.Controllers
                 var prescriptionExpertise = new DoctorExpertiseInsertRequestDto
                 {
                     ExpertiseID = doctorCategoryExpInsertResult.Result.ExpertiseID,
-                    DoctorID = commonDto?.DoctorId,
-                    TenantID = commonDto.TenantId
+                    DoctorID = request.doctorId
                 };
 
                 var DoctorExpertise = await _prescriptionPatientService.DoctorExpertiseInsert(prescriptionExpertise);
@@ -1317,18 +1385,11 @@ namespace Prescription.Controllers
             {
                 foreach (var degree in request.Doctor.Degree)
                 {
-                    var prescriptionDoctorNew = new DegreeInsertRequestDto
-                    {
-                        DegreeName = degree.DegreeName,
-                        TenantID = commonDto?.TenantId,
-                    };
-
-                    var result = await _prescriptionPatientService.DegreeInsert(prescriptionDoctorNew);
 
                     var doctorDegreeNew = new DoctorDegreeInsertRequestDto
                     {
-                        DoctorID = commonDto?.DoctorId,
-                        DegreeID = (int)result.Result.DegreeID,
+                        DoctorID = request.doctorId,
+                        DegreeID = degree.Id,
                         PassingYear = 0,
                         InstituteName = degree.InstituteName,
                         InstituteID = 0,
