@@ -98,7 +98,7 @@ namespace Prescription.Controllers
             PrescriptionExaminationService prescriptionExaminationService,
              PrescriptionPdfCreatorService pdfService,
              PrescriptionTemplateService prescriptionTemplateService,
-             
+
              IConfiguration configuration
             )
         {
@@ -282,7 +282,7 @@ namespace Prescription.Controllers
                             }
                             commonDto.DoctorId = doctorResult.Result?.DoctorID;
 
-                            await InsertDoctorDetails(request, commonDto);
+                            //await InsertDoctorDetails(request, commonDto);
                         }
                         else
                         {
@@ -324,7 +324,7 @@ namespace Prescription.Controllers
                         DoctorId = commonDto?.DoctorId,
                         isHeader = request.isHeader,
                         isPreHand = request.isPreHand,
-                        AppointmentRefId =request.appointmentId,
+                        AppointmentRefId = request.appointmentId,
                         FollowUpDate = !string.IsNullOrEmpty(request.FollowUp) ? DateTime.Parse(request.FollowUp) : DateTime.Today,
                         PrescriptionCode = prescriptionCode
 
@@ -332,7 +332,8 @@ namespace Prescription.Controllers
 
                     var prescriptionResult = await _prescriptionService.Insert(prescription);
 
-                    if (string.IsNullOrEmpty(request.uploadImage)){
+                    if (string.IsNullOrEmpty(request.uploadImage))
+                    {
                         await InsertAdvice(request, prescriptionResult);
                         await InsertInvestigation(request, prescriptionResult);
                         await InsertDiagonosis(request, prescriptionResult);
@@ -342,13 +343,13 @@ namespace Prescription.Controllers
                         await InsertExamination(request, commonDto, prescriptionResult);
                         await InsertTemplate(request, commonDto, prescriptionResult);
                     }
- 
-                    
+
+
 
                     if (prescriptionResult.IsSuccess)
                     {
                         scope.Complete();
-                        var pdfInsertResult="";
+                        var pdfInsertResult = "";
 
                         // Here Create PDF Prescription and send the patient.
                         // Get Email Template or Message template
@@ -387,11 +388,11 @@ namespace Prescription.Controllers
         }
 
 
-  
 
 
 
-        private async Task<string> GeneratePdfPrescription(PrescriptionRequestDto request,Common commonDto,int PrescriptionId,string prescriptionCode)
+
+        private async Task<string> GeneratePdfPrescription(PrescriptionRequestDto request, Common commonDto, int PrescriptionId, string prescriptionCode)
         {
             try
             {
@@ -422,7 +423,7 @@ namespace Prescription.Controllers
                 var diagnosis = request.Diagnosis;
                 string diagnosisHtml = "";
 
-                
+
 
                 if (doctorDegree != null)
                 {
@@ -447,7 +448,7 @@ namespace Prescription.Controllers
                 }
                 else
                 {
-                    if (request.isPreHand ||chambers?.Count==0)
+                    if (request.isPreHand || chambers?.Count == 0)
                     {
                         chamberHtml += @"
 
@@ -461,7 +462,7 @@ namespace Prescription.Controllers
                 {
                     scheduleHtml = string.Join(", ", schedules.Select(s =>
                     {
-                     
+
 
                         // Handle Start-End display
                         var startEndText = s.Start == s.End ? s.Start : $"{s.Start}-{s.End}";
@@ -482,7 +483,7 @@ namespace Prescription.Controllers
 
                 if (string.IsNullOrEmpty(request.uploadImage))
                 {
-                    if (complaints != null&& complaints.Any())
+                    if (complaints != null && complaints.Any())
                     {
                         complaintsHtml = "<ul style=\"padding-left: 20px;\">";
                         foreach (var complaint in complaints)
@@ -515,7 +516,7 @@ namespace Prescription.Controllers
 
 
 
-                    if (examinations != null )
+                    if (examinations != null)
                     {
                         exminationHtml = "<ul style=\"padding-left: 20px;\">";
 
@@ -631,11 +632,11 @@ namespace Prescription.Controllers
 
                 };
 
-                 string prescriptionBaseUrl = _configuration["GeneralSettings:PrescriptionBaseURL"];
+                string prescriptionBaseUrl = _configuration["GeneralSettings:PrescriptionBaseURL"];
 
                 //var QR = GenerateQrCodeBase64("https://soowgood.com");
 
-                                        var htmlCode = $@"
+                var htmlCode = $@"
                         <meta charset=""UTF-8"">
                         <!DOCTYPE html>
                         <html>
@@ -757,7 +758,7 @@ namespace Prescription.Controllers
                     doc.LoadHtml(imageHtmlCode);
 
 
-            }
+                }
                 else
                 {
                     doc.LoadHtml(htmlCode);
@@ -765,40 +766,40 @@ namespace Prescription.Controllers
                 }
                 HtmlNode tbody = doc.DocumentNode.SelectSingleNode("//body");
 
-            var sl = 0;
-            //foreach (var service in mail.OrderImageServicesList)
-            //{
-            //    sl++;
-            //    var td = $"<td style='padding: 8px;'>{sl}</td>\r\n <td style='padding: 8px;'>{service.name}</td>\r\n <td style='padding: 8px;'>{service.TotalImage}</td>\r\n <td style='padding: 8px;'>{service.point}</td>\r\n <td style='padding: 8px;'>{service.spend_point}</td>";
-            //    HtmlNode newRow = HtmlNode.CreateNode($"<tr>{td}</tr>");
-            //    tbody.AppendChild(newRow);
-            //}
+                var sl = 0;
+                //foreach (var service in mail.OrderImageServicesList)
+                //{
+                //    sl++;
+                //    var td = $"<td style='padding: 8px;'>{sl}</td>\r\n <td style='padding: 8px;'>{service.name}</td>\r\n <td style='padding: 8px;'>{service.TotalImage}</td>\r\n <td style='padding: 8px;'>{service.point}</td>\r\n <td style='padding: 8px;'>{service.spend_point}</td>";
+                //    HtmlNode newRow = HtmlNode.CreateNode($"<tr>{td}</tr>");
+                //    tbody.AppendChild(newRow);
+                //}
 
-            string mergeModifiedHtml = doc.DocumentNode.OuterHtml;
-            //var totalPoint = mail.OrderImageServicesList.Sum(x => x.spend_point);
-            var modifiedHtml = mergeModifiedHtml.Replace("{Total Charge : $20.00}", $"Total Charge : {0}");
+                string mergeModifiedHtml = doc.DocumentNode.OuterHtml;
+                //var totalPoint = mail.OrderImageServicesList.Sum(x => x.spend_point);
+                var modifiedHtml = mergeModifiedHtml.Replace("{Total Charge : $20.00}", $"Total Charge : {0}");
 
-            //if (mail.orderMasterChargeBreakdown != null)
-            //{
-            //    modifiedHtml = modifiedHtml
-            //        .Replace("{Date}", mail.orderMasterChargeBreakdown.order_time)
-            //        .Replace("{OrderNumber}", mail.orderMasterChargeBreakdown.order_no)
-            //        .Replace("{SubscriptionPlan}", mail.orderMasterChargeBreakdown.order_subscription_plan_type)
-            //        .Replace("{PaymentStatus}", mail.orderMasterChargeBreakdown.order_payment_status)
-            //        .Replace("{OrderStatus}", mail.orderMasterChargeBreakdown.order_status)
-            //        .Replace("{RawImageCount}", mail.orderMasterChargeBreakdown.order_no_of_images.ToString())
-            //        .Replace("{Current Balance : 600 Credit(s)}", $"{{Current Balance : {mail.orderMasterChargeBreakdown.current_balance} Credit(s)}}");
-            //}
+                //if (mail.orderMasterChargeBreakdown != null)
+                //{
+                //    modifiedHtml = modifiedHtml
+                //        .Replace("{Date}", mail.orderMasterChargeBreakdown.order_time)
+                //        .Replace("{OrderNumber}", mail.orderMasterChargeBreakdown.order_no)
+                //        .Replace("{SubscriptionPlan}", mail.orderMasterChargeBreakdown.order_subscription_plan_type)
+                //        .Replace("{PaymentStatus}", mail.orderMasterChargeBreakdown.order_payment_status)
+                //        .Replace("{OrderStatus}", mail.orderMasterChargeBreakdown.order_status)
+                //        .Replace("{RawImageCount}", mail.orderMasterChargeBreakdown.order_no_of_images.ToString())
+                //        .Replace("{Current Balance : 600 Credit(s)}", $"{{Current Balance : {mail.orderMasterChargeBreakdown.current_balance} Credit(s)}}");
+                //}
 
-            var pdfRequestModel = new PrescriptionPdfRequestDto
-            {
-                HtmlContent = modifiedHtml,
-                PdfFilePath = pdfFilePath,
-                WkhtmltopdfPath = whk,
-                FileName = fileName
-            };
+                var pdfRequestModel = new PrescriptionPdfRequestDto
+                {
+                    HtmlContent = modifiedHtml,
+                    PdfFilePath = pdfFilePath,
+                    WkhtmltopdfPath = whk,
+                    FileName = fileName
+                };
 
-            var result = await _pdfService.PdfInsert(pdfRequestModel);
+                var result = await _pdfService.PdfInsert(pdfRequestModel);
 
                 //try
                 //{
@@ -821,10 +822,10 @@ namespace Prescription.Controllers
 
 
 
-                
+
 
                 var pdfResult = await _pdfService.DbPdfInsert(pdfInsertModel);
-                var baseUrl= _configuration.GetSection("GeneralSettings").GetSection("PrescriptionBaseURL").Value;
+                var baseUrl = _configuration.GetSection("GeneralSettings").GetSection("PrescriptionBaseURL").Value;
                 var PrescriptionLink = baseUrl + pdfInsertModel.FilePath;
 
                 var notification = new SmsSendRequestDto()
@@ -833,7 +834,7 @@ namespace Prescription.Controllers
                     Sms = $"Dear {request.Patient.PatientName},\r\n" +
                     $"Your prescription from {request.Doctor.DoctorName} is now available. " +
                     $"Please click the link below to view or download it:\r\n {PrescriptionLink} " +
-                    "\r\nIf you have any questions or need further assistance, feel free to contact us at +880 1605-144633.\r\n"+
+                    "\r\nIf you have any questions or need further assistance, feel free to contact us at +880 1605-144633.\r\n" +
                     "Best regards,\r\n SoowGood"
                 };
                 if (!string.IsNullOrWhiteSpace(request.Patient.patientPhoneNo))
@@ -896,7 +897,7 @@ namespace Prescription.Controllers
 
         private async Task InsertMedication(PrescriptionRequestDto request, Response<int> prescriptionResult)
         {
-            if ((request.Medications != null ) && prescriptionResult.Result != 0)
+            if ((request.Medications != null) && prescriptionResult.Result != 0)
             {
                 foreach (var medication in request.Medications)
                 {
@@ -920,7 +921,7 @@ namespace Prescription.Controllers
 
         private async Task InsertChiefComplain(PrescriptionRequestDto request, Response<int> prescriptionResult)
         {
-            if ((request.ChiefComplaints != null ) && prescriptionResult.Result != 0)
+            if ((request.ChiefComplaints != null) && prescriptionResult.Result != 0)
             {
                 foreach (var complain in request.ChiefComplaints)
                 {
@@ -943,19 +944,19 @@ namespace Prescription.Controllers
 
         private async Task InsertTemplate(PrescriptionRequestDto request, Common? commonDto, Response<int> prescriptionResult)
         {
-            if ((request.isTemplate==true) && prescriptionResult.Result != 0)
+            if ((request.isTemplate == true) && prescriptionResult.Result != 0)
             {
-                
-                    var prescriptionTemplateNew = new PrescriptionTemplateInsertRequestDto
-                    {
-                        PrescriptionID = prescriptionResult.Result,
-                        Name = request.TemplateName,
-                        DoctorID =(int)commonDto.DoctorId 
-                    };
+
+                var prescriptionTemplateNew = new PrescriptionTemplateInsertRequestDto
+                {
+                    PrescriptionID = prescriptionResult.Result,
+                    Name = request.TemplateName,
+                    DoctorID = (int)commonDto.DoctorId
+                };
 
 
-                    var result = await _prescriptionTemplateService.Insert(prescriptionTemplateNew);
-                
+                var result = await _prescriptionTemplateService.Insert(prescriptionTemplateNew);
+
 
             }
         }
@@ -973,8 +974,8 @@ namespace Prescription.Controllers
                     {
                         PrescriptionID = prescriptionResult.Result,
                         CommonHistoryID = history.Id,
-                        PastHistory=history.PastHistory,
-                        PresentHistory=history.PresentHistory
+                        PastHistory = history.PastHistory,
+                        PresentHistory = history.PresentHistory
                     };
 
 
@@ -986,7 +987,7 @@ namespace Prescription.Controllers
 
         private async Task InsertDiagonosis(PrescriptionRequestDto request, Response<int> prescriptionResult)
         {
-            if ((request.Diagnosis != null ) && prescriptionResult.Result != 0)
+            if ((request.Diagnosis != null) && prescriptionResult.Result != 0)
             {
                 foreach (var diagnosis in request.Diagnosis)
                 {
@@ -994,8 +995,8 @@ namespace Prescription.Controllers
                     {
                         PrescriptionId = prescriptionResult.Result,
                         DiagnosisId = diagnosis.Id,
-                        PastDiagnosis=diagnosis.PastDiagnosis,
-                        PresentDiagnosis=diagnosis.PresentDiagnosis
+                        PastDiagnosis = diagnosis.PastDiagnosis,
+                        PresentDiagnosis = diagnosis.PresentDiagnosis
 
                     };
 
@@ -1008,7 +1009,7 @@ namespace Prescription.Controllers
 
         private async Task InsertInvestigation(PrescriptionRequestDto request, Response<int> prescriptionResult)
         {
-            if ((request.Test != null ) && prescriptionResult.Result != 0)
+            if ((request.Test != null) && prescriptionResult.Result != 0)
             {
                 foreach (var test in request.Test)
                 {
@@ -1028,7 +1029,7 @@ namespace Prescription.Controllers
 
         private async Task InsertAdvice(PrescriptionRequestDto request, Response<int> prescriptionResult)
         {
-            if ((request.Advice != null ) && prescriptionResult.Result != 0)
+            if ((request.Advice != null) && prescriptionResult.Result != 0)
             {
                 foreach (var advice in request.Advice)
                 {
@@ -1091,7 +1092,7 @@ namespace Prescription.Controllers
                         Email = "patient@example.com",
                         UserType = "Patient",
                         IsActive = true,
-                        PhoneNumber =request.Patient.patientPhoneNo,
+                        PhoneNumber = request.Patient.patientPhoneNo,
                         ReferenceUserId = request.Patient.PatientProfileId
                     };
 
@@ -1117,7 +1118,7 @@ namespace Prescription.Controllers
                         PatientReferenceID = request.Patient.PatientProfileId,
                         BloodGroup = request.Patient.patientBloodGroup,
                         PatientAge = request.Patient.PatientAge,
-                        Gender=request.Patient.patientGender
+                        Gender = request.Patient.patientGender
 
                     };
 
@@ -1288,16 +1289,84 @@ namespace Prescription.Controllers
         //}
 
 
+        [HttpPost("registration")]
+        public async Task<ActionResult<ApiResponse<int>>> Registration(UserInsertRequestDto request)
+        {
+            var apiResponse = new ApiResponse<int>();
 
-
-        private async Task InsertDoctorDetails(PrescriptionRequestDto request, Common commonDto)
+            try
             {
+                //// PasswordHasher instance create
+                //var passwordHasher = new PasswordHasher<UserInsertRequestDto>();
+
+                //// Hash the password
+                //var hashedPassword = passwordHasher.HashPassword(request, request.PasswordHash);
+
+                // Create new user DTO with hashed password
+                var prescriptionUserNew = new UserInsertRequestDto
+                {
+                    TenantId = 1,
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    PasswordHash = "hashedPassword", // ✅ hashed password stored
+                    Email = string.IsNullOrWhiteSpace(request.Email) ? "patient@example.com" : request.Email,
+                    UserType = "Doctor",
+                    IsActive = true,
+                    PhoneNumber = request.PhoneNumber
+                };
+
+                // Insert user and get new user ID
+                var user = await _prescriptionPatientService.UserInsert(prescriptionUserNew);
+
+                // Use the new user ID for doctor insert
+                var prescriptionDoctorNew = new DoctorInsertRequestDto
+                {
+                    UserID = user.Result.UserId,
+                    HospitalAffiliation = "dfasfasdfafa"
+                };
+
+                var doctorResult = await _prescriptionPatientService.DoctorInsert(prescriptionDoctorNew);
+
+                // Prepare API response
+                apiResponse.Results = doctorResult.Result.DoctorID;
+                apiResponse.IsSuccess = true;
+                apiResponse.Message = "Doctor registered successfully.";
+                apiResponse.Status = "Success";
+                apiResponse.StatusCode = 200;
+            }
+            catch (Exception ex)
+            {
+                apiResponse.IsSuccess = false;
+                apiResponse.Message = $"Error: {ex.Message}";
+                apiResponse.Status = "Failed";
+                apiResponse.StatusCode = 500;
+            }
+
+            return Ok(apiResponse);
+        }
+
+
+        [HttpPost("doctor-registration")]
+        public async Task<ActionResult<ApiResponse<int>>> DoctorRegistration(RegistrationInsertRequestDto request)
+        {
+            var apiResponse = new ApiResponse<int>();
+            var pdfResult = new PdfApiResponseDto();
+            var pdfApiResponse = new ApiResponse<PdfApiResponseDto>();
+
+            await InsertDoctorDetails(request);
+
+            return null;
+        }
+
+
+        private async Task InsertDoctorDetails(RegistrationInsertRequestDto request)
+        {
             // Area of expertise Insert
             if (request.Doctor.AreaOfExperties != null)
             {
                 var AreadofExpertiseNew = new ExpertiseCategoryInsertRequestDto
                 {
-                    TenantID = commonDto?.TenantId,
+                    TenantID = 1,
                     ExpertiseName = request.Doctor.AreaOfExperties
                 };
                 var doctorCategoryExpInsertResult = await _prescriptionPatientService.ExpertiseCategoryInsert(AreadofExpertiseNew);
@@ -1305,8 +1374,7 @@ namespace Prescription.Controllers
                 var prescriptionExpertise = new DoctorExpertiseInsertRequestDto
                 {
                     ExpertiseID = doctorCategoryExpInsertResult.Result.ExpertiseID,
-                    DoctorID = commonDto?.DoctorId,
-                    TenantID = commonDto.TenantId
+                    DoctorID = request.doctorId
                 };
 
                 var DoctorExpertise = await _prescriptionPatientService.DoctorExpertiseInsert(prescriptionExpertise);
@@ -1317,18 +1385,11 @@ namespace Prescription.Controllers
             {
                 foreach (var degree in request.Doctor.Degree)
                 {
-                    var prescriptionDoctorNew = new DegreeInsertRequestDto
-                    {
-                        DegreeName = degree.DegreeName,
-                        TenantID = commonDto?.TenantId,
-                    };
-
-                    var result = await _prescriptionPatientService.DegreeInsert(prescriptionDoctorNew);
 
                     var doctorDegreeNew = new DoctorDegreeInsertRequestDto
                     {
-                        DoctorID = commonDto?.DoctorId,
-                        DegreeID = (int)result.Result.DegreeID,
+                        DoctorID = request.doctorId,
+                        DegreeID = 1,
                         PassingYear = 0,
                         InstituteName = degree.InstituteName,
                         InstituteID = 0,
@@ -1475,3 +1536,7 @@ namespace Prescription.Controllers
         }
     }
 }
+
+
+
+
