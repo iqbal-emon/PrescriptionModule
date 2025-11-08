@@ -170,7 +170,10 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserService, UserService>();
-
+builder.Services.AddSwaggerGen(c =>
+{
+    c.CustomSchemaIds(type => type.FullName);
+});
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -197,6 +200,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Apply Authorization Policies from Custom Class
 builder.Services.AddCustomAuthorizationPolicies();
+
 
 IConfigurationSection pluginPaths = builder.Configuration.GetSection("PluginPaths:PluginDirectoryPath");
 var pluginBasePath = pluginPaths.Value;

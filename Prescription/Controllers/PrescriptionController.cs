@@ -1289,7 +1289,7 @@ namespace Prescription.Controllers
         //}
 
 
-        [HttpPost("registration")]
+        [HttpPost("new_registration")]
         public async Task<ActionResult<ApiResponse<int>>> Registration(UserInsertRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
@@ -1347,6 +1347,7 @@ namespace Prescription.Controllers
 
 
 
+        [HttpPost("doctor_registration")]
         public async Task<ActionResult<ApiResponse<int>>> DoctorRegistration(RegistrationInsertRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
