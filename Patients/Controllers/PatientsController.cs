@@ -93,7 +93,7 @@ namespace PatienFolowUp.Controllers
             try
             {
                 var patients = await _patientService.GetById(PatientId);
-                var mappedPatients = await _mapperService.MapSingle<Patient, PatientsApiResponseDto>(patients.Result);
+                var mappedPatients =patients.Result;
                 if (patients.Result == null)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
@@ -109,6 +109,42 @@ namespace PatienFolowUp.Controllers
             }
             return Ok(apiResponse);
         }
+
+
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        [HttpGet("get-patients-by-phone_no")]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetByPhoneNo(string phoneNo)
+        {
+            var apiResponse = new ApiResponse<PatientsApiResponseDto>();
+            try
+            {
+                var patients = await _patientService.GetByPhoneNo(phoneNo);
+                var mappedPatients = patients.Result;
+                if (patients.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = mappedPatients;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+
+
+
+
+
+
+
+
+
         [Authorize(Policy = PermissionConstants.PatientsGetAll)]
         [HttpGet("get-age-distribution")]
         public async Task<ActionResult<ApiResponse<List<PatientAgeDistributionResponseDto>>>> GetAgeDistribution()

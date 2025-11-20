@@ -64,13 +64,43 @@ namespace PatienFolowUp.Application.Services
             return response;
         }
 
-        public async Task<Response<Patient>> GetById(int id)
+        public async Task<Response<PatientsApiResponseDto>> GetById(int id)
         {
-            var response = new Response<Patient>();
+            var response = new Response<PatientsApiResponseDto>();
 
             try
             {
                 var patients = await _patientsQueryRepository.GetById(id);
+
+                if (patients == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, patients.Result, patients.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message, StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the patients.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+        public async Task<Response<PatientsApiResponseDto>> GetByPhoneNo(string phoneNo)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetByPhoneNo(phoneNo);
 
                 if (patients == null)
                 {

@@ -3,10 +3,12 @@ using DataAccess.DatabaseAccessLayer;
 using Entities.EntityClass.PatientEntity;
 using Microsoft.AspNetCore.Http;
 using PatienFolowUp.Domain.Repositories.Patients;
+using PatienFolowUp.Dtos.ResponseDto.Patients;
 using PatienFolowUp.Utility;
 using Patients.Dtos.ResponseDto.PatientsDto;
 using System.Data.SqlClient;
 using Utility.ApiResponse;
+using Utility.BaseInterface;
 using Utility.Response;
 using Utility.SqlErrorMessgae;
 
@@ -116,12 +118,12 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
         }
 
 
-        public async Task<Response<Patient>> GetById(int id)
+        public async Task<Response<PatientsApiResponseDto>> GetById(int id)
         {
-            var response = new Response<Patient>();
+            var response = new Response<PatientsApiResponseDto>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Patient, dynamic>("Patients_GetById", new
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PatientsApiResponseDto, dynamic>("Patients_GetById", new
                 {
                     PatientID = id
                 });
@@ -136,6 +138,34 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
             }
             return response;
         }
+
+
+        public async Task<Response<PatientsApiResponseDto>> GetByPhoneNo(string phoneNo)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetByPhoneNo",
+                    new
+                    {
+                        PhoneNo = phoneNo  // Correct
+                    }
+                );
+
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PatientsResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+
         public async Task<Response<List<PatientAgeDistributionResponseDto>>> GetAgeDistribution()
         {
             var response = new Response<List<PatientAgeDistributionResponseDto>>();
@@ -181,6 +211,11 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
         }
 
         public Task<Response<List<Patient>>> GetAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<Response<Patient>> IBaseCommonQueryMethodRepository<Patient>.GetById(int id)
         {
             throw new NotImplementedException();
         }
