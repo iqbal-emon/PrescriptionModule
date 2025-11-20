@@ -41,24 +41,65 @@ namespace Appointment.Controllers
             var apiResponse = new ApiResponse<List<AppointmentApiResponseDto>>();
             try
             {
-                var appointments = await _appointmentService.GetAll();
-                var mappedAppointments = appointments.Result;
+                var appointmentsResponse = await _appointmentService.GetAll();
+                var appointments = appointmentsResponse.Result;
 
-                if (appointments.Result.Count == 0)
+                if (appointments == null || appointments.Count == 0)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, "No appointments found.");
                     return Ok(apiResponse);
                 }
 
-                apiResponse.Results = mappedAppointments;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, mappedAppointments, "Appointments retrieved successfully.");
+                // Loop through each appointment to get Session & Schedule details
+                foreach (var appointment in appointments)
+                {
+                    if (appointment.SessionId > 0)
+                    {
+                        var sessionResponse = await _appointmentService.GetBySessionId(appointment.SessionId);
+                        if (sessionResponse.IsSuccess && sessionResponse.Result != null)
+                        {
+                            appointment.SessionName = sessionResponse.Result.DoctorScheduleName;
+                            appointment.ScheduleDayofWeek = sessionResponse.Result.ScheduleDayofWeek;
+                            appointment.StartTime = sessionResponse.Result.StartTime;
+                            appointment.EndTime = sessionResponse.Result.EndTime;
+                            appointment.NoOfPatients = sessionResponse.Result.NoOfPatients;
+                            appointment.IsActive = sessionResponse.Result.IsActive;
+                        }
+                    }
+
+                    if (appointment.ScheduleId > 0)
+                    {
+                        var scheduleResponse = await _appointmentService.GetBySchedule(appointment.ScheduleId);
+                        if (scheduleResponse.IsSuccess && scheduleResponse.Result != null)
+                        {
+                            appointment.ScheduleName = scheduleResponse.Result.ScheduleName;
+                            appointment.ScheduleTypeName = scheduleResponse.Result.ScheduleTypeName;
+                            appointment.ConsultancyTypeName = scheduleResponse.Result.ConsultancyTypeName;
+                            appointment.DoctorChamberId = scheduleResponse.Result.DoctorChamberId;
+                            appointment.Chamber = scheduleResponse.Result.Chamber;
+                            appointment.Status = scheduleResponse.Result.Status;
+                            appointment.OffDayFrom = scheduleResponse.Result.OffDayFrom;
+                            appointment.DayTextFrom = scheduleResponse.Result.DayTextFrom;
+                            appointment.OffDayTo = scheduleResponse.Result.OffDayTo;
+                            appointment.DayTextTo = scheduleResponse.Result.DayTextTo;
+                            appointment.Remarks = scheduleResponse.Result.Remarks;
+                            appointment.ResponseSuccess = scheduleResponse.Result.ResponseSuccess;
+                            appointment.ResponseMessage = scheduleResponse.Result.ResponseMessage;
+                        }
+                    }
+                }
+
+                apiResponse.Results = appointments;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, appointments, "Appointments retrieved successfully.");
             }
             catch (Exception ex)
             {
                 ApiResponseHelper.SetFailedResponse(apiResponse, null, "Error while retrieving appointments.");
             }
+
             return Ok(apiResponse);
         }
+
 
         [Authorize(Policy = PermissionConstants.AppointmentGetById)]
         [HttpGet("get-by-id")]

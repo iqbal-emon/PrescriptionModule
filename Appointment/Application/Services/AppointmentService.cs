@@ -1,14 +1,20 @@
-﻿using Appointment.Domain.Repositories.Appointment;
+﻿using ApiCallService.BaseApiCallService;
+using Appointment.Domain.Repositories.Appointment;
 using Appointment.Dtos.RequestDto;
 using Appointment.Dtos.RequestDto.AppointmentDto;
 using Appointment.Dtos.ResponseDto.AppointmentDto;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RestSharp;
 using SharedService.MapService;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Utility.ApiResponse;
 using Utility.Response;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Appointment.Application.Services
 {
@@ -17,15 +23,22 @@ namespace Appointment.Application.Services
         private readonly IAppointmentQueryRepository _appointmentQueryRepository;
         private readonly IAppointmentCommandRepository _appointmentCommandRepository;
         private readonly MapperService _mapperService;
+        private readonly IConfiguration _configuration;
+        private string _apiBaseURL;
+        private readonly IBaseRestClientApiService _baseRestClientApiService;
 
         public AppointmentService(
             IAppointmentQueryRepository appointmentQueryRepository,
             IAppointmentCommandRepository appointmentCommandRepository,
-            MapperService mapperService)
+            MapperService mapperService,
+            IConfiguration configuration, IBaseRestClientApiService baseRestClientApiService)
         {
             _appointmentQueryRepository = appointmentQueryRepository;
             _appointmentCommandRepository = appointmentCommandRepository;
             _mapperService = mapperService;
+            _configuration = configuration;
+            _apiBaseURL = _configuration.GetSection("GeneralSettings:Soowgood").Value;
+            _baseRestClientApiService = baseRestClientApiService;
         }
 
         // Get all appointments
@@ -132,6 +145,70 @@ namespace Appointment.Application.Services
         {
             return _appointmentCommandRepository.Delete(id);
         }
+
+
+        public async Task<Response<SessionResponseDto>> GetBySessionId(int? sessionId)
+        {
+            var response = new Response<SessionResponseDto>();
+            try
+            {
+                var baseUrl = _apiBaseURL;
+                var endPoint = $"api/app/doctor-schedule-day-session/{sessionId}/session";
+
+                // Add Authorization header
+                string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+                var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
+                var userData = deSerializedJsonResult.ToObject<SessionResponseDto>();
+
+                if (userData != null)
+                {
+                    response.Result = userData;
+                    response.IsSuccess = true;
+                }
+
+                return response;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+        public async Task<Response<ScheduleResponseDto>> GetBySchedule(int? scheduleId)
+        {
+            var response = new Response<ScheduleResponseDto>();
+            try
+            {
+                var baseUrl = _apiBaseURL;
+                var endPoint = $"api/app/doctor-schedule/{scheduleId}";
+
+                // Add Authorization header
+                string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+                var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
+                var userData = deSerializedJsonResult.ToObject<ScheduleResponseDto>();
+
+                if (userData != null)
+                {
+                    response.Result = userData;
+                    response.IsSuccess = true;
+                }
+
+                return response;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+
+
+
+
+
 
 
     }
