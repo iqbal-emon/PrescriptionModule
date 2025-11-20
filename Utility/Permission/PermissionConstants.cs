@@ -198,6 +198,14 @@ namespace Utility.Permission
         public const string PrescriptionPdfsGetAll = "PrescriptionPdfsGetAll";
         public const string PrescriptionPdfsGetById = "PrescriptionPdfsGetById";
 
-        
+        public const string AppointmentCreate = "AppointmentCreate";
+        public const string AppointmentUpdate = "AppointmentUpdate";
+        public const string AppointmentDelete = "AppointmentDelete";
+        public const string AppointmentGetAll = "AppointmentGetAll";
+        public const string AppointmentGetById = "AppointmentGetById";
+
+
+
+
     }
 }

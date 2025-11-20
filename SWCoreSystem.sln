@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrescriptionPdf", "Prescrip
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification", "Notification\Notification.csproj", "{47BED824-8166-4847-8025-3A64B688B7B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Appointment", "Appointment\Appointment.csproj", "{65131714-AE7F-424F-9FA3-A7074AA7E466}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -225,6 +227,10 @@ Global
 		{47BED824-8166-4847-8025-3A64B688B7B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47BED824-8166-4847-8025-3A64B688B7B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47BED824-8166-4847-8025-3A64B688B7B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65131714-AE7F-424F-9FA3-A7074AA7E466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65131714-AE7F-424F-9FA3-A7074AA7E466}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65131714-AE7F-424F-9FA3-A7074AA7E466}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65131714-AE7F-424F-9FA3-A7074AA7E466}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -265,6 +271,7 @@ Global
 		{FADB8DD4-478B-4AA9-BD6D-54DBF0B81152} = {BB4A2AFF-DD5A-4B33-9065-57F7491E219E}
 		{53EE7C23-9152-4AFD-86D8-26A84B1F6822} = {BB4A2AFF-DD5A-4B33-9065-57F7491E219E}
 		{47BED824-8166-4847-8025-3A64B688B7B7} = {BB4A2AFF-DD5A-4B33-9065-57F7491E219E}
+		{65131714-AE7F-424F-9FA3-A7074AA7E466} = {BB4A2AFF-DD5A-4B33-9065-57F7491E219E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {84E1731A-ECFD-4041-B86A-3ED451DD8EEC}
