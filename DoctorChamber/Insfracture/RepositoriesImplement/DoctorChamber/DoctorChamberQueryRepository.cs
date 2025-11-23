@@ -94,5 +94,76 @@ namespace DoctorChamber.Insfracture.RepositoriesImplement.DoctorChamber
 
             return response;
         }
+        public async Task<ApiResponse<List<Entities.CountryEntity.District>>> GetAllDistrict(int divisonId)
+        {
+            var apiResponse = new ApiResponse<List<Entities.CountryEntity.District>>();
+
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<
+                    Entities.CountryEntity.District,
+                    dynamic
+                >("District_GetAll", new {
+                    DivisionId = divisonId       });
+
+                apiResponse.Results = result.ToList();
+
+                ApiResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                    apiResponse.Results,
+                    "All districts retrieved successfully",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(
+                    apiResponse,
+                    null,
+                    StandardDataAccessMessages.GetSqlErrorMessage(ex)
+                );
+            }
+
+            return apiResponse;
+        }
+
+
+        public async Task<ApiResponse<List<Entities.CountryEntity.Division>>> GetAllDivision()
+        {
+            var apiResponse = new ApiResponse<List<Entities.CountryEntity.Division>>();
+
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<
+                    Entities.CountryEntity.Division,
+                    dynamic
+                >("Division_GetAll", new { });
+
+                apiResponse.Results = result.ToList();
+
+                ApiResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                    apiResponse.Results,
+                    "All districts retrieved successfully",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(
+                    apiResponse,
+                    null,
+                    StandardDataAccessMessages.GetSqlErrorMessage(ex)
+                );
+            }
+
+            return apiResponse;
+        }
+
+
+
+
     }
 }

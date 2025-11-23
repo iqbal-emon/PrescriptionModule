@@ -22,6 +22,10 @@ namespace Prescription.Dtos.RequestDto.DoctorChamberDto
         public int? ZipCodeID { get; set; }
         public int TenantID { get; set; }
 
+        public int? ChamberReferenceId { get; set; }
+        public int? DistrictId { get; set; }
+        public int? DivisionId { get; set; }
+
         public bool IsVisibleOnPrescription { get; set; }
         public bool IsDeleted { get; set; }
     }

@@ -27,6 +27,9 @@ namespace DoctorChamber.Dtos.RequestDto.DoctorChamberDto
 
         [Required(ErrorMessage = "Tenant ID is required.")]
         public int TenantID { get; set; }
+        public int? ChamberReferenceId { get; set; }
+        public int? DistrictId { get; set; }
+        public int? DivisionId { get; set; }
 
 
         public bool IsDeleted { get; set; }

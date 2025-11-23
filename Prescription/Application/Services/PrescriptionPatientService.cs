@@ -585,6 +585,42 @@ namespace Prescription.Application.Services
         }
 
 
+        public async Task<Response<DoctorChamberApiResponseDto>> DoctorChamberInsert(DoctorChamberInsertRequestDto requestModel)
+        {
+
+            var response = new Response<DoctorChamberApiResponseDto>();
+            try
+            {
+                var baseUrl = _apiBaseURL;
+                var endPoint = "api/2025-02/create-doctor-chamber";
+                // Add Authorization header
+                string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+                var responseJson = await _baseRestClientApiService.MakeApiCall(baseUrl, endPoint, Method.Post, requestModel, token, 3, 1000);
+                var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
+                int results = deSerializedJsonResult["results"]?.Value<int>() ?? 0;
+
+                var doctorDetailsApiResponse = new DoctorChamberApiResponseDto
+                {
+                    ChamberID = results
+                };
+
+                if (results != null)
+                {
+                    response.Result = doctorDetailsApiResponse;
+                    response.IsSuccess = true;
+                }
+                return response;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+
+
+
 
 
 

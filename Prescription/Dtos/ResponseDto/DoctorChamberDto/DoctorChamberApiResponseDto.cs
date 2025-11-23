@@ -15,6 +15,9 @@ namespace Prescription.Dtos.ResponseDto.DoctorChamberDto
         public string? ZipCode { get; set; }
         public int? ZipCodeID { get; set; }
         public bool IsVisibleOnPrescription { get; set; }
+        public int? ChamberReferenceId { get; set; }
+        public int? DistrictId { get; set; }
+        public int? DivisionId { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

@@ -12,6 +12,7 @@ using DoctorChamber.Application.Services;
 using DoctorChamber.Utility;
 using DoctorChamber.Dtos.ResponseDtoDoctorChamberDto;
 using DoctorChamber.Dtos.RequestDto.DoctorChamberDto;
+using DoctorChamber.Dtos.ResponseDto.DoctorChamberDto;
 
 namespace DoctorChamber.Controllers
 {
@@ -156,5 +157,111 @@ namespace DoctorChamber.Controllers
             }
             return Ok(apiResponse);
         }
+
+
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        [HttpGet("gets_district_by_division_id")]
+        public async Task<ActionResult<ApiResponse<List<DistrictApiResponseDto>>>> GetAllDistrictList(int divisonId)
+        {
+            var apiResponse = new ApiResponse<List<DistrictApiResponseDto>>();
+
+            try
+            {
+                var districtList = await _chamberService.GetAllDistrict(divisonId);
+                var mappedDistricts = await _mapperService.MapList<
+                    Entities.CountryEntity.District,
+                    DistrictApiResponseDto
+                >(districtList.Result);
+
+                if (districtList.Result == null || districtList.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(
+                        apiResponse,
+                        null,
+                        "No district found"
+                    );
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = mappedDistricts;
+
+                ApiResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                    apiResponse.Results,
+                    "District list loaded successfully",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception)
+            {
+                ApiResponseHelper.SetFailedResponse(
+                    apiResponse,
+                    null,
+                    "An unexpected error occurred while getting district list"
+                );
+            }
+
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        [HttpGet("gets-all-division_list")]
+        public async Task<ActionResult<ApiResponse<List<DivisionApiResponseDto>>>> GetAllDivisionList()
+        {
+            var apiResponse = new ApiResponse<List<DivisionApiResponseDto>>();
+
+            try
+            {
+                // Call the service to get all divisions
+                var divisionList = await _chamberService.GetAllDivision();
+
+                // Map entities to DTOs
+                var mappedDivisions = await _mapperService.MapList<
+                    Entities.CountryEntity.Division,
+                    DivisionApiResponseDto
+                >(divisionList.Result);
+
+                // Handle empty results
+                if (divisionList.Result == null || divisionList.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(
+                        apiResponse,
+                        null,
+                        "No division found"
+                    );
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = mappedDivisions;
+
+                // Set success response
+                ApiResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                    apiResponse.Results,
+                    "Division list loaded successfully",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception)
+            {
+                ApiResponseHelper.SetFailedResponse(
+                    apiResponse,
+                    null,
+                    "An unexpected error occurred while getting division list"
+                );
+            }
+
+            return Ok(apiResponse);
+        }
+
+
+
+
+
+
+
+
     }
 }

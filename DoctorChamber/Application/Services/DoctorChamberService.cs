@@ -143,10 +143,121 @@ namespace DoctorChamber.Application.Services
 
             return response;
         }
-
+       
         public Task<Response<bool>> Delete(int id)
         {
             return _degreeCommandRepository.Delete(id);
         }
+
+        public async Task<Response<List<Entities.CountryEntity.District>>> GetAllDistrict(int divisonId)
+        {
+            var response = new Response<List<Entities.CountryEntity.District>>();
+
+            try
+            {
+                var result = await _degreeQueryRepository.GetAllDistrict(divisonId);
+
+                if (result.Results == null || result.Results.Count == 0)
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        result.Results,
+                        "No districts found",
+                        StatusResponseMessage.success,
+                        StatusCodes.Status400BadRequest
+                    );
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(
+                        response,
+                        result.Results, // removed .Result
+                        "Districts retrieved successfully",
+                        StatusResponseMessage.success,
+                        StatusCodes.Status200OK
+                    );
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving districts.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.CountryEntity.Division>>> GetAllDivision()
+        {
+            var response = new Response<List<Entities.CountryEntity.Division>>();
+
+            try
+            {
+                var result = await _degreeQueryRepository.GetAllDivision();
+
+                if (result.Results == null || result.Results.Count == 0)
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        result.Results,
+                        "No districts found",
+                        StatusResponseMessage.success,
+                        StatusCodes.Status400BadRequest
+                    );
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(
+                        response,
+                        result.Results, // removed .Result
+                        "Districts retrieved successfully",
+                        StatusResponseMessage.success,
+                        StatusCodes.Status200OK
+                    );
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving districts.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+
+            return response;
+        }
+
     }
 }

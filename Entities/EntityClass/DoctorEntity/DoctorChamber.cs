@@ -20,8 +20,12 @@ namespace Entities.EntityClass.DoctorEntity
         public string? ZipCode { get; set; }
         public int? ZipCodeID { get; set; }
         public bool IsVisibleOnPrescription { get; set; } = true;
+        public int? ChamberReferenceId { get; set; }
+        public int? DistrictId { get; set; }
+        public int? DivisionId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
+
     }
 }
