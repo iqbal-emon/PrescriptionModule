@@ -431,6 +431,7 @@ namespace Prescription.Controllers
         {
             try
             {
+
                 var doctorDegree = request.Doctor.Degree;
 
                 string doctorDetailsHtml = "";
@@ -457,6 +458,8 @@ namespace Prescription.Controllers
                 var diagnosis = request.Diagnosis;
                 string diagnosisHtml = "";
 
+
+
                 if (doctorDegree != null)
                 {
                     // Take up to 4 degrees
@@ -464,276 +467,196 @@ namespace Prescription.Controllers
 
                     foreach (var degree in degreesToShow)
                     {
-                        doctorDetailsHtml += $"<div style=\"font-size: 13px; margin: 0;\">{degree.DegreeName} - {degree.InstituteName}, {degree.InstituteCity}</div>";
+                        doctorDetailsHtml += $"<p style=\"margin: 5px 0; font-size: 18px;\">{degree.DegreeName}-{degree.InstituteName}-{degree.InstituteCity}</p>";
                     }
                 }
+
 
                 if (chambers != null && chambers.Any())
                 {
                     foreach (var chamber in chambers)
                     {
-                        chamberHtml += $"<div style=\"font-size: 13px; margin: 0 0 3px 0; font-weight: 500;\">{chamber.ChamberName}</div>";
-                        chamberHtml += $"<div style=\"font-size: 12px; margin: 0 0 3px 0;\">{chamber.Address}</div>";
+                        chamberHtml += $"<h3 style=\"margin: 5px 0; font-size: 18px;color: #00aaff;\">{chamber.ChamberName}</h3>";
+                        chamberHtml += $"<p style=\"margin: 5px 0; font-size: 18px;\">{chamber.Address}</p>";
+
                     }
                 }
                 else
                 {
                     if (request.isPreHand || chambers?.Count == 0)
                     {
-                        chamberHtml += @"";
+                        chamberHtml += @"
+
+";
+
                     }
                 }
 
+
                 if (schedules != null && schedules.Any())
                 {
-                    scheduleHtml = string.Join("<br/>", schedules.Select(s =>
+                    scheduleHtml = string.Join(", ", schedules.Select(s =>
                     {
+
+
+                        // Handle Start-End display
                         var startEndText = s.Start == s.End ? s.Start : $"{s.Start}-{s.End}";
-                        var timeRange = $"{s.StartTime:hh\\:mm tt} - {s.EndTime:hh\\:mm tt}";
-                        return $"<span style=\"font-size: 12px;\">{startEndText} ({timeRange})</span>";
+
+                        // Format in 12-hour style (e.g., "09:00 AM")
+                        var timeRange = $"{s.StartTime:hh:mm tt}-{s.EndTime:hh:mm tt}";
+
+                        return $"<span style=\"font-size: 14px; font-weight: bold;\"> {startEndText}  ({timeRange})</span>";
                     }));
                 }
+
+
+
+
+
+
+
 
                 if (string.IsNullOrEmpty(request.uploadImage))
                 {
                     if (complaints != null && complaints.Any())
                     {
-                        complaintsHtml = "<ul style=\"padding-left: 18px; margin: 4px 0;\">";
+                        complaintsHtml = "<ul style=\"padding-left: 20px;\">";
                         foreach (var complaint in complaints)
                         {
-                            complaintsHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">{complaint.Name} <span style='color:#777;'>&nbsp;{complaint.Days}&nbsp;{complaint.Notes}</span></li>";
+                            complaintsHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{complaint.Name} &nbsp {complaint.Days} &nbsp {complaint.Notes} </li>";
                         }
                         complaintsHtml += "</ul>";
+
                     }
 
                     if (histories != null && histories.Any())
                     {
-                        historyHtml = "<ul style=\"padding-left: 18px; margin: 4px 0;\">";
+                        historyHtml = "<ul style=\"padding-left: 20px;\">";
                         foreach (var history in histories)
                         {
-                            historyHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">{history.Name} <span style='color:#777;'>&nbsp;{history.PastHistory}&nbsp;{history.PresentHistory}</span></li>";
+                            historyHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{history.Name} &nbsp {history.PastHistory} &nbsp {history.PresentHistory} </li>";
                         }
                         historyHtml += "</ul>";
                     }
 
                     if (diagnosis != null && diagnosis.Any())
                     {
-                        diagnosisHtml = "<ul style=\"padding-left: 18px; margin: 4px 0;\">";
+                        diagnosisHtml = "<ul style=\"padding-left: 20px;\">";
                         foreach (var diago in diagnosis)
                         {
-                            diagnosisHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">{diago.Name} <span style='color:#777;'>&nbsp;{diago.PastDiagnosis}&nbsp;{diago.PresentDiagnosis}</span></li>";
+                            diagnosisHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{diago.Name} &nbsp {diago.PastDiagnosis} &nbsp {diago.PresentDiagnosis} </li>";
                         }
                         diagnosisHtml += "</ul>";
                     }
 
+
+
                     if (examinations != null)
                     {
-                        exminationHtml = "<ul style=\"padding-left: 18px; margin: 4px 0;\">";
+                        exminationHtml = "<ul style=\"padding-left: 20px;\">";
+
                         foreach (var examination in examinations)
                         {
-                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">BP: {examination.Systolic}/{examination.Diastolic}</li>";
-                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">Pulse: {examination.Pulse}</li>";
-                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">Weight: {examination.Weight}</li>";
-                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">Height: {examination.HeightFeet}-{examination.HeightInches}</li>";
+                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">BP:{examination.Systolic}/{examination.Diastolic} </li>";
+                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">Pulse:{examination.Pulse} </li>";
+                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">Weight:{examination.Weight} </li>";
+                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">Height:{examination.HeightFeet}-{examination.HeightInches} </li>";
+
                         }
                         exminationHtml += "</ul>";
+
                     }
+
 
                     if (investigations != null && investigations.Any())
                     {
-                        investigationHtml = "<ul style=\"padding-left: 18px; margin: 4px 0;\">";
+                        investigationHtml = "<ul style=\"padding-left: 20px;\">";
                         foreach (var investigation in investigations)
                         {
-                            investigationHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">{investigation.Name} <span style='color:#777;'>&nbsp;{investigation.Notes}</span></li>";
+                            investigationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{investigation.Name} &nbsp {investigation.Notes} </li>";
+
                         }
                         investigationHtml += "</ul>";
+
                     }
+
+
+
 
                     if (advices != null && advices.Any())
                     {
-                        adviceHtml = "<ul style=\"padding-left: 18px; margin: 4px 0;\">";
+                        adviceHtml = "<ul style=\"padding-left: 20px;\">";
+
                         foreach (var advice in advices)
                         {
-                            adviceHtml += $"<li style=\"margin: 2px 0; font-size: 12px;\">{advice.Name} <span style='color:#777;'>&nbsp;{advice.Notes}</span></li>";
+                            adviceHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{advice.Name} &nbsp {advice.Notes} </li>";
+
                         }
                         adviceHtml += "</ul>";
                     }
 
                     if (!string.IsNullOrWhiteSpace(followUp) && DateTime.TryParse(followUp, out var parsedDate))
                     {
-                        followHtml = $"<ul style=\"padding-left: 18px; margin: 4px 0;\"><li style=\"margin: 2px 0; font-size: 12px;\">{parsedDate:dd MMMM, yyyy}</li></ul>";
+                        followHtml = $"<ul style=\"padding-left: 20px;\"><li style=\"margin: 5px 0; font-size: 18px;\">{parsedDate:MM/dd/yyyy}</li></ul>";
                     }
+
 
                     if (medications != null && medications.Any())
                     {
-                        medicationHtml = "<ol style=\"padding-left: 20px; margin: 8px 0;\">";
+                        medicationHtml = "<ol style=\"padding-left: 20px;\">";
 
                         foreach (var medication in medications)
                         {
-                            medicationHtml += "<li style=\"margin: 6px 0 10px 0; font-size: 13px;\">";
-                            medicationHtml += $"<div style=\"font-weight: 600; font-size: 13px;\">{medication.Name}</div>";
-                            medicationHtml += $"<div style=\"font-size: 12px; color:#555; margin-top:2px;\">{medication.Timming} &nbsp; {medication.MealTime} &nbsp; {medication.Duration}</div>";
-                            if (!string.IsNullOrWhiteSpace(medication.Notes))
-                            {
-                                medicationHtml += $"<div style=\"font-size: 11px; color:#888; margin-top:2px;\">Note: {medication.Notes}</div>";
-                            }
-                            medicationHtml += "</li>";
+                            medicationHtml += "<div style=\"padding: 10px 0;\">"; // Padding between medicines
+                            medicationHtml += $"<li style=\"margin: 5px 0; font-size: 20px;font-weight: bold; \">{medication.Name}</li>";
+                            medicationHtml += $"<p style=\"margin: 5px 2px; font-size: 18px;padding-left:20px;\">{medication.Timming} &nbsp {medication.MealTime} &nbsp {medication.Duration} &nbsp {medication.Notes}</p>";
+                            medicationHtml += "</div>";
                         }
 
                         medicationHtml += "</ol>";
                     }
+
+
+
+
+
                 }
 
-                // For uploaded-image prescriptions (pre-scanned)
+
                 var imageHtmlCode = $@"
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset=""UTF-8"">
     <title>Medical Prescription</title>
 </head>
-<body style=""margin: 0; padding:0; display:flex; justify-content:center; align-items:center; font-family: 'Roboto', sans-serif;"">
+<body style=""margin: 0; display: flex; justify-content: center; align-items: center;"">
     <div style=""width: 900px; height: 1300px;"">
-        <img src=""{request.uploadImage}""
+        <img src=""{request.uploadImage}"" 
              alt=""Uploaded Prescription"" 
-             style=""width:100%; height:100%; object-fit:contain;"" />
+             style="" width: 100%;height:1300px;"" />
     </div>
 </body>
 </html>";
 
-                // ---- NEW LAYOUT (reference design style) ----
-                var htmlCode = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset=""UTF-8"">
-    <title>Medical Prescription</title>
-</head>
-<body style=""margin:0; padding:0; font-family:'Roboto', Arial, sans-serif; background-color:#ffffff;"">
-    <div style=""width:900px; margin:0 auto; padding:24px 32px; box-sizing:border-box;"">
-        
-        <!-- HEADER -->
-        {(request.isHeader ? $@"
-        <div style=""display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #e0e0e0; padding-bottom:12px;"">
-            <div style=""flex:1;"">
-                <div style=""font-size:20px; font-weight:600; color:#009688; margin-bottom:4px;"">{request.Doctor.DoctorName}</div>
-                {doctorDetailsHtml}
-                <div style=""font-size:13px; margin-top:6px; color:#333;"">{request.Doctor.AreaOfExperties}</div>
-                <div style=""font-size:12px; margin-top:4px; color:#444;"">BMDC: {request.Doctor.bmdc}</div>
-            </div>
-            <div style=""flex:0 0 260px; text-align:right;"">
-                {chamberHtml}
-                {(string.IsNullOrEmpty(scheduleHtml) ? "" : $"<div style='margin-top:6px;'>{scheduleHtml}</div>")}
-            </div>
-        </div>
-        " : "")}
 
-        <!-- PATIENT + DATE ROW -->
-        <div style=""display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:8px 0 10px 0; border-bottom:1px solid #e0e0e0; margin-top:8px;"">
-            <div style=""flex:1;"">
-                <span style=""font-weight:600;"">Patient:</span> {request.Patient.PatientName}
-                &nbsp;&nbsp;&nbsp;
-                <span style=""font-weight:600;"">Age:</span> {request.Patient.PatientAge} years
-                &nbsp;&nbsp;&nbsp;
-                <span style=""font-weight:600;"">Gender:</span> {request.Patient.patientGender}
-                &nbsp;&nbsp;&nbsp;
-            </div>
-            <div style=""text-align:right;"">
-                <span style=""font-weight:600;"">Date:</span> {DateTime.Now:dd MMMM, yyyy}
-                &nbsp;&nbsp;&nbsp;
-                <span style=""font-weight:600;"">Time:</span> {DateTime.Now:hh:mm tt}
-            </div>
-        </div>
 
-        <!-- MAIN CONTENT: LEFT (complaints etc) + RIGHT (medicine) -->
-        <div style=""display:flex; margin-top:12px; min-height:600px;"">
-            
-            <!-- LEFT COLUMN -->
-            <div style=""flex:0 0 38%; padding-right:18px; border-right:1px solid #eeeeee; box-sizing:border-box;"">
-                <div style=""margin-bottom:14px;"">
-                    <div style=""font-size:13px; font-weight:600; color:#009688; margin-bottom:2px;"">Chief Complaints</div>
-                    <div style=""height:1px; background-color:#e0e0e0; margin-bottom:4px;""></div>
-                    {complaintsHtml}
-                </div>
 
-                <div style=""margin-bottom:14px;"">
-                    <div style=""font-size:13px; font-weight:600; color:#009688; margin-bottom:2px;"">History</div>
-                    <div style=""height:1px; background-color:#e0e0e0; margin-bottom:4px;""></div>
-                    {historyHtml}
-                </div>
 
-                <div style=""margin-bottom:14px;"">
-                    <div style=""font-size:13px; font-weight:600; color:#009688; margin-bottom:2px;"">Diagnosis</div>
-                    <div style=""height:1px; background-color:#e0e0e0; margin-bottom:4px;""></div>
-                    {diagnosisHtml}
-                </div>
 
-                <div style=""margin-bottom:14px;"">
-                    <div style=""font-size:13px; font-weight:600; color:#009688; margin-bottom:2px;"">Investigation</div>
-                    <div style=""height:1px; background-color:#e0e0e0; margin-bottom:4px;""></div>
-                    {investigationHtml}
-                </div>
 
-                <div style=""margin-bottom:14px;"">
-                    <div style=""font-size:13px; font-weight:600; color:#009688; margin-bottom:2px;"">On Examination</div>
-                    <div style=""height:1px; background-color:#e0e0e0; margin-bottom:4px;""></div>
-                    {exminationHtml}
-                </div>
-
-                <div style=""margin-bottom:14px;"">
-                    <div style=""font-size:13px; font-weight:600; color:#009688; margin-bottom:2px;"">Follow Up</div>
-                    <div style=""height:1px; background-color:#e0e0e0; margin-bottom:4px;""></div>
-                    {followHtml}
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN : MEDICINE -->
-            <div style=""flex:1; padding-left:18px; box-sizing:border-box;"">
-                <div style=""background-color:#e8f5e9; border-radius:4px; padding:8px 12px; font-size:13px; font-weight:600; color:#00796b; margin-bottom:6px;"">
-                    Medicine (Rx)
-                </div>
-
-                <div style=""margin-bottom:10px;"">
-                    {medicationHtml}
-                </div>
-
-                <div style=""margin-top:16px;"">
-                    <div style=""font-size:13px; font-weight:600; color:#009688; margin-bottom:2px;"">Advice</div>
-                    <div style=""height:1px; background-color:#e0e0e0; margin-bottom:4px;""></div>
-                    {adviceHtml}
-                </div>
-
-            </div>
-        </div>
-
-        <!-- SIGNATURE + FOOTER -->
-        <div style=""margin-top:30px; display:flex; justify-content:space-between; align-items:flex-end; font-size:11px; border-top:1px solid #e0e0e0; padding-top:10px;"">
-            <div>
-                <div>Date issued: {DateTime.Now:MM/dd/yyyy}</div>
-                <div style=""margin-top:2px;"">Prescription Code: {prescriptionCode}</div>
-            </div>
-
-            <div style=""text-align:right;"">
-                {(string.IsNullOrEmpty(request.Doctor.signature) ? "" : $@"
-                    <img src=""{request.Doctor.signature}"" alt=""Doctor's Signature"" style=""height:60px; width:auto; margin-bottom:4px;"" />
-                ")}
-                <div style=""width:200px; border-top:1px solid #444; margin-left:auto;""></div>
-                <div style=""margin-top:3px;"">Doctor's Signature</div>
-            </div>
-        </div>
-
-    </div>
-</body>
-</html>";
-
-                // ---------- HTML to PDF pipeline (unchanged) ----------
+                // Admin Send Email
                 string whk = _configuration.GetSection("AppSettings").GetSection("PDFSOFTWAREPATH").Value;
+                // C:\Users\KOW\AppData\Roaming
+                //string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 string appDataFolder = _configuration.GetSection("AppSettings").GetSection("PDFCREATEDPATH").Value;
+                string subdirectory = "KOW";
                 string fileName = $"prescription.html";
                 string htmlFilePath = Path.Combine(appDataFolder, fileName);
-                string pdfFileName = $"{PrescriptionId}{commonDto.PatientId}{commonDto.DoctorId}.pdf";
+                string pdfFileName = $"{PrescriptionId}_{commonDto.PatientId}_{commonDto.DoctorId}.pdf";
                 string pdfFilePath = Path.Combine(appDataFolder, pdfFileName);
-
+                //string imagePath = _configuration.GetSection("AppSettings").GetSection("STATICIMAGEPATH").Value;
+                //byte[] imageBytes = System.IO.File.ReadAllBytes(imagePath);
+                //string base64Image = Convert.ToBase64String(imageBytes);
                 var pdfInsertModel = new PdfInsertRequestDto
                 {
                     PrescriptionID = PrescriptionId,
@@ -741,22 +664,167 @@ namespace Prescription.Controllers
                     PatientID = commonDto.PatientId,
                     FilePath = Path.Combine("Prescriptions", pdfFileName).Replace("\\", "/"),
                     AppointmentRefId = request.appointmentId
+
                 };
+
+                string prescriptionBaseUrl = _configuration["GeneralSettings:PrescriptionBaseURL"];
+
+                //var QR = GenerateQrCodeBase64("https://soowgood.com");
+
+                var htmlCode = $@"
+                        <meta charset=""UTF-8"">
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Medical Prescription Form</title>
+                        </head>
+                        <body style=""font-family: 'Roboto', sans-serif;"">
+                            <div style=""width: 980px;  display: flex; flex-direction: column;height: 1220px;"">
+        
+                                <!-- Header Section -->
+                                <div style=""background-color: #f0f0f0; padding: 10px; border-bottom: 1px solid #ccc;height:15%"">
+
+                                {(request.isHeader ? $@"
+                                    <div style=""float: left; width: 70%;"">
+                                        <h3 style=""margin: 5px 0; font-size: 22px;color: #00aaff;"">{request.Doctor.DoctorName}</h3>
+                                        {doctorDetailsHtml}
+                                        <p style=""margin: 5px 0; font-size: 14px;"">{request.Doctor.AreaOfExperties}</p>
+                   <p style=""margin: 5px 0; font-size: 18px;\"">BMDC:{request.Doctor.bmdc}</p>
+
+                                    </div>
+                                    <div style=""float: right; width: 30%; text-align: right;"">
+                                        {chamberHtml}
+                                        {scheduleHtml}
+                                    </div>
+                                    <div style=""clear: both;""></div>
+                                " : "")}
+                        </div>
+
+                                <!-- Patient Info Section -->
+                                <table style=""width: 100%; border-collapse: collapse; border-bottom: 1px solid #ccc;"">
+                                    <tr>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Name: {request.Patient.PatientName}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Age: {request.Patient.PatientAge}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Blood Group: {request.Patient.patientBloodGroup}</td>
+                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Gender: {request.Patient.patientGender}</td>
+
+                                    </tr>
+                                </table>
+
+
+                                <!-- Main Content Section -->
+                                <table style=""width: 100%; border-collapse: collapse;height: 93%;"">
+                                    <!-- Left Section - Patient History -->
+                                    <tr>
+                                        <td style=""width: 30%; padding: 10px; border-right: 1px solid #ccc; vertical-align: top;padding-left:20px;"">
+                                            <h4 style=""margin: 5px 0;padding-bottom: 5px;"">Chief Complaint</h4>
+                                            {complaintsHtml}
+                                            <h4 style=""margin: 5px 0; padding-bottom: 5px;"">History</h4>
+                                            {historyHtml}
+                                            <h4 style=""margin: 15px 0 5px 0; padding-bottom: 5px;"">On Examinations</h4>
+                                            {exminationHtml}
+                                            <h4 style=""margin: 15px 0 5px 0; padding-bottom: 5px;"">Diagnosis</h4>
+                                              {diagnosisHtml}                    
+                                            <h4 style=""margin: 15px 0 5px 0; padding-bottom: 5px;"">Investigation</h4>
+                                                                                        {investigationHtml}
+
+
+
+                                                <h4 style=""margin: 15px 0 5px 0;  padding-bottom: 5px;"">Follow Up</h4>
+                                                                    {followHtml}
+                                                                </td>
+
+                                        <!-- Right Section - Prescription -->
+                                        <td style=""width: 70%; padding: 10px; vertical-align: top;padding-left:20px;"">
+                                            <h3 style=""margin: 5px 0;  padding-bottom: 5px;"">Rx.</h3>
+                                            <div style=""margin: 10px 0;"">
+                                                {medicationHtml}
+                                            </div>
+
+                                            <h3 style=""margin: 20px 0 5px 0;  padding-bottom: 5px;"">Advices</h3>
+                                            {adviceHtml}
+
+                    
+                                        </td>
+                                         <td style=""width: 30%; vertical-align: bottom;"">
+                                            <div style=""text-align: center;"">
+                                                                <img src=""{request.Doctor.signature}"" alt=""Doctor's Signature"" height=""100"" width=""150"">
+
+                                                <div style=""border-top: 1px solid #000; width: 150px; margin: 0 auto;""></div>
+                                                <p style=""margin: 5px 0 0 0; font-size: 12px; text-align: center;"">
+                                                    Doctor's Signature
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+
+
+                               <!-- Footer Section -->
+                        <div style=""width: 100%; padding: 5px; border-top: 1px solid #ccc; font-size: 12px; color: #666; background-color: #f9f9f9; margin-top: auto;"">
+
+                          <!-- Left and Right sections using inline-block -->
+                          <div style=""display: inline-block; width: 49%; vertical-align: top; text-align: left;"">
+                                       <p style=""margin: 5px 0 0 0;"">Date issued:{DateTime.Now.ToString("MM/dd/yyyy")}</p>
+
+
+                            </div>
+
+                          <div style=""display: inline-block; width: 49%; vertical-align: top; text-align: right;"">
+                                      <p style=""margin: 5px 0 0 0;"">Powered By</p>
+                                      <p>PrescriptionCode:{prescriptionCode}</p>
+                      
+
+
+                          </div>
+
+                        </div>
+
+                            </div>
+                        </body>
+                        </html>";
+
+
 
                 HtmlDocument doc = new HtmlDocument();
                 if (!string.IsNullOrEmpty(request.uploadImage))
                 {
                     doc.LoadHtml(imageHtmlCode);
+
+
                 }
                 else
                 {
                     doc.LoadHtml(htmlCode);
-                }
 
+                }
                 HtmlNode tbody = doc.DocumentNode.SelectSingleNode("//body");
 
+                var sl = 0;
+                //foreach (var service in mail.OrderImageServicesList)
+                //{
+                //    sl++;
+                //    var td = $"<td style='padding: 8px;'>{sl}</td>\r\n <td style='padding: 8px;'>{service.name}</td>\r\n <td style='padding: 8px;'>{service.TotalImage}</td>\r\n <td style='padding: 8px;'>{service.point}</td>\r\n <td style='padding: 8px;'>{service.spend_point}</td>";
+                //    HtmlNode newRow = HtmlNode.CreateNode($"<tr>{td}</tr>");
+                //    tbody.AppendChild(newRow);
+                //}
+
                 string mergeModifiedHtml = doc.DocumentNode.OuterHtml;
+                //var totalPoint = mail.OrderImageServicesList.Sum(x => x.spend_point);
                 var modifiedHtml = mergeModifiedHtml.Replace("{Total Charge : $20.00}", $"Total Charge : {0}");
+
+                //if (mail.orderMasterChargeBreakdown != null)
+                //{
+                //    modifiedHtml = modifiedHtml
+                //        .Replace("{Date}", mail.orderMasterChargeBreakdown.order_time)
+                //        .Replace("{OrderNumber}", mail.orderMasterChargeBreakdown.order_no)
+                //        .Replace("{SubscriptionPlan}", mail.orderMasterChargeBreakdown.order_subscription_plan_type)
+                //        .Replace("{PaymentStatus}", mail.orderMasterChargeBreakdown.order_payment_status)
+                //        .Replace("{OrderStatus}", mail.orderMasterChargeBreakdown.order_status)
+                //        .Replace("{RawImageCount}", mail.orderMasterChargeBreakdown.order_no_of_images.ToString())
+                //        .Replace("{Current Balance : 600 Credit(s)}", $"{{Current Balance : {mail.orderMasterChargeBreakdown.current_balance} Credit(s)}}");
+                //}
 
                 var pdfRequestModel = new PrescriptionPdfRequestDto
                 {
@@ -768,6 +836,29 @@ namespace Prescription.Controllers
 
                 var result = await _pdfService.PdfInsert(pdfRequestModel);
 
+                //try
+                //{
+                //    var subject = template.Result.header;
+                //    var body = $"{modifiedHtml}\n{template.Result.footer}";
+                //    Thread email = new Thread(delegate ()
+                //    {
+                //        var isEmailSent = new EmailSender(_configuration).SendMailGun(subject, body, emailList, null, pdfFilePath);
+                //    });
+                //    email.IsBackground = true;
+                //    email.Start();
+                //    response.IsSuccess = true;
+                //}
+                //catch (Exception e)
+                //{
+                //    response.IsSuccess = false;
+                //    response.Message = e.Message;
+                //}
+
+
+
+
+
+
                 var pdfResult = await _pdfService.DbPdfInsert(pdfInsertModel);
                 var baseUrl = _configuration.GetSection("GeneralSettings").GetSection("PrescriptionBaseURL").Value;
                 var PrescriptionLink = baseUrl + pdfInsertModel.FilePath;
@@ -776,20 +867,27 @@ namespace Prescription.Controllers
                 {
                     MobileNo = request.Patient.patientPhoneNo,
                     Sms = $"Dear {request.Patient.PatientName},\r\n" +
-                          $"Your prescription from {request.Doctor.DoctorName} is now available. " +
-                          $"Please click the link below to view or download it:\r\n {PrescriptionLink} " +
-                          "\r\nIf you have any questions or need further assistance, feel free to contact us at +880 1605-144633.\r\n" +
-                          "Best regards,\r\n SoowGood"
+                    $"Your prescription from {request.Doctor.DoctorName} is now available. " +
+                    $"Please click the link below to view or download it:\r\n {PrescriptionLink} " +
+                    "\r\nIf you have any questions or need further assistance, feel free to contact us at +880 1605-144633.\r\n" +
+                    "Best regards,\r\n SoowGood"
                 };
                 if (!string.IsNullOrWhiteSpace(request.Patient.patientPhoneNo))
                 {
                     var notifications = await _pdfService.Notification(notification);
                 }
 
+
+
+
+
+
+
                 return pdfInsertModel.FilePath;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+
                 throw;
             }
         }
