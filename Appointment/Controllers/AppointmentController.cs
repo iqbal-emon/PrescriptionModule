@@ -205,5 +205,28 @@ namespace Appointment.Controllers
             }
             return Ok(apiResponse);
         }
+
+
+
+        [HttpPost("add-thanas")]
+        public async Task<IActionResult> AddThanas([FromBody] List<Thana> thanas)
+        {
+            if (thanas == null || !thanas.Any())
+                return BadRequest("No data provided.");
+
+            foreach (var thana in thanas)
+            {
+                // আপনি চাইলে validation করতে পারেন
+                if (string.IsNullOrEmpty(thana.ThanaName))
+                    continue;
+
+                _context.Thanas.Add(thana);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Thana list inserted successfully!" });
+        }
+
+
     }
 }

@@ -339,9 +339,17 @@ namespace Prescription.Controllers
                             }
                         }
                     }
+                    if (request.Patient.PatientProfileId == 0)
+                    {
+                        userResult2 = await InsertPatient(request, commonDto, userResult2);
+                    }
+                    else
+                    {
+                        commonDto.PatientId = request.Patient.PatientProfileId;
+                    }
 
-                    userResult2 = await InsertPatient(request, commonDto, userResult2);
-                    var prescriptionCode = "PS" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
+
+                  var prescriptionCode = "PS" + Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
 
                     var prescription = new PrescriptionInsertRequestDto
                     {
