@@ -341,7 +341,17 @@ namespace Prescription.Controllers
                     }
                     if (request.Patient.PatientProfileId == 0)
                     {
-                        userResult2 = await InsertPatient(request, commonDto, userResult2);
+                        var existingPatient= await _prescriptionPatientService.GetByPhoneNo(request.Patient.patientPhoneNo);
+                        if(existingPatient.IsSuccess && existingPatient.Result != null)
+                        {
+                            commonDto.PatientId = existingPatient.Result.PatientID;
+                        }
+                        else
+                        {
+                            userResult2 = await InsertPatient(request, commonDto, userResult2);
+
+                        }
+
                     }
                     else
                     {
@@ -869,8 +879,8 @@ namespace Prescription.Controllers
                     Sms = $"Dear {request.Patient.PatientName},\r\n" +
                     $"Your prescription from {request.Doctor.DoctorName} is now available. " +
                     $"Please click the link below to view or download it:\r\n {PrescriptionLink} " +
-                    "\r\nIf you have any questions or need further assistance, feel free to contact us at +880 1605-144633.\r\n" +
-                    "Best regards,\r\n SoowGood"
+                    "\r\nIf you have any questions or need further assistance, feel free to contact us.\r\n" +
+                    "Best regards,\r\n Prescripto"
                 };
                 if (!string.IsNullOrWhiteSpace(request.Patient.patientPhoneNo))
                 {
