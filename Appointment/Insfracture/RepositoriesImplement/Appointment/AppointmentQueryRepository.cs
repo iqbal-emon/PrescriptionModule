@@ -24,14 +24,14 @@ namespace Appointment.Infrastructure.RepositoriesImplement
             throw new NotImplementedException();
         }
 
-        public async Task<Response<List<AppointmentApiResponseDto>>> GetAll()
+        public async Task<Response<List<AppointmentApiResponseDto>>> GetAll(int doctorId)
         {
             var response = new Response<List<AppointmentApiResponseDto>>();
             try
             {
                 var result = await _dataAccess.LoadDataUsingProcedure<AppointmentApiResponseDto, dynamic>(
                     "Appointment_GetAll",
-                    new { }
+                    new { doctorId=doctorId }
                 );
 
                 response.Result = result.ToList();

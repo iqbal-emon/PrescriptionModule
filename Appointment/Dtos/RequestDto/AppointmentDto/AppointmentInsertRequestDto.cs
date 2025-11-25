@@ -18,6 +18,10 @@ namespace Appointment.Dtos.RequestDto.AppointmentDto
         public string Gender { get; set; }
 
         [Required]
+
+        public int DoctorProfileId  { get; set; }
+
+        [Required]
         public int Age { get; set; }
         [Required]
         [MaxLength(20)]

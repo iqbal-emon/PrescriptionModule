@@ -16,6 +16,8 @@ namespace Entities.EntityClass
         [Required]
         [MaxLength(100)]
         public string PatientName { get; set; }
+        [Required]
+        public int DoctorProfileId  { get; set; }
 
         [Required]
         [MaxLength(10)]

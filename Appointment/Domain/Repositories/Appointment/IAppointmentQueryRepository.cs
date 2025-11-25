@@ -11,7 +11,7 @@ namespace Appointment.Domain.Repositories.Appointment
 {
     public interface  IAppointmentQueryRepository:IBaseCommonQueryMethodRepository<Entities.EntityClass.Appointment>
     {
-        public Task<Response<List<AppointmentApiResponseDto>>> GetAll();
+        public Task<Response<List<AppointmentApiResponseDto>>> GetAll(int doctorId);
 
 
     }

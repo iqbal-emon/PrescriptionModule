@@ -42,13 +42,13 @@ namespace Appointment.Application.Services
         }
 
         // Get all appointments
-        public async Task<Response<List<AppointmentApiResponseDto>>> GetAll()
+        public async Task<Response<List<AppointmentApiResponseDto>>> GetAll(int doctorId)
         {
             var response = new Response<List<AppointmentApiResponseDto>>();
 
             try
             {
-                var appointments = await _appointmentQueryRepository.GetAll();
+                var appointments = await _appointmentQueryRepository.GetAll(doctorId);
 
                 if (appointments == null)
                 {

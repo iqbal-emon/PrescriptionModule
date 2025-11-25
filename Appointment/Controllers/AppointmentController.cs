@@ -35,13 +35,13 @@ namespace Appointment.Controllers
         }
 
         [Authorize(Policy = PermissionConstants.AppointmentGetAll)]
-        [HttpGet("get-all")]
-        public async Task<ActionResult<ApiResponse<List<AppointmentApiResponseDto>>>> GetAllAppointments()
+        [HttpGet("appointment-get-by-doctorId")]
+        public async Task<ActionResult<ApiResponse<List<AppointmentApiResponseDto>>>> GetAllAppointments(int doctorId)
         {
             var apiResponse = new ApiResponse<List<AppointmentApiResponseDto>>();
             try
             {
-                var appointmentsResponse = await _appointmentService.GetAll();
+                var appointmentsResponse = await _appointmentService.GetAll(doctorId);
                 var appointments = appointmentsResponse.Result;
 
                 if (appointments == null || appointments.Count == 0)
@@ -204,27 +204,6 @@ namespace Appointment.Controllers
                 ApiResponseHelper.SetFailedResponse(apiResponse, false, "Error while deleting appointment.");
             }
             return Ok(apiResponse);
-        }
-
-
-
-        [HttpPost("add-thanas")]
-        public async Task<IActionResult> AddThanas([FromBody] List<Thana> thanas)
-        {
-            if (thanas == null || !thanas.Any())
-                return BadRequest("No data provided.");
-
-            foreach (var thana in thanas)
-            {
-                // আপনি চাইলে validation করতে পারেন
-                if (string.IsNullOrEmpty(thana.ThanaName))
-                    continue;
-
-                _context.Thanas.Add(thana);
-            }
-
-            await _context.SaveChangesAsync();
-            return Ok(new { success = true, message = "Thana list inserted successfully!" });
         }
 
 

@@ -69,6 +69,7 @@ namespace Appointment.Infrastructure.RepositoriesImplement
                     SessionId = entity.SessionId,
                     ScheduleId = entity.ScheduleId,
                     BloodGroup = entity.BloodGroup,
+                    DoctorProfileId=entity.DoctorProfileId,
                     AppointmentDate = entity.AppointmentDate
                 };
 
