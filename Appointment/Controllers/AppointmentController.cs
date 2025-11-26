@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Appointment.Dtos.RequestDto.AppointmentDto;
 using Pharmacies.Utility;
 using Appointment.Dtos.ResponseDto.AppointmentDto;
+using Utility.Response;
 
 namespace Appointment.Controllers
 {
@@ -33,26 +34,51 @@ namespace Appointment.Controllers
             _mapperService = mapperService;
             _appointmentService = appointmentService;
         }
-
         [Authorize(Policy = PermissionConstants.AppointmentGetAll)]
         [HttpGet("appointment-get-by-doctorId")]
-        public async Task<ActionResult<ApiResponse<List<AppointmentApiResponseDto>>>> GetAllAppointments(int doctorId)
+        public async Task<ActionResult<PagedWithResponse<List<AppointmentApiResponseDto>>>> GetAllAppointments(
+         int doctorId,
+    int pageNumber = 1,
+    int pageSize = 10,
+    string search = null,
+    int? sessionId = null,
+    int? scheduleId = null)
         {
-            var apiResponse = new ApiResponse<List<AppointmentApiResponseDto>>();
+            var response = new PagedWithResponse<List<AppointmentApiResponseDto>>();
+
             try
             {
-                var appointmentsResponse = await _appointmentService.GetAll(doctorId);
-                var appointments = appointmentsResponse.Result;
+                // Call service
+                var appointmentsResponse = await _appointmentService.GetAll(doctorId,
+            pageNumber,
+            pageSize,
+            search,
+            sessionId,
+            scheduleId);
 
-                if (appointments == null || appointments.Count == 0)
+                // Null-safe check
+                if (appointmentsResponse?.Result?.Result == null || !appointmentsResponse.Result.Result.Any())
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "No appointments found.");
-                    return Ok(apiResponse);
+                    response.Result = new List<AppointmentApiResponseDto>();
+                    response.TotalCount = 0;
+                    response.IsSuccess = false;
+                    response.Message = "No appointments found.";
+                    return Ok(response);
                 }
 
-                // Loop through each appointment to get Session & Schedule details
+                var appointments = appointmentsResponse.Result.Result;
+
+                // Fill pagination info
+                response.TotalCount = appointmentsResponse.Result.TotalCount;
+                response.Result = appointments;
+                response.IsSuccess = true;
+                response.StatusCode = 200;
+                response.Message = "Appointments retrieved successfully.";
+
+                // Enrich with session and schedule info
                 foreach (var appointment in appointments)
                 {
+                    // Load Session Details
                     if (appointment.SessionId > 0)
                     {
                         var sessionResponse = await _appointmentService.GetBySessionId(appointment.SessionId);
@@ -67,6 +93,7 @@ namespace Appointment.Controllers
                         }
                     }
 
+                    // Load Schedule Details
                     if (appointment.ScheduleId > 0)
                     {
                         var scheduleResponse = await _appointmentService.GetBySchedule(appointment.ScheduleId);
@@ -88,24 +115,27 @@ namespace Appointment.Controllers
                         }
                     }
                 }
-
-                apiResponse.Results = appointments;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, appointments, "Appointments retrieved successfully.");
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, null, "Error while retrieving appointments.");
+                response.Result = new List<AppointmentApiResponseDto>();
+                response.TotalCount = 0;
+                response.IsSuccess = false;
+                response.Message = $"Error while retrieving appointments. {ex.Message}";
             }
 
-            return Ok(apiResponse);
+            return Ok(response);
         }
+
+
+
 
 
         [Authorize(Policy = PermissionConstants.AppointmentGetById)]
         [HttpGet("get-by-id")]
-        public async Task<ActionResult<ApiResponse<AppointmentApiResponseDto>>> GetAppointmentById(int id)
+        public async Task<ActionResult<ApiResponse<AppointmentResponseDto>>> GetAppointmentById(int id)
         {
-            var apiResponse = new ApiResponse<AppointmentApiResponseDto>();
+            var apiResponse = new ApiResponse<AppointmentResponseDto>();
             try
             {
                 var appointment = await _appointmentService.GetById(id);
@@ -115,7 +145,7 @@ namespace Appointment.Controllers
                     return Ok(apiResponse);
                 }
 
-                var mappedAppointment = await _mapperService.MapSingle<Entities.EntityClass.Appointment, AppointmentApiResponseDto>(appointment.Result);
+                var mappedAppointment = appointment.Result;
                 apiResponse.Results = mappedAppointment;
                 ApiResponseHelper.SetSuccessResponse(apiResponse, mappedAppointment, "Appointment retrieved successfully.");
             }

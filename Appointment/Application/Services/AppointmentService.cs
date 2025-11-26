@@ -41,41 +41,84 @@ namespace Appointment.Application.Services
             _baseRestClientApiService = baseRestClientApiService;
         }
 
-        // Get all appointments
-        public async Task<Response<List<AppointmentApiResponseDto>>> GetAll(int doctorId)
+        public async Task<Response<PagedWithResponse<List<AppointmentApiResponseDto>>>> GetAll(
+          int doctorId,
+    int pageNumber = 1,
+    int pageSize = 10,
+    string search = null,
+    int? sessionId = null,
+    int? scheduleId = null)
         {
-            var response = new Response<List<AppointmentApiResponseDto>>();
+            // The response object that will be returned
+            var response = new Response<PagedWithResponse<List<AppointmentApiResponseDto>>>();
 
             try
             {
-                var appointments = await _appointmentQueryRepository.GetAll(doctorId);
+                // Call repository to get paged appointments
+                var repoResponse = await _appointmentQueryRepository.GetAll(doctorId,
+            pageNumber,
+            pageSize,
+            search,
+            sessionId,
+            scheduleId);
 
-                if (appointments == null)
+                // Null-safe check
+                if (repoResponse == null || repoResponse.Result == null || !repoResponse.Result.Result.Any())
                 {
-                    ResponseHelper.SetFailedResponse(response, appointments.Result, appointments.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        repoResponse?.Message ?? "No appointments found",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status400BadRequest
+                    );
+                    return response;
                 }
-                else
+
+                // Extract appointments list and total count from repository response
+                var appointmentsList = repoResponse.Result.Result; // List<AppointmentApiResponseDto>
+                var totalCount = repoResponse.Result.TotalCount;
+
+                // Wrap the result in PagedWithResponse
+                var pagedResult = new PagedWithResponse<List<AppointmentApiResponseDto>>
                 {
-                    ResponseHelper.SetSuccessResponse(response, appointments.Result, appointments.Message, StatusResponseMessage.success, appointments.StatusCode);
-                }
+                    Result = appointmentsList,
+                    TotalCount = totalCount,
+                    IsSuccess = true,
+                    Message = "Appointments retrieved successfully."
+                };
+
+                // Fill main response
+                response.Result = pagedResult;
+                response.IsSuccess = true;
+                response.Message = pagedResult.Message;
             }
             catch (Exception ex)
             {
-                response.Message = "An unexpected error occurred while retrieving appointments.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                response.Message = $"An unexpected error occurred while retrieving appointments. {ex.Message}";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
             }
 
             return response;
         }
 
+
+
+
         // Get appointment by ID
-        public async Task<Response<Entities.EntityClass.Appointment>> GetById(int id)
+        public async Task<Response<AppointmentResponseDto>> GetById(int id)
         {
-            var response = new Response<Entities.EntityClass.Appointment>();
+            var response = new Response<AppointmentResponseDto>();
 
             try
             {
-                var appointment = await _appointmentQueryRepository.GetById(id);
+                var appointment = await _appointmentQueryRepository.GetByAppointmentId(id);
 
                 if (appointment == null)
                 {

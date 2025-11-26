@@ -42,6 +42,7 @@ namespace Appointment.Dtos.ResponseDto.AppointmentDto
         public string? Remarks { get; set; }
         public bool? ResponseSuccess { get; set; }
         public string? ResponseMessage { get; set; }
+        public int TotalCount { get; set; }
 
 
     }
