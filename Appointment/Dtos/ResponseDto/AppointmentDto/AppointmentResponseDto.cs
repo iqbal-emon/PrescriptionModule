@@ -27,7 +27,7 @@ namespace Appointment.Dtos.ResponseDto.AppointmentDto
         public string PatientCode { get; set; }
 
         // User (Patient) Info
-        public string PatienName { get; set; }    // Mapped from U.FirstName
+        public string PatientName { get; set; }    // Mapped from U.FirstName
         public string LastName { get; set; }
         public string PatientEmail { get; set; }  // Mapped from U.Email
         public string PhoneNumber { get; set; }
