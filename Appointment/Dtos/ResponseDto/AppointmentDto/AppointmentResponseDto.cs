@@ -23,7 +23,7 @@ namespace Appointment.Dtos.ResponseDto.AppointmentDto
         public string BloodGroup { get; set; }
         public string InsuranceProvider { get; set; }
         public string InsurancePolicyNumber { get; set; }
-        public int? PatientAge { get; set; }
+        public string? PatientAge { get; set; }
         public string PatientCode { get; set; }
 
         // User (Patient) Info
