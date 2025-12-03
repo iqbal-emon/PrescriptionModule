@@ -530,7 +530,7 @@ namespace Prescription.Controllers
                 {
                     if (complaints != null && complaints.Any())
                     {
-                        complaintsHtml = "<ul style=\"padding-left: 20px;\">";
+                        complaintsHtml = "<ul style=\"padding-left: 20px;margin: 0;color:#7F7F7F;\">";
                         foreach (var complaint in complaints)
                         {
                             complaintsHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{complaint.Name} &nbsp {complaint.Days} &nbsp {complaint.Notes} </li>";
@@ -539,19 +539,11 @@ namespace Prescription.Controllers
 
                     }
 
-                    if (histories != null && histories.Any())
-                    {
-                        historyHtml = "<ul style=\"padding-left: 20px;\">";
-                        foreach (var history in histories)
-                        {
-                            historyHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{history.Name} &nbsp {history.PastHistory} &nbsp {history.PresentHistory} </li>";
-                        }
-                        historyHtml += "</ul>";
-                    }
+                    
 
                     if (diagnosis != null && diagnosis.Any())
                     {
-                        diagnosisHtml = "<ul style=\"padding-left: 20px;\">";
+                        diagnosisHtml = "<ul style=\"padding-left: 20px;margin: 0;color:#7F7F7F;\">";
                         foreach (var diago in diagnosis)
                         {
                             diagnosisHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{diago.Name} &nbsp {diago.PastDiagnosis} &nbsp {diago.PresentDiagnosis} </li>";
@@ -559,18 +551,27 @@ namespace Prescription.Controllers
                         diagnosisHtml += "</ul>";
                     }
 
+                    if (histories != null && histories.Any())
+                    {
+                        historyHtml = "<ul style=\"padding-left: 20px;margin: 0;color:#7F7F7F;\">";
+                        foreach (var history in histories)
+                        {
+                            historyHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{history.Name} &nbsp {history.PastHistory} &nbsp {history.PresentHistory} </li>";
+                        }
+                        historyHtml += "</ul>";
+                    }
 
 
                     if (examinations != null)
                     {
-                        exminationHtml = "<ul style=\"padding-left: 20px;\">";
+                        exminationHtml = "<ul style=\"padding-left: 20px;margin: 0;color:#7F7F7F;\">";
 
                         foreach (var examination in examinations)
                         {
-                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">BP:{examination.Systolic}/{examination.Diastolic} </li>";
-                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">Pulse:{examination.Pulse} </li>";
-                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">Weight:{examination.Weight} </li>";
-                            exminationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">Height:{examination.HeightFeet}-{examination.HeightInches} </li>";
+                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 18px;\">BP:{examination.Systolic}/{examination.Diastolic} </li>";
+                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 18px;\">Pulse:{examination.Pulse} </li>";
+                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 18px;\">Weight:{examination.Weight} </li>";
+                            exminationHtml += $"<li style=\"margin: 2px 0; font-size: 18px;\">Height:{examination.HeightFeet}-{examination.HeightInches} </li>";
 
                         }
                         exminationHtml += "</ul>";
@@ -580,10 +581,10 @@ namespace Prescription.Controllers
 
                     if (investigations != null && investigations.Any())
                     {
-                        investigationHtml = "<ul style=\"padding-left: 20px;\">";
+                        investigationHtml = "<ul style=\"padding-left: 20px;margin: 0;color:#7F7F7F;\">";
                         foreach (var investigation in investigations)
                         {
-                            investigationHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{investigation.Name} &nbsp {investigation.Notes} </li>";
+                            investigationHtml += $"<li style=\"margin: 1px 0; font-size: 18px;\">{investigation.Name} &nbsp {investigation.Notes} </li>";
 
                         }
                         investigationHtml += "</ul>";
@@ -595,11 +596,11 @@ namespace Prescription.Controllers
 
                     if (advices != null && advices.Any())
                     {
-                        adviceHtml = "<ul style=\"padding-left: 20px;\">";
+                        adviceHtml = "<ul style=\"padding-left: 20px;margin: 0;color:#7F7F7F;\">";
 
                         foreach (var advice in advices)
                         {
-                            adviceHtml += $"<li style=\"margin: 5px 0; font-size: 18px;\">{advice.Name} &nbsp {advice.Notes} </li>";
+                            adviceHtml += $"<li style=\"margin: 1px 0; font-size: 18px;\">{advice.Name} &nbsp {advice.Notes} </li>";
 
                         }
                         adviceHtml += "</ul>";
@@ -607,13 +608,13 @@ namespace Prescription.Controllers
 
                     if (!string.IsNullOrWhiteSpace(followUp) && DateTime.TryParse(followUp, out var parsedDate))
                     {
-                        followHtml = $"<ul style=\"padding-left: 20px;\"><li style=\"margin: 5px 0; font-size: 18px;\">{parsedDate:MM/dd/yyyy}</li></ul>";
+                        followHtml = $"<ul style=\"padding-left: 20px;color:#7F7F7F;margin: 0;\"><li style=\"margin: 0; font-size: 18px;\">{parsedDate:MM/dd/yyyy}</li></ul>";
                     }
 
 
                     if (medications != null && medications.Any())
                     {
-                        medicationHtml = "<ol style=\"padding-left: 20px;\">";
+                        medicationHtml = "<ol style=\"padding-left: 20px;color:#7F7F7F;margin: 0;\">";
 
                         foreach (var medication in medications)
                         {
@@ -634,19 +635,19 @@ namespace Prescription.Controllers
 
 
                 var imageHtmlCode = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Medical Prescription</title>
-</head>
-<body style=""margin: 0; display: flex; justify-content: center; align-items: center;"">
-    <div style=""width: 900px; height: 1300px;"">
-        <img src=""{request.uploadImage}"" 
-             alt=""Uploaded Prescription"" 
-             style="" width: 100%;height:1300px;"" />
-    </div>
-</body>
-</html>";
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Medical Prescription</title>
+                </head>
+                <body style=""margin: 0; display: flex; justify-content: center; align-items: center;"">
+                    <div style=""width: 900px; height: 1300px;"">
+                        <img src=""{request.uploadImage}"" 
+                             alt=""Uploaded Prescription"" 
+                             style="" width: 100%;height:1300px;"" />
+                    </div>
+                </body>
+                </html>";
 
 
 
@@ -696,9 +697,10 @@ namespace Prescription.Controllers
 
                                 {(request.isHeader ? $@"
                                     <div style=""float: left; width: 70%;"">
-                                        <h3 style=""margin: 5px 0; font-size: 22px;color: #00aaff;"">{request.Doctor.DoctorName}</h3>
+                                        <h3 style=""margin: 5px 0; font-size: 22px;color: #00A87E;"">{request.Doctor.DoctorName}</h3>
                                         {doctorDetailsHtml}
-                                        <p style=""margin: 5px 0; font-size: 14px;"">{request.Doctor.AreaOfExperties}</p>
+                                       <p style=""margin: 5px 0; font-size: 14px;"">{request.Doctor.AreaOfExperties}</p>
+
                    <p style=""margin: 5px 0; font-size: 18px;\"">BMDC:{request.Doctor.bmdc}</p>
 
                                     </div>
@@ -711,12 +713,25 @@ namespace Prescription.Controllers
                         </div>
 
                                 <!-- Patient Info Section -->
-                                <table style=""width: 100%; border-collapse: collapse; border-bottom: 1px solid #ccc;"">
+                                <table style=""width: 100%;p border-collapse: collapse; border-bottom: 1px solid #ccc;"">
                                     <tr>
-                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Name: {request.Patient.PatientName}</td>
-                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Age: {request.Patient.PatientAge}</td>
-                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Blood Group: {request.Patient.patientBloodGroup}</td>
-                                        <td style=""padding: 3px 25px; font-size: 14px; font-weight: bold;"">Gender: {request.Patient.patientGender}</td>
+                                      <td style=""padding: 8px 25px; font-size: 14px; font-weight: bold; color:#24141;"">
+                                Name: <font color:#1F1F1F;>{request.Patient.PatientName}</font>
+                            </td>
+
+                            <td style=""padding: 8px 25px; font-size: 14px; font-weight: bold; color:#24141;"">
+                                Age: <font color:#1F1F1F;>{request.Patient.PatientAge}</font>
+                            </td>
+
+                            <td style=""padding: 8px 25px; font-size: 14px; font-weight: bold; color:#24141;"">
+                                Blood Group: <font color:#1F1F1F;>{request.Patient.patientBloodGroup}</font>
+                            </td>
+
+                            <td style=""padding: 8px 25px; font-size: 14px; font-weight: bold; color:#24141;"">
+                                Gender: <font color:#1F1F1F;>{request.Patient.patientGender}</font>
+                            </td>
+
+
 
                                     </tr>
                                 </table>
@@ -727,31 +742,31 @@ namespace Prescription.Controllers
                                     <!-- Left Section - Patient History -->
                                     <tr>
                                         <td style=""width: 30%; padding: 10px; border-right: 1px solid #ccc; vertical-align: top;padding-left:20px;"">
-                                            <h4 style=""margin: 5px 0;padding-bottom: 5px;"">Chief Complaint</h4>
+                                            <h4 style=""margin: 5px 0;padding-bottom: 2px;color: #00A87E;"">Chief Complaint</h4>
                                             {complaintsHtml}
-                                            <h4 style=""margin: 5px 0; padding-bottom: 5px;"">History</h4>
+                                            <h4 style=""margin: 5px 0; padding-bottom: 2px;color: #00A87E;"">History</h4>
                                             {historyHtml}
-                                            <h4 style=""margin: 15px 0 5px 0; padding-bottom: 5px;"">On Examinations</h4>
+                                            <h4 style=""margin: 5px 0; padding-bottom: 2px;color: #00A87E;"">On Examinations</h4>
                                             {exminationHtml}
-                                            <h4 style=""margin: 15px 0 5px 0; padding-bottom: 5px;"">Diagnosis</h4>
+                                            <h4 style=""margin: 5px 0 5px 0; padding-bottom: 2px;color: #00A87E;"">Diagnosis</h4>
                                               {diagnosisHtml}                    
-                                            <h4 style=""margin: 15px 0 5px 0; padding-bottom: 5px;"">Investigation</h4>
+                                            <h4 style=""margin: 5px 0 5px 0; padding-bottom: 2px;color: #00A87E;"">Investigation</h4>
                                                                                         {investigationHtml}
 
 
 
-                                                <h4 style=""margin: 15px 0 5px 0;  padding-bottom: 5px;"">Follow Up</h4>
+                                                <h4 style=""margin: 5px 0 5px 0;  padding-bottom: 2px;color: #00A87E;"">Follow Up</h4>
                                                                     {followHtml}
                                                                 </td>
 
                                         <!-- Right Section - Prescription -->
                                         <td style=""width: 70%; padding: 10px; vertical-align: top;padding-left:20px;"">
-                                            <h3 style=""margin: 5px 0;  padding-bottom: 5px;"">Rx.</h3>
+                                            <h3 style=""margin: 1px 0;  padding-bottom: 2px;color:#00A87E;"">Rx.</h3>
                                             <div style=""margin: 10px 0;"">
                                                 {medicationHtml}
                                             </div>
 
-                                            <h3 style=""margin: 20px 0 5px 0;  padding-bottom: 5px;"">Advices</h3>
+                                            <h3 style=""margin: 1px 0 5px 0;  padding-bottom: 5px;color:#00A87E;"">Advices</h3>
                                             {adviceHtml}
 
                     
@@ -772,22 +787,43 @@ namespace Prescription.Controllers
 
 
                                <!-- Footer Section -->
-                        <div style=""width: 100%; padding: 5px; border-top: 1px solid #ccc; font-size: 12px; color: #666; background-color: #f9f9f9; margin-top: auto;"">
+                      <div style=""width: 100%; padding: 5px; border-top: 1px solid #ccc; font-size: 12px; color: #666; background-color: #f9f9f9; margin-top: auto;"">
 
-                          <!-- Left and Right sections using inline-block -->
-                          <div style=""display: inline-block; width: 49%; vertical-align: top; text-align: left;"">
-                                       <p style=""margin: 5px 0 0 0;"">Date issued:{DateTime.Now.ToString("MM/dd/yyyy")}</p>
+    <table style=""width:100%; margin-top:5px;"">
+        <tr>
+            <!-- Left -->
+            <td style=""text-align:left; vertical-align:top; border:none;"">
+  <p style=""margin:5px 0 0 0;color:#7F7F7F;"">
+  Date issued: {TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("Bangladesh Standard Time")).ToString("MM/dd/yyyy hh:mm tt")}
 
-
-                            </div>
-
-                          <div style=""display: inline-block; width: 49%; vertical-align: top; text-align: right;"">
-                                      <p style=""margin: 5px 0 0 0;"">Powered By</p>
-                                      <p>PrescriptionCode:{prescriptionCode}</p>
-                      
+</p>
 
 
-                          </div>
+            </td>
+
+            <!-- Right -->
+            <td style=""text-align:right; vertical-align:top; border:none;"">
+                
+                <table style=""display:inline-block;"">
+                    <tr>
+                        <td style=""color:#00A87E; font-size:14px; padding:0; border:none;"">
+                            Powered By:
+                        </td>
+                        <td style=""color:#7F7F7F; font-size:14px; padding-left:5px; border:none;"">
+                            Prescripto
+                        </td>
+                    </tr>
+                </table>
+
+                <p style=""margin:3px 0 0 0;color:#7F7F7F;"">
+                    PrescriptionCode: {prescriptionCode}
+                </p>
+            </td>
+        </tr>
+    </table>
+
+</div>
+
 
                         </div>
 
