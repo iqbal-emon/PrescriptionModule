@@ -1,5 +1,7 @@
 ﻿using Medication.Domain.Repositories.MedicationManufacturer;
+using Medication.Dtos.ReponseDto.MedicationManufacturerDto;
 using Medication.Dtos.RequestDto.MedicationManufacturerDto;
+using Medication.Dtos.ResponseDto.MedicationDto;
 using Microsoft.AspNetCore.Http;
 using SharedService.MapService;
 using System.Data.SqlClient;
@@ -22,8 +24,76 @@ namespace Medication.Application.Services
                 _medicationManufacturerCommandRepository = medicationManufacturerCommandRepository;
                 _mapperService = mapperService;
             }
+        public async Task<PagedWithResponse<List<MedicationManufacturerApiReponseDto>>> GetAllManufacturerMostUsed(
+     int pageNumber = 1,
+     int pageSize = 10,
+     string? searchTerm = null,
 
-            public async Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetAll(string? manufacturerName)
+     string? manufacturerName = null, string? days = null)
+        {
+            var response = new PagedWithResponse<List<MedicationManufacturerApiReponseDto>>();
+
+            try
+            {
+                // ✅ Call repository (which will execute both SPs with filters)
+                var pagedData = await _medicationManufacturerQueryRepository.GetAllManufacturerMostUsed(pageNumber, pageSize, searchTerm, manufacturerName, days);
+
+                if (pagedData.Result == null || pagedData.TotalCount == 0)
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        0,
+                        null,
+                        "No medications found.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status404NotFound
+                    );
+                }
+                else
+                {
+                    response.Result = pagedData.Result;
+                    response.TotalCount = pagedData.TotalCount;
+
+                    ResponseHelper.SetSuccessResponse(
+                        response,
+                        response.TotalCount,
+                        response.Result,
+                        "Medications retrieved successfully.",
+                        StatusResponseMessage.success,
+                        StatusCodes.Status200OK
+                    );
+                }
+            }
+            catch (SqlException)
+            {
+                response.Message = "A database error occurred while retrieving the medications.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    response.TotalCount,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+            catch (Exception)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    response.TotalCount,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+
+            return response;
+        }
+
+
+        public async Task<Response<List<Entities.EntityClass.MedicineEntity.Medication>>> GetAll(string? manufacturerName)
             {
                 var response = new Response<List<Entities.EntityClass.MedicineEntity.Medication>>();
 

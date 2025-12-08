@@ -1,6 +1,7 @@
 ﻿using Medication.Application.Services;
 using Medication.Dtos.ReponseDto.MedicationManufacturerDto;
 using Medication.Dtos.RequestDto.MedicationManufacturerDto;
+using Medication.Dtos.ResponseDto.MedicationDto;
 using Medication.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 
 namespace Medication.Controllers
 {
@@ -31,7 +33,51 @@ namespace Medication.Controllers
                 _medicationManufacturerService = medicationManufacturerService;
             }
 
-            [Authorize(Policy = PermissionConstants.MedicationManufacturerGetAll)]
+
+        [Authorize(Policy = PermissionConstants.MedicationGetAll)]
+        [HttpGet("gets-most-used-medication-manufacturer")]
+        public async Task<IActionResult> GetAllMedicationMostUsed(
+    [FromQuery] string? searchTerm = null,
+    [FromQuery] string? manufacturerName = null,
+    [FromQuery] string? days = null,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
+        {
+            var apiResponse = new PagedWithResponse<List<MedicationManufacturerApiReponseDto>>();
+
+            try
+            {
+                var manufacturers = await _medicationManufacturerService.GetAllManufacturerMostUsed(pageNumber, pageSize, searchTerm, manufacturerName, days);
+
+                if (manufacturers?.Result == null || manufacturers.TotalCount == 0)
+                {
+                    ResponseHelper.SetFailedResponse(apiResponse, 0, null, "No medication found");
+                    return Ok(apiResponse);
+                }
+
+                ResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                    manufacturers.TotalCount,
+                    manufacturers.Result,
+                    "Medications retrieved successfully.",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+
+                return Ok(apiResponse);
+            }
+            catch (Exception)
+            {
+                ResponseHelper.SetFailedResponse(apiResponse, 0, null, "Error occurred while fetching medications.");
+                return Ok(apiResponse);
+            }
+        }
+
+
+
+
+
+        [Authorize(Policy = PermissionConstants.MedicationManufacturerGetAll)]
             [HttpGet("gets-all-medication-manufacturers")]
             public async Task<ActionResult<ApiResponse<List<MedicationManufacturerApiReponseDto>>>> GetAllMedicationManufacturers(string? manufacturerName)
             {

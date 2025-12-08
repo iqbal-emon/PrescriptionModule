@@ -8,7 +8,9 @@ namespace Medication.Dtos.ReponseDto.MedicationManufacturerDto
 {
     public class MedicationManufacturerApiReponseDto
     {
-        public string? Manufacturer { get; set; } // Manufacturer name
+        public string? Manufacturer { get; set; }   
+        public int UsageCount { get; set; }             
+        public int PrescriptionCount { get; set; }       
 
     }
 }

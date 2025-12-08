@@ -100,7 +100,7 @@ namespace PatienFolowUp.Application.Services
 
             try
             {
-                var patients = await _patientsQueryRepository.GetByPhoneNo(phoneNo);
+                var patients = await _patientsQueryRepository.GetByPhoneNo(phoneNo); 
 
                 if (patients == null)
                 {
