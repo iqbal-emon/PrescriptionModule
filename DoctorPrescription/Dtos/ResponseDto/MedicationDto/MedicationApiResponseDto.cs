@@ -20,6 +20,7 @@ namespace Medication.Dtos.ResponseDto.MedicationDto
         public DateTime UpdatedAt { get; set; }
         public int MedicationBrandId { get; set; }
         public string GenericName { get; set; }
+        public string Indication { get; set; }
         public string DAR { get; set; }
          public bool IsActive { get; set; }
 

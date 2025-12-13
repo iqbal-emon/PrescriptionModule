@@ -42,6 +42,7 @@ namespace Entities.EntityClass.MedicineEntity
 
         [MaxLength(50)]
         public string Strength { get; set; } // 500mg, 10mg, etc.
+        public string Indication { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
