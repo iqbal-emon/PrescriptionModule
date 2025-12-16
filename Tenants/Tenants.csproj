@@ -7,4 +7,8 @@
     <BaseOutputPath>D:\soowgood\SWCoreSystem\SWCoreSystem\AuthenticationSystem\bin\Debug\net8.0\Plugins</BaseOutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Google.GenAI" Version="0.9.0" />
+  </ItemGroup>
+
 </Project>

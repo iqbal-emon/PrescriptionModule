@@ -1,38 +1,42 @@
 ﻿using ApiCallService.BaseApiCallService;
 using ApiCallService.JsonObjectConverService;
+using DoctorExpertise.Dtos.RequestDto.DoctorExpertiseDto;
+using Entities.EntityClass;
+using Google.GenAI;
+using Google.GenAI.Types;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Prescription.Dtos.RequestDto.DegreeDto;
+using Prescription.Dtos.RequestDto.DoctorChamberDto;
 using Prescription.Dtos.RequestDto.DoctorDegreeDto;
 using Prescription.Dtos.RequestDto.DoctorDto;
+using Prescription.Dtos.RequestDto.DoctorExpertise;
+using Prescription.Dtos.RequestDto.DoctorScheduleDto;
+using Prescription.Dtos.RequestDto.ExaminationsDto;
+using Prescription.Dtos.RequestDto.ExpertiseCategoryDto;
+using Prescription.Dtos.RequestDto.GeminiDto;
+using Prescription.Dtos.RequestDto.Patients;
+using Prescription.Dtos.RequestDto.PatientsDto;
+using Prescription.Dtos.RequestDto.ScheduleDto;
 using Prescription.Dtos.RequestDto.UserDto;
 using Prescription.Dtos.ResponseDto.DegreeDto;
+using Prescription.Dtos.ResponseDto.DoctorChamberDto;
 using Prescription.Dtos.ResponseDto.DoctorDegreeDto;
 using Prescription.Dtos.ResponseDto.DoctorDto;
+using Prescription.Dtos.ResponseDto.DoctorScheduleDto;
+using Prescription.Dtos.ResponseDto.ExaminationsDto;
 using Prescription.Dtos.ResponseDto.PatientResponse;
+using Prescription.Dtos.ResponseDto.ScheduleDto;
 using Prescription.Dtos.ResponseDto.UserDto;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Utility.Response;
-using Prescription.Dtos.RequestDto.DoctorChamberDto;
-using Prescription.Dtos.RequestDto.PatientsDto;
-using Prescription.Dtos.ResponseDto.DoctorChamberDto;
-using Prescription.Dtos.RequestDto.ExpertiseCategoryDto;
-using Prescription.Dtos.ResponseDto.ExaminationsDto;
-using Prescription.Dtos.RequestDto.ExaminationsDto;
-using Prescription.Dtos.RequestDto.Patients;
-using DoctorExpertise.Dtos.RequestDto.DoctorExpertiseDto;
-using Prescription.Dtos.RequestDto.DoctorExpertise;
-using Entities.EntityClass;
-using Prescription.Dtos.RequestDto.ScheduleDto;
-using Prescription.Dtos.ResponseDto.ScheduleDto;
-using Prescription.Dtos.ResponseDto.DoctorScheduleDto;
-using Prescription.Dtos.RequestDto.DoctorScheduleDto;
 
 namespace Prescription.Application.Services
 {
@@ -41,11 +45,94 @@ namespace Prescription.Application.Services
         private readonly IConfiguration _configuration;
         private string _apiBaseURL;
         private readonly IBaseRestClientApiService _baseRestClientApiService;
+        private readonly Client _client;
         public PrescriptionPatientService(IConfiguration configuration, IBaseRestClientApiService baseRestClientApiService)
         {
             _configuration = configuration;
             _apiBaseURL = _configuration.GetSection("GeneralSettings:PrescriptionBaseURL").Value;
             _baseRestClientApiService = baseRestClientApiService;
+            var apiKey = configuration["Gemini:ApiKey"];
+
+            if (string.IsNullOrWhiteSpace(apiKey))
+                throw new Exception("Gemini API key missing");
+
+            // 🔥 DIRECT CALL HERE
+            System.Environment.SetEnvironmentVariable("GOOGLE_API_KEY", apiKey);
+
+            _client = new Client();
+        }
+        public async Task<string> GeneratedTextAsync(string prompt)
+        {
+            const int maxRetries = 3;
+            int attempt = 0;
+            var systemInstruction = new Content
+            {
+                Parts = new List<Part>
+        {
+            new Part
+            {
+                Text = "You are an expert medical assistant for doctors. Your goal is to provide rapid, precise clinical information. " +
+                       "Audience: Doctors. Assume high medical literacy. " +
+                       "Tone: Professional, clinical, concise. 'Doctor-to-Doctor'. " +
+                       "Format: Write in continuous paragraphs with inline formatting. Use semicolons or commas to separate items instead of bullet points or line breaks. " +
+                       "Constraint: Do not provide general patient advice. Stick to high-level medical terminology."
+            }
+        }
+            };
+
+            var config = new GenerateContentConfig
+            {
+                SystemInstruction = systemInstruction,
+                Temperature = 0.7,
+                MaxOutputTokens = 1000
+            };
+
+            while (attempt < maxRetries)
+            {
+                try
+                {
+                    var response = await _client.Models.GenerateContentAsync(
+                        model: "gemini-2.5-flash",
+                        contents: prompt,
+                        config: config
+                    );
+
+                    // Get the text response
+                    var text = response.Candidates[0].Content.Parts[0].Text;
+
+                    // Remove all newlines and normalize spacing
+                    text = text.Replace("\r\n", " ")  // Windows line endings
+                              .Replace("\n", " ")      // Unix line endings
+                              .Replace("\r", " ")      // Old Mac line endings
+                              .Replace("  ", " ")      // Double spaces
+                              .Trim();                 // Trim start/end spaces
+
+                    // Optional: Remove extra spaces (in case there are multiple)
+                    while (text.Contains("  "))
+                    {
+                        text = text.Replace("  ", " ");
+                    }
+
+                    return text;
+                }
+                catch (Google.GenAI.ServerError ex) when (ex.Message.Contains("overloaded"))
+                {
+                    attempt++;
+                    if (attempt >= maxRetries)
+                    {
+                        throw new InvalidOperationException(
+                            "AI service is currently overloaded. Please try again later.",
+                            ex
+                        );
+                    }
+
+                    // Exponential backoff: 1s, 2s, 4s
+                    var delayMs = (int)Math.Pow(2, attempt - 1) * 1000;
+                    await Task.Delay(delayMs);
+                }
+            }
+
+            throw new Exception("Max retries reached");
         }
         public async Task<Response<PatientsResponseDto>> PatientInsert(PatientsInsertRequestDto requestModel)
         {
@@ -651,9 +738,67 @@ namespace Prescription.Application.Services
             }
 
         }
+        public async Task<string> CallGemini2Flash(string prompt)
+        {
+            var apiKey = _configuration["Gemini:ApiKey"];
 
+            var url =
+                $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={apiKey}";
 
+            var payload = new
+            {
+                systemInstruction = new
+                {
+                    parts = new[]
+                    {
+                new
+                {
+                    text = "You are an expert medical assistant for doctors. Audience: Doctors. Assume high medical literacy. Tone: Professional, clinical, concise. Doctor-to-Doctor. Format: Bullet points, exact dosages, interactions. No conversational filler. Constraint: Do not provide general patient advice."
+                }
+            }
+                },
+                contents = new[]
+                {
+            new
+            {
+                role = "user",
+                parts = new[]
+                {
+                    new { text = prompt }
+                }
+            }
+        },
+                generationConfig = new { }
+            };
 
+            using var client = new HttpClient();
+            var json = System.Text.Json.JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync(url, content);
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(responseJson);
+
+            var aiText = doc.RootElement
+                .GetProperty("candidates")[0]
+                .GetProperty("content")[0]
+                .GetProperty("parts")[0]
+                .GetProperty("text")
+                .GetString();
+
+            return aiText;
+        }
+        public async Task<string> GenerateTextAsync(string prompt)
+        {
+            var response = await _client.Models.GenerateContentAsync(
+                model: "gemini-2.5-flash",
+                contents: prompt
+            );
+
+            return response.Candidates[0].Content.Parts[0].Text;
+        }
 
 
 

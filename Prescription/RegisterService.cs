@@ -119,6 +119,8 @@ namespace Prescription
             services.AddScoped<PrescriptionInvestigationService>();
             services.AddScoped<PrescriptionPatientService>();
 
+           
+
 
 
 

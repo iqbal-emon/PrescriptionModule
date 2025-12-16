@@ -1,4 +1,5 @@
 ﻿
+using ApiCallService.BaseApiCallService;
 using DoctorExpertise.Dtos.RequestDto.DoctorExpertiseDto;
 using Entities.EntityClass;
 using Entities.EntityClass.DoctorEntity;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Prescription.Application.services;
 using Prescription.Application.Services;
 using Prescription.Dtos.CommonDto;
@@ -20,6 +23,7 @@ using Prescription.Dtos.RequestDto.DoctorDto;
 using Prescription.Dtos.RequestDto.DoctorScheduleDto;
 using Prescription.Dtos.RequestDto.ExaminationsDto;
 using Prescription.Dtos.RequestDto.ExpertiseCategoryDto;
+using Prescription.Dtos.RequestDto.GeminiDto;
 using Prescription.Dtos.RequestDto.NotificationDto;
 using Prescription.Dtos.RequestDto.Patients;
 using Prescription.Dtos.RequestDto.PatientsDto;
@@ -45,6 +49,7 @@ using PrescriptionExamination.Application.Services;
 using PrescriptionPdf.Dtos.RequestDto.PdfDto;
 using PrescriptionPdf.Dtos.ResponseDto.PdfDto;
 using QRCoder;
+using RestSharp;
 using SharedService.CommonService;
 using SharedService.MapService;
 using System;
@@ -53,6 +58,7 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Xml;
@@ -1579,6 +1585,61 @@ namespace Prescription.Controllers
 
             return Ok(apiResponse);
         }
+
+        [HttpPost("ask")]
+        public async Task<IActionResult> Ask([FromBody] GeminiRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Prompt))
+                return BadRequest("Prompt is required.");
+
+            try
+            {
+                var result = await _prescriptionPatientService.CallGemini2Flash(request.Prompt);
+                return Ok(new { response = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        
+        }
+
+
+        [HttpPost("generate")]
+        public async Task<IActionResult> Generate([FromBody] GeminiRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Prompt))
+                return BadRequest(new { error = "Prompt is required" });
+
+            try
+            {
+                var result = await _prescriptionPatientService.GeneratedTextAsync(request.Prompt);
+                return Ok(new { response = result });
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("overloaded"))
+            {
+                return StatusCode(503, new
+                {
+                    error = "Service Unavailable",
+                    message = "The AI service is currently experiencing high demand. Please try again in a few moments.",
+                    retryAfter = 5 // seconds
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here
+                // _logger.LogError(ex, "Error generating content");
+
+                return StatusCode(500, new
+                {
+                    error = "Internal Server Error",
+                    message = "An error occurred while processing your request."
+                });
+            }
+        }
+
+
+
 
         [Authorize(Policy = PermissionConstants.PrescriptionDelete)]
         [HttpDelete("delete-prescription")]
