@@ -1606,14 +1606,14 @@ namespace Prescription.Controllers
 
 
         [HttpPost("generate")]
-        public async Task<IActionResult> Generate([FromBody] GeminiRequestDto request)
+        public async Task<IActionResult> Generate([FromBody] GeminiChatRequestDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.Prompt))
-                return BadRequest(new { error = "Prompt is required" });
+            if (request?.Contents == null || !request.Contents.Any())
+                return BadRequest(new { error = "Contents are required" });
 
             try
             {
-                var result = await _prescriptionPatientService.GeneratedTextAsync(request.Prompt);
+                var result = await _prescriptionPatientService.GenerateChatAsync(request);
                 return Ok(new { response = result });
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("overloaded"))
@@ -1621,22 +1621,24 @@ namespace Prescription.Controllers
                 return StatusCode(503, new
                 {
                     error = "Service Unavailable",
-                    message = "The AI service is currently experiencing high demand. Please try again in a few moments.",
-                    retryAfter = 5 // seconds
+                    message = "The AI service is currently overloaded. Please retry shortly.",
+                    retryAfter = 5
                 });
             }
             catch (Exception ex)
             {
-                // Log the exception here
-                // _logger.LogError(ex, "Error generating content");
+                // Log the full exception for debugging
+                // _logger.LogError(ex, "Error in Generate endpoint");
 
                 return StatusCode(500, new
                 {
                     error = "Internal Server Error",
-                    message = "An error occurred while processing your request."
+                    message = ex.Message, // Temporarily expose for debugging
+                    details = ex.InnerException?.Message
                 });
             }
         }
+
 
 
 

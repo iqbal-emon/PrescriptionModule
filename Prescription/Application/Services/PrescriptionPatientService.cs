@@ -61,57 +61,63 @@ namespace Prescription.Application.Services
 
             _client = new Client();
         }
-        public async Task<string> GeneratedTextAsync(string prompt)
+
+        public async Task<string> GenerateChatAsync(GeminiChatRequestDto request)
         {
             const int maxRetries = 3;
             int attempt = 0;
-            var systemInstruction = new Content
-            {
-                Parts = new List<Part>
-        {
-            new Part
-            {
-                Text = "You are an expert medical assistant for doctors. Your goal is to provide rapid, precise clinical information. " +
-                       "Audience: Doctors. Assume high medical literacy. " +
-                       "Tone: Professional, clinical, concise. 'Doctor-to-Doctor'. " +
-                       "Format: Write in continuous paragraphs with inline formatting. Use semicolons or commas to separate items instead of bullet points or line breaks. " +
-                       "Constraint: Do not provide general patient advice. Stick to high-level medical terminology."
-            }
-        }
-            };
 
+            // Build configuration
             var config = new GenerateContentConfig
             {
-                SystemInstruction = systemInstruction,
-                Temperature = 0.7,
-                MaxOutputTokens = 1000
+                Temperature = request.GenerationConfig?.Temperature ?? 0.7,
+                MaxOutputTokens = request.GenerationConfig?.MaxOutputTokens ?? 1000
             };
+
+            // Add system instruction if provided
+            if (request.SystemInstruction?.Parts != null && request.SystemInstruction.Parts.Any())
+            {
+                config.SystemInstruction = new Content
+                {
+                    Parts = request.SystemInstruction.Parts
+                        .Select(p => new Part { Text = p.Text })
+                        .ToList()
+                };
+            }
+
+            // Convert frontend contents to Gemini Content format
+            var contents = request.Contents.Select(c => new Content
+            {
+                Role = c.Role,
+                Parts = c.Parts.Select(p => new Part { Text = p.Text }).ToList()
+            }).ToList();
 
             while (attempt < maxRetries)
             {
                 try
                 {
+                    // IMPORTANT: Pass contents as IEnumerable, not string
                     var response = await _client.Models.GenerateContentAsync(
                         model: "gemini-2.5-flash",
-                        contents: prompt,
+                        contents: contents, // This should be IEnumerable<Content>
                         config: config
                     );
 
-                    // Get the text response
-                    var text = response.Candidates[0].Content.Parts[0].Text;
+                    // Extract text from response
+                    var text = response?.Candidates?[0]?.Content?.Parts?[0]?.Text;
 
-                    // Remove all newlines and normalize spacing
-                    text = text.Replace("\r\n", " ")  // Windows line endings
-                              .Replace("\n", " ")      // Unix line endings
-                              .Replace("\r", " ")      // Old Mac line endings
-                              .Replace("  ", " ")      // Double spaces
-                              .Trim();                 // Trim start/end spaces
+                    if (string.IsNullOrEmpty(text))
+                        throw new Exception("Empty response from AI service");
 
-                    // Optional: Remove extra spaces (in case there are multiple)
+                    // Normalize output (remove line breaks, normalize spacing)
+                    text = text.Replace("\r\n", " ")
+                               .Replace("\n", " ")
+                               .Replace("\r", " ")
+                               .Trim();
+
+                    // Remove multiple spaces
                     while (text.Contains("  "))
-                    {
                         text = text.Replace("  ", " ");
-                    }
 
                     return text;
                 }
@@ -119,16 +125,15 @@ namespace Prescription.Application.Services
                 {
                     attempt++;
                     if (attempt >= maxRetries)
-                    {
-                        throw new InvalidOperationException(
-                            "AI service is currently overloaded. Please try again later.",
-                            ex
-                        );
-                    }
+                        throw new InvalidOperationException("AI service overloaded after retries.", ex);
 
-                    // Exponential backoff: 1s, 2s, 4s
-                    var delayMs = (int)Math.Pow(2, attempt - 1) * 1000;
-                    await Task.Delay(delayMs);
+                    // Exponential backoff
+                    await Task.Delay((int)Math.Pow(2, attempt - 1) * 1000);
+                }
+                catch (Exception ex)
+                {
+                    // Log and rethrow for debugging
+                    throw new Exception($"Error calling Gemini API: {ex.Message}", ex);
                 }
             }
 
