@@ -285,7 +285,7 @@ namespace Prescription.Controllers
                                     ZipCode = chamber.ZipCode,
                                     Country = chamber.Country,
 
-                                    DistrictId = chamber.disctrictId,
+                                    DistrictId = chamber.districtId,
                                     DivisionId = chamber.divisionId,
                                     DoctorID = doctorResult.Result.DoctorID,
                                     TenantID = 1,
