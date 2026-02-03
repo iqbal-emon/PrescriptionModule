@@ -30,7 +30,7 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
       int pageNumber = 1,
       int pageSize = 10,
       string searchTerm = "",
-      int? doctorId = null)
+      int? doctorId = null, string followupdate = "")
         {
             var response = new PagedWithResponse<List<PatientDataDto>>();
 
@@ -39,7 +39,7 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
                 // 1️⃣ TotalCount SP
                 var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
                     "Patients_GetTotalCount",
-                    new { SearchTerm = searchTerm, DoctorID = doctorId }
+                    new { SearchTerm = searchTerm, DoctorID = doctorId,FollowupDate= followupdate }
                 );
                 response.TotalCount = totalCount;
 
@@ -51,7 +51,8 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
                         PageNumber = pageNumber,
                         PageSize = pageSize,
                         SearchTerm = searchTerm,
-                        DoctorID = doctorId
+                        DoctorID = doctorId,
+                        FollowupDate = followupdate
                     }
                 );
 

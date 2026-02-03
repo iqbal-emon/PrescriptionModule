@@ -39,14 +39,14 @@ namespace PatienFolowUp.Controllers
     int pageNumber = 1,
     int pageSize = 10,
     int? doctorId = null,
-    string searchTerm = "")
+    string searchTerm = "",string? followupdate="")
         {
             var apiResponse = new PagedWithResponse<List<PatientDataDto>>();
 
             try
             {
                 // Call service to get paged patients
-                var patients = await _patientService.GetAllPatients(pageNumber, pageSize, searchTerm, doctorId);
+                var patients = await _patientService.GetAllPatients(pageNumber, pageSize, searchTerm, doctorId, followupdate);
 
                 if (patients.Result == null && patients.TotalCount == 0)
                 {

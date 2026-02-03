@@ -25,11 +25,11 @@ namespace PatienFolowUp.Application.Services
             _patientsCommandRepository = patientsCommandRepository;
             _mapperService = mapperService;
         }
-        public async Task<PagedWithResponse<List<PatientDataDto>>> GetAllPatients(int pageNumber = 1, int pageSize = 10, string searchTerm = "",int? doctorId=null)
+        public async Task<PagedWithResponse<List<PatientDataDto>>> GetAllPatients(int pageNumber = 1, int pageSize = 10, string searchTerm = "", int? doctorId = null, string followupdate ="")
         {
             var response = new PagedWithResponse<List<PatientDataDto>>();
 
-            var patientsResponse = await _patientsQueryRepository.GetAll(pageNumber, pageSize, searchTerm, doctorId);
+            var patientsResponse = await _patientsQueryRepository.GetAll(pageNumber, pageSize, searchTerm, doctorId, followupdate);
 
            if (!patientsResponse.IsSuccess || patientsResponse.Result == null)
 {
