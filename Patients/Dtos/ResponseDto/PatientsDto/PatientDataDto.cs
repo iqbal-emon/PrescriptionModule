@@ -30,5 +30,6 @@ namespace Patients.Dtos.ResponseDto.PatientsDto
         // For pagination
         public int TotalCount { get; set; }
         public  string PatientCode { get; set; }
+        public string? FollowupDate { get; set; }
     }
 }
