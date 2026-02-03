@@ -2,6 +2,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Entities.EntityClass.PatientEntity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using PatienFolowUp.Domain.Repositories.Patients;
 using PatienFolowUp.Dtos.ResponseDto.Patients;
 using PatienFolowUp.Utility;
@@ -83,6 +84,81 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    0,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+
+            return response;
+        }
+
+        public async Task<PagedWithResponse<List<PatientDataDto>>> GetFollowUpPatients(
+      int? doctorId,
+      string startDate,
+      string endDate)
+        {
+            var response = new PagedWithResponse<List<PatientDataDto>>();
+            try
+            {
+                // Parse dates safely
+                DateTime? parsedStartDate = null;
+                DateTime? parsedEndDate = null;
+
+                if (!string.IsNullOrEmpty(startDate))
+                {
+                    if (DateTime.TryParse(startDate, out DateTime tempStart))
+                        parsedStartDate = tempStart;
+                }
+
+                if (!string.IsNullOrEmpty(endDate))
+                {
+                    if (DateTime.TryParse(endDate, out DateTime tempEnd))
+                        parsedEndDate = tempEnd;
+                }
+
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientDataDto, dynamic>(
+                    "Patients_GetFollowUpPatientsList",
+                    new
+                    {
+                        DoctorID = doctorId,  // Changed: DoctorId -> DoctorID
+                        StartDate = parsedStartDate,
+                        EndDate = parsedEndDate
+                    }
+                );
+
+                response.Result = result;
+                response.TotalCount = result.Count;
+                response.IsSuccess = true;
+
+                ResponseHelper.SetSuccessResponse(
+                    response,
+                    result.Count,
+                    result,
+                    PatientsResponseMessage.common_get_all_success,
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = $"Database error: {sqlEx.Message}";
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    0,
+                    null,
+                    response.Message,
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"Unexpected error: {ex.Message}";
                 ResponseHelper.SetFailedResponse(
                     response,
                     0,

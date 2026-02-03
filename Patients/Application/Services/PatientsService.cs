@@ -63,7 +63,68 @@ namespace PatienFolowUp.Application.Services
 
             return response;
         }
+        public async Task<PagedWithResponse<FollowUpResponseDto>> GetFollowUpPatients(
+     int? doctorId,
+     string startDate,
+     string endDate)
+        {
+            var response = new PagedWithResponse<FollowUpResponseDto>();
 
+            // Repository থেকে data নিন
+            var patientsResponse = await _patientsQueryRepository.GetFollowUpPatients(
+                doctorId,
+                startDate,
+                endDate);
+
+            if (!patientsResponse.IsSuccess || patientsResponse.Result == null || patientsResponse.Result.Count == 0)
+            {
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    0,
+                    new FollowUpResponseDto { Followups = new List<FollowUpGroupDto>() },
+                    patientsResponse.Message ?? "No follow-up patients found.",
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status404NotFound
+                );
+                return response;
+            }
+
+            // Group by FollowUpDate করুন
+            var groupedData = patientsResponse.Result
+                .Where(p => !string.IsNullOrEmpty(p.FollowupDate))  // Null or empty follow-up dates বাদ দিন
+                .GroupBy(p => DateTime.Parse(p.FollowupDate).Date)
+                .Select(g => new FollowUpGroupDto
+                {
+                    Date = g.Key.ToString("yyyy-MM-dd"),
+                    Patients = g.Select(p => new FollowUpPatientDto
+                    {
+                        PatientName = $"{p.FirstName} {p.LastName}".Trim(),
+                        PatientId = p.PatientReferenceID.ToString(),
+                        Age=p.PatientAge,
+                        Gender=p.Gender,
+                        AppointmentTime = "N/A",  // যদি appointment time না থাকে
+                        ContactNumber = p.PhoneNumber ?? "N/A"
+                    }).ToList()
+                })
+                .OrderBy(g => g.Date)  // Date অনুযায়ী sort করুন
+                .ToList();
+
+            var result = new FollowUpResponseDto
+            {
+                Followups = groupedData
+            };
+
+            ResponseHelper.SetSuccessResponse(
+                response,
+                patientsResponse.TotalCount,
+                result,
+                PatientsResponseMessage.common_get_all_success,
+                StatusResponseMessage.success,
+                StatusCodes.Status200OK
+            );
+
+            return response;
+        }
         public async Task<Response<PatientsApiResponseDto>> GetById(int id)
         {
             var response = new Response<PatientsApiResponseDto>();
