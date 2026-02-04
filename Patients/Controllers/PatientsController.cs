@@ -84,51 +84,6 @@ namespace PatienFolowUp.Controllers
             return Ok(apiResponse);
         }
 
-        [HttpGet("gets-all-followup-patients")]
-        public async Task<ActionResult<PagedWithResponse<FollowUpResponseDto>>> GetFollowUpPatients(
-    [FromQuery] int? doctorId = null,
-    [FromQuery] string startDate = "",
-    [FromQuery] string endDate = "")
-        {
-            var apiResponse = new PagedWithResponse<FollowUpResponseDto>();
-            try
-            {
-                var patients = await _patientService.GetFollowUpPatients(doctorId, startDate, endDate);
-
-                if (patients.Result == null)
-                {
-                    ApiResponseHelper.SetFailedResponse(
-                        apiResponse,
-                        result: new FollowUpResponseDto { Followups = new List<FollowUpGroupDto>() },
-                        totalCount: 0,
-                        message: PatientsApiConstantsResponseMessage.patients_null_of_get_list
-                    );
-                    return Ok(apiResponse);
-                }
-
-                ApiResponseHelper.SetSuccessResponse(
-                    apiResponse,
-                    result: patients.Result,
-                    totalCount: patients.TotalCount,
-                    message: PatientsApiConstantsResponseMessage.patients_get_all_success,
-                    status: StatusResponseMessage.success,
-                    statusCode: StatusCodes.Status200OK
-                );
-            }
-            catch (Exception ex)
-            {
-                ApiResponseHelper.SetFailedResponse(
-                    apiResponse,
-                    result: new FollowUpResponseDto { Followups = new List<FollowUpGroupDto>() },
-                    totalCount: 0,
-                    message: $"Error: {ex.Message}"
-                );
-            }
-
-            return Ok(apiResponse);
-        }
-
-
 
 
 
@@ -184,6 +139,40 @@ namespace PatienFolowUp.Controllers
             return Ok(apiResponse);
         }
 
+
+
+        [HttpGet("gets-all-followup-patients")]
+        public async Task<ActionResult<ApiResponse<FollowUpResponseDto>>> GetFollowUpPatients(
+    [FromQuery] int? doctorId = null,
+    [FromQuery] string startDate = "",
+    [FromQuery] string endDate = "")
+        {
+            var apiResponse = new ApiResponse<FollowUpResponseDto>();
+            try
+            {
+                var patients = await _patientService.GetFollowUpPatients(doctorId, startDate, endDate);
+
+                if (patients.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Failed to load patient follow up.");
+                    return Ok(apiResponse);
+                }
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(
+                    apiResponse,
+                    apiResponse.Results,
+                    "Patient FollowUp retrieved successfully.",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, "Failed to load patient follow up.");
+            }
+
+            return Ok(apiResponse);
+        }
 
 
 
