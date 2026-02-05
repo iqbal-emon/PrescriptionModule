@@ -205,6 +205,12 @@ builder.Services.AddCustomAuthorizationPolicies();
 IConfigurationSection pluginPaths = builder.Configuration.GetSection("PluginPaths:PluginDirectoryPath");
 var pluginBasePath = pluginPaths.Value;
 
+// Use fallback if plugin path is empty
+if (string.IsNullOrWhiteSpace(pluginBasePath))
+{
+    pluginBasePath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0");
+}
+
 PluginLoader.LoadPlugins(builder.Services, Path.Combine(pluginBasePath, "Plugins"));
 PluginLoader.LoadPlugin(builder.Services, Path.Combine(pluginBasePath, "Plugins"));
 
@@ -216,14 +222,30 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableS
     app.UseSwaggerUI();
 }
 
-//IConfigurationSection getPublicRootPath = builder.Configuration.GetSection("AppSettings:PDFCREATEDPATH");
-//var PublicRootPath = getPublicRootPath.Value.Replace("\\","/");
+// Get PDF path and ensure directory exists
+var pdfPath = builder.Configuration["AppSettings:PDFCREATEDPATH"];
+if (string.IsNullOrWhiteSpace(pdfPath))
+{
+    pdfPath = Path.Combine(Directory.GetCurrentDirectory(), "Prescriptions");
+}
+
+// Ensure Prescriptions directory exists
+if (!Directory.Exists(pdfPath))
+{
+    Directory.CreateDirectory(pdfPath);
+}
+
+// Ensure Static subdirectory exists for logo
+var staticPath = Path.Combine(pdfPath, "Static");
+if (!Directory.Exists(staticPath))
+{
+    Directory.CreateDirectory(staticPath);
+}
+
 // WWW Root Folder
 app.UseFileServer(new FileServerOptions
 {
-    FileProvider = new PhysicalFileProvider(
-        builder.Configuration["AppSettings:PDFCREATEDPATH"] ??
-        Path.Combine(Directory.GetCurrentDirectory(), "Prescriptions")),
+    FileProvider = new PhysicalFileProvider(pdfPath),
     RequestPath = "/Prescriptions",
     EnableDirectoryBrowsing = false
 });

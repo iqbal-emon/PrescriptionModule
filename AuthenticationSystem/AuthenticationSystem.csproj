@@ -16,6 +16,10 @@
     <Folder Include="Dtos\ReturnDto\" />
     <Folder Include="Dtos\ResponseDto\" />
     <Folder Include="Entities\" />
+    <Folder Include="Application\" />
+    <Folder Include="Domain\" />
+    <Folder Include="Insfrastructure\" />
+    <Folder Include="Utility\" />
     <Folder Include="Repositories\Interface\" />
     <Folder Include="Repositories\Implementation\" />
     <Folder Include="SharedService\" />
