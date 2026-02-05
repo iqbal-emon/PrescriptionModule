@@ -7,6 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Entities\**" />
+    <Compile Remove="Repositories\**" />
+    <Compile Remove="SharedService\**" />
+    <Compile Remove="Utilities\**" />
+    <Content Remove="Entities\**" />
+    <Content Remove="Repositories\**" />
+    <Content Remove="SharedService\**" />
+    <Content Remove="Utilities\**" />
+    <EmbeddedResource Remove="Entities\**" />
+    <EmbeddedResource Remove="Repositories\**" />
+    <EmbeddedResource Remove="SharedService\**" />
+    <EmbeddedResource Remove="Utilities\**" />
+    <None Remove="Entities\**" />
+    <None Remove="Repositories\**" />
+    <None Remove="SharedService\**" />
+    <None Remove="Utilities\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.4.0" />
@@ -15,15 +34,9 @@
   <ItemGroup>
     <Folder Include="Dtos\ReturnDto\" />
     <Folder Include="Dtos\ResponseDto\" />
-    <Folder Include="Entities\" />
-    <Folder Include="Application\" />
     <Folder Include="Domain\" />
     <Folder Include="Insfrastructure\" />
     <Folder Include="Utility\" />
-    <Folder Include="Repositories\Interface\" />
-    <Folder Include="Repositories\Implementation\" />
-    <Folder Include="SharedService\" />
-    <Folder Include="Utilities\" />
   </ItemGroup>
 
   <ItemGroup>

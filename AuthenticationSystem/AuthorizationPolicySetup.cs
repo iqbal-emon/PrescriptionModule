@@ -1,5 +1,4 @@
-﻿using AuthenticationSystem.MiddlewareService;
-using AuthenticationSystem.Services;
+﻿using AuthenticationSystem.Application.MiddlewareService;
 using System.Reflection;
 using Utility.Permission;
 

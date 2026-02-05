@@ -10,21 +10,16 @@ namespace Entities.EntityClass
     public class Role
     {
         [Key]
-        public int RoleId { get; set; }  // Primary Key
+        public int Id { get; set; }
 
         [Required]
-        [StringLength(50)]
-        public string RoleName { get; set; } // e.g., "Admin", "Student", "Professor"
+        [MaxLength(100)]
+        public string Name { get; set; }
 
-        [StringLength(255)]
-        public string Description { get; set; } // Optional description of the role
+        [Required]
+        public bool IsDefault { get; set; } = false;
 
-        public bool IsActive { get; set; } = true; // Soft delete functionality
-
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime? UpdatedAt { get; set; }
-
+        [Required]
+        public bool IsActive { get; set; } = true;
     }
-
 }

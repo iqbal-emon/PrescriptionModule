@@ -1,28 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
+using Entities.EntityClass;
 
-namespace Entities.EntityClass
+namespace Entities.EntityClass.AuthEntity
 {
     public class User
     {
         [Key]
-        [Required]
-        public int UserID { get; set; }
-
-        [ForeignKey("Tenant")]
-        [Required]
-        public int TenantID { get; set; }
-
-        [MaxLength(50)]
-        public string? FirstName { get; set; }
-
-        [MaxLength(50)]
-        public string? LastName { get; set; }
+        public int Id { get; set; }
 
         [Required]
         [MaxLength(150)]
@@ -41,12 +27,6 @@ namespace Entities.EntityClass
         public string PasswordHash { get; set; }
 
         [MaxLength(20)]
-        public string? UserType { get; set; }
-
-        [MaxLength(15)]
-        public string? PhoneNumber { get; set; }
-
-        [MaxLength(20)]
         public string? ContactNo { get; set; }
 
         [Required]
@@ -56,17 +36,13 @@ namespace Entities.EntityClass
         [Required]
         public bool IsActive { get; set; } = true;
 
-        public bool? IsDeleted { get; set; } = false;
-
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime? UpdatedAt { get; set; }
 
-        public int? ReferenceUserId { get; set; }
-
-        // Navigation Properties
-        public Tenant? Tenant { get; set; }
+        // Navigation Property
         public Role? Role { get; set; }
     }
 }
+

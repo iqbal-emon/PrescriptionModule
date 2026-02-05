@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,14 +9,15 @@ namespace Entities.EntityClass
 {
     public class Permission
     {
-        public int PermissionId { get; set; }
+        [Key]
+        public int Id { get; set; }
 
-        public string PolicyName { get; set; } = string.Empty;
+        [Required]
+        [MaxLength(150)]
+        public string DisplayName { get; set; }
 
-        public string PermissionKey { get; set; } = string.Empty;
-
-        public bool IsActive { get; set; }
-
-        public bool IsDeleted { get; set; }
+        [Required]
+        [MaxLength(500)]
+        public string PermissionValue { get; set; }
     }
 }

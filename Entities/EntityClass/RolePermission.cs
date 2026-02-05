@@ -11,18 +11,18 @@ namespace Entities.EntityClass
     public class RolePermission
     {
         [Key]
-        [Column(Order = 1)]
+        public int Id { get; set; }
+
+        [Required]
+        [ForeignKey("Role")]
         public int RoleId { get; set; }
 
-        [Key]
-        [Column(Order = 2)]
+        [Required]
+        [ForeignKey("Permission")]
         public int PermissionId { get; set; }
 
         // Navigation Properties
-        [ForeignKey("RoleId")]
-        public Role Role { get; set; }
-
-        [ForeignKey("PermissionId")]
-        public Permission Permission { get; set; }
+        public Role? Role { get; set; }
+        public Permission? Permission { get; set; }
     }
 }
