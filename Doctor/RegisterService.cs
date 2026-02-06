@@ -2,6 +2,26 @@
 using Doctor.Application.Services;
 using Doctor.Domain.Repositories.Doctor;
 using Doctor.Insfracture.RepositoriesImplement.Doctor;
+using Doctor.Domain.Repositories.DoctorChamber;
+using Doctor.Insfracture.RepositoriesImplement.DoctorChamber;
+using Doctor.Domain.Repositories.DoctorDegree;
+using Doctor.Insfracture.RepositoriesImplement.DoctorDegree;
+using Doctor.Domain.Repositories.DoctorExpertise;
+using Doctor.Insfracture.RepositoriesImplement.DoctorExpertise;
+using Doctor.Domain.Repositories.DoctorSchedule;
+using Doctor.Insfracture.RepositoriesImplement.DoctorSchedule;
+using Doctor.Domain.Repositories.DoctorSpecialization;
+using Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization;
+using Doctor.Domain.Repositories.DoctorScheduleDaySession;
+using Doctor.Insfracture.RepositoriesImplement.DoctorScheduleDaySession;
+using Doctor.Domain.Repositories.DoctorScheduledDayOff;
+using Doctor.Insfracture.RepositoriesImplement.DoctorScheduledDayOff;
+using Doctor.Domain.Repositories.DoctorFeesSetup;
+using Doctor.Insfracture.RepositoriesImplement.DoctorFeesSetup;
+using Doctor.Domain.Repositories.MasterDoctor;
+using Doctor.Insfracture.RepositoriesImplement.MasterDoctor;
+using Doctor.Domain.Repositories.CampaignDoctor;
+using Doctor.Insfracture.RepositoriesImplement.CampaignDoctor;
 using Microsoft.Extensions.DependencyInjection;
 using PluginDIService.PluginDependencyRepository;
 using SharedService.CommonService;
@@ -19,13 +39,66 @@ namespace Doctor
     {
         public void RegisterServices(IServiceCollection services)
         {
+            // Shared Services
             services.AddScoped<SharedCommonService>();
             services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IDoctorCommandRepository, DoctorCommandRepository>();
-            services.AddScoped<IDoctorQueryRepository, DoctorQueryRepository>();
             services.AddScoped<ISqlDataAccessLayer, SqlDataAccessLayer>();
             services.AddScoped<MapperService>();
+
+            // Doctor Services
+            services.AddScoped<IDoctorCommandRepository, DoctorCommandRepository>();
+            services.AddScoped<IDoctorQueryRepository, DoctorQueryRepository>();
             services.AddScoped<DoctorService>();
+
+            // DoctorChamber Services
+            services.AddScoped<IDoctorChamberQueryRepository, DoctorChamberQueryRepository>();
+            services.AddScoped<IDoctorChamberCommandRepository, DoctorChamberCommandRepository>();
+            services.AddScoped<DoctorChamberService>();
+
+            // DoctorDegree Services
+            services.AddScoped<IDoctorDegreeQueryRepository, DoctorDegreeQueryRepository>();
+            services.AddScoped<IDoctorDegreeCommandRepository, DoctorDegreeCommandRepository>();
+            services.AddScoped<DoctorDegreeService>();
+
+            // DoctorExpertise Services
+            services.AddScoped<IDoctorExpertiseQueryRepository, DoctorExpertiseQueryRepository>();
+            services.AddScoped<IDoctorExpertiseCommandRepository, DoctorExpertiseCommandRepository>();
+            services.AddScoped<DoctorExpertiseService>();
+
+            // DoctorSchedule Services
+            services.AddScoped<IDoctorScheduleQueryRepository, DoctorScheduleQueryRepository>();
+            services.AddScoped<IDoctorScheduleCommandRepository, DoctorScheduleCommandRepository>();
+            services.AddScoped<DoctorScheduleService>();
+
+            // DoctorSpecialization Services
+            services.AddScoped<IDoctorSpecializationQueryRepository, DoctorSpecializationQueryRepository>();
+            services.AddScoped<IDoctorSpecializationCommandRepository, DoctorSpecializationCommandRepository>();
+            services.AddScoped<DoctorSpecializationService>();
+
+            // DoctorScheduleDaySession Services
+            services.AddScoped<IDoctorScheduleDaySessionQueryRepository, DoctorScheduleDaySessionQueryRepository>();
+            services.AddScoped<IDoctorScheduleDaySessionCommandRepository, DoctorScheduleDaySessionCommandRepository>();
+            services.AddScoped<DoctorScheduleDaySessionService>();
+
+            // DoctorScheduledDayOff Services
+            services.AddScoped<IDoctorScheduledDayOffQueryRepository, DoctorScheduledDayOffQueryRepository>();
+            services.AddScoped<IDoctorScheduledDayOffCommandRepository, DoctorScheduledDayOffCommandRepository>();
+            services.AddScoped<DoctorScheduledDayOffService>();
+
+            // DoctorFeesSetup Services
+            services.AddScoped<IDoctorFeesSetupQueryRepository, DoctorFeesSetupQueryRepository>();
+            services.AddScoped<IDoctorFeesSetupCommandRepository, DoctorFeesSetupCommandRepository>();
+            services.AddScoped<DoctorFeesSetupService>();
+
+            // MasterDoctor Services
+            services.AddScoped<IMasterDoctorQueryRepository, MasterDoctorQueryRepository>();
+            services.AddScoped<IMasterDoctorCommandRepository, MasterDoctorCommandRepository>();
+            services.AddScoped<MasterDoctorService>();
+
+            // CampaignDoctor Services
+            services.AddScoped<ICampaignDoctorQueryRepository, CampaignDoctorQueryRepository>();
+            services.AddScoped<ICampaignDoctorCommandRepository, CampaignDoctorCommandRepository>();
+            services.AddScoped<CampaignDoctorService>();
         }
     }
 }
