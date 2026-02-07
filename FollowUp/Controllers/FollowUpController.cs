@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharedService.CommonService;
 using SharedService.MapService;
-using SharedService.Model;
 using System.Data;
 using System.Security;
 using Utility.ApiResponse;

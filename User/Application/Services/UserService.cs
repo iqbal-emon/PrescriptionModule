@@ -6,7 +6,6 @@ using Utility.Response;
 using User.Dtos.RequestDto.UserDto;
 using User.Domain.Repositories.User;
 using Entities.EntityClass;
-using SharedService.Model;
 using System.Data;
 
 namespace User.Application.Services

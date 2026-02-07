@@ -1,4 +1,4 @@
-﻿using SharedService.Model;
+﻿using Entities.EntityClass;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharedService.CommonService;
 using SharedService.MapService;
-using SharedService.Model;
 using Symptoms.Dtos.RequestDto.SymptomDto;
 using Symptoms.Dtos.RequestDto.SymtomDto;
 using Symptoms.Dtos.ResponseDto.SymtomDto;

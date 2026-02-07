@@ -111,13 +111,6 @@ namespace Prescription
             services.AddScoped<IPrescriptionTemplateCommandRepository, PrescriptionTemplateCommandRepository>();
 
             services.AddScoped<PrescriptionTemplateService>();
-            services.AddScoped<PrescriptionAdviceService>();
-            services.AddScoped<PrescriptionDiagonsisService>();
-            services.AddScoped<PrescriptionItemService>();
-            services.AddScoped<PrescriptionSymptomService>();
-            services.AddScoped<PrescriptionPatientService>();
-            services.AddScoped<PrescriptionInvestigationService>();
-            services.AddScoped<PrescriptionPatientService>();
 
            
 
