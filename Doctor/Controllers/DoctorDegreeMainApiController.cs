@@ -14,7 +14,7 @@ using Utility.Response;
 namespace Doctor.Controllers
 {
     [ApiController]
-    [Route("api/app/doctor-degree")]
+    [Route("api/2025-02/doctor-degree")]
     public class DoctorDegreeMainApiController : ControllerBase
     {
         private readonly DoctorDegreeService _degreeService;

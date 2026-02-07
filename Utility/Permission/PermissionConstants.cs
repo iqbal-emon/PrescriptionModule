@@ -204,6 +204,27 @@ namespace Utility.Permission
         public const string AppointmentGetAll = "AppointmentGetAll";
         public const string AppointmentGetById = "AppointmentGetById";
 
+        public const string SpecialityCreate = "SpecialityCreate";
+        public const string SpecialityUpdate = "SpecialityUpdate";
+        public const string SpecialityDelete = "SpecialityDelete";
+        public const string SpecialityGetAll = "SpecialityGetAll";
+        public const string SpecialityGetId = "SpecialityGetId";
+
+        public const string SpecializationCreate = "SpecializationCreate";
+        public const string SpecializationUpdate = "SpecializationUpdate";
+        public const string SpecializationDelete = "SpecializationDelete";
+        public const string SpecializationGetAll = "SpecializationGetAll";
+        public const string SpecializationGetId = "SpecializationGetId";
+
+        public const string DocumentsAttachmentCreate = "DocumentsAttachmentCreate";
+        public const string DocumentsAttachmentUpdate = "DocumentsAttachmentUpdate";
+        public const string DocumentsAttachmentDelete = "DocumentsAttachmentDelete";
+        public const string DocumentsAttachmentGetAll = "DocumentsAttachmentGetAll";
+        public const string DocumentsAttachmentGetId = "DocumentsAttachmentGetId";
+
+        public const string NotificationGetAll = "NotificationGetAll";
+        public const string NotificationGetId = "NotificationGetId";
+
 
 
 

@@ -13,10 +13,10 @@ using Utility.ApiResponse;
 using Utility.Permission;
 using Utility.Response;
 
-namespace AuthenticationSystem.Controllers
+namespace Specialization.Controllers
 {
     [ApiController]
-    [Route("api/app/specialization")]
+    [Route("api/2025-02/specialization")]
     public class SpecializationMainApiController : ControllerBase
     {
         private readonly SpecializationService _specializationService;
@@ -29,38 +29,31 @@ namespace AuthenticationSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = PermissionConstants.DegreeCreate)]
+        [Authorize(Policy = PermissionConstants.SpecializationCreate)]
         public async Task<ActionResult<ApiResponse<int>>> CreateSpecialization([FromBody] SpecializationInsertRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
             try
             {
-                if (ModelState.IsValid)
+                var response = await _specializationService.Insert(request);
+                if (response.IsSuccess)
                 {
-                    var response = await _specializationService.Insert(request);
-                    if (response.IsSuccess)
-                    {
-                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, SpecializationApiConstantsResponseMessage.specialization_insert_success_message);
-                    }
-                    else
-                    {
-                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
-                    }
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Specialization created successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecializationApiConstantsResponseMessage.specialization_inserted_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecializationApiConstantsResponseMessage.specialization_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = PermissionConstants.DegreeGetId)]
+        [Authorize(Policy = PermissionConstants.SpecializationGetId)]
         public async Task<ActionResult<ApiResponse<SpecializationApiResponseDto>>> GetSpecializationById(int id)
         {
             var apiResponse = new ApiResponse<SpecializationApiResponseDto>();
@@ -69,23 +62,23 @@ namespace AuthenticationSystem.Controllers
                 var specialization = await _specializationService.GetById(id);
                 if (specialization.Result == null)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, null, SpecializationApiConstantsResponseMessage.specialization_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Specialization not found");
                     return Ok(apiResponse);
                 }
 
                 var mappedSpecialization = await _mapperService.MapSingle<Entities.EntityClass.Specialization, SpecializationApiResponseDto>(specialization.Result);
                 apiResponse.Results = mappedSpecialization;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, SpecializationApiConstantsResponseMessage.specialization_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Specialization retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, null, SpecializationApiConstantsResponseMessage.specialization_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet("by-speciality-id/{specialityId}")]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        [Authorize(Policy = PermissionConstants.SpecializationGetAll)]
         public async Task<ActionResult<ApiResponse<List<SpecializationApiResponseDto>>>> GetBySpecialityId(int specialityId)
         {
             var apiResponse = new ApiResponse<List<SpecializationApiResponseDto>>();
@@ -94,23 +87,23 @@ namespace AuthenticationSystem.Controllers
                 var specializations = await _specializationService.GetBySpecialityId(specialityId);
                 if (specializations.Result == null || specializations.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), SpecializationApiConstantsResponseMessage.specialization_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), "No specializations found");
                     return Ok(apiResponse);
                 }
 
                 var mappedSpecializations = await _mapperService.MapList<Entities.EntityClass.Specialization, SpecializationApiResponseDto>(specializations.Result);
                 apiResponse.Results = mappedSpecializations;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, SpecializationApiConstantsResponseMessage.specialization_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Specializations retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), SpecializationApiConstantsResponseMessage.specialization_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        [Authorize(Policy = PermissionConstants.SpecializationGetAll)]
         public async Task<ActionResult<ApiResponse<List<SpecializationApiResponseDto>>>> GetAllSpecializations()
         {
             var apiResponse = new ApiResponse<List<SpecializationApiResponseDto>>();
@@ -119,23 +112,23 @@ namespace AuthenticationSystem.Controllers
                 var specializations = await _specializationService.GetAll();
                 if (specializations.Result == null || specializations.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), SpecializationApiConstantsResponseMessage.specialization_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), "No specializations found");
                     return Ok(apiResponse);
                 }
 
                 var mappedSpecializations = await _mapperService.MapList<Entities.EntityClass.Specialization, SpecializationApiResponseDto>(specializations.Result);
                 apiResponse.Results = mappedSpecializations;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, SpecializationApiConstantsResponseMessage.specialization_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Specializations retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), SpecializationApiConstantsResponseMessage.specialization_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet("by-specialty-id/{specialityId}")]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        [Authorize(Policy = PermissionConstants.SpecializationGetAll)]
         public async Task<ActionResult<ApiResponse<List<SpecializationApiResponseDto>>>> GetBySpecialtyId(int specialityId)
         {
             // Alternative endpoint - same as by-speciality-id
@@ -143,7 +136,7 @@ namespace AuthenticationSystem.Controllers
         }
 
         [HttpGet("filtering")]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        [Authorize(Policy = PermissionConstants.SpecializationGetAll)]
         public async Task<ActionResult<ApiResponse<List<SpecializationApiResponseDto>>>> GetFilteredSpecializations([FromQuery] string searchTerm = "")
         {
             var apiResponse = new ApiResponse<List<SpecializationApiResponseDto>>();
@@ -152,7 +145,7 @@ namespace AuthenticationSystem.Controllers
                 var specializations = await _specializationService.GetAll();
                 if (specializations.Result == null || specializations.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), SpecializationApiConstantsResponseMessage.specialization_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), "No specializations found");
                     return Ok(apiResponse);
                 }
 
@@ -168,48 +161,41 @@ namespace AuthenticationSystem.Controllers
                 }
 
                 apiResponse.Results = mappedSpecializations;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, SpecializationApiConstantsResponseMessage.specialization_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Specializations retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), SpecializationApiConstantsResponseMessage.specialization_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecializationApiResponseDto>(), $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpPut]
-        [Authorize(Policy = PermissionConstants.DegreeUpdate)]
+        [Authorize(Policy = PermissionConstants.SpecializationUpdate)]
         public async Task<ActionResult<ApiResponse<int>>> UpdateSpecialization([FromBody] SpecializationUpdateRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
             try
             {
-                if (ModelState.IsValid)
+                var response = await _specializationService.Update(request);
+                if (response.IsSuccess)
                 {
-                    var response = await _specializationService.Update(request);
-                    if (response.IsSuccess)
-                    {
-                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, SpecializationApiConstantsResponseMessage.specialization_update_success_message);
-                    }
-                    else
-                    {
-                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
-                    }
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Specialization updated successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecializationApiConstantsResponseMessage.specialization_update_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecializationApiConstantsResponseMessage.specialization_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = PermissionConstants.DegreeDelete)]
+        [Authorize(Policy = PermissionConstants.SpecializationDelete)]
         public async Task<ActionResult<ApiResponse<bool>>> DeleteSpecialization(int id)
         {
             var apiResponse = new ApiResponse<bool>();
@@ -218,16 +204,16 @@ namespace AuthenticationSystem.Controllers
                 var response = await _specializationService.Delete(id);
                 if (response.IsSuccess)
                 {
-                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, SpecializationApiConstantsResponseMessage.specialization_delete_success_message);
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Specialization deleted successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, false, SpecializationApiConstantsResponseMessage.specialization_deleted_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, false, SpecializationApiConstantsResponseMessage.specialization_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, false, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }

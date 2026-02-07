@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Notification.Application.Services;
 using Notification.Dtos.ResponseDto.NotificationDto;
-using Notification.Utility;
 using SharedService.MapService;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ using Utility.Response;
 namespace Notification.Controllers
 {
     [ApiController]
-    [Route("api/app/notification")]
+    [Route("api/2025-02/notification")]
     public class NotificationMainApiController : ControllerBase
     {
         private readonly NotificationService _notificationService;
@@ -27,7 +26,7 @@ namespace Notification.Controllers
         }
 
         [HttpGet("by-user-id/{userId}")]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.NotificationGetAll)]
         public async Task<ActionResult<ApiResponse<List<NotificationApiResponseDto>>>> GetNotificationsByUserId(int userId, [FromQuery] string role = "")
         {
             var apiResponse = new ApiResponse<List<NotificationApiResponseDto>>();
@@ -36,17 +35,17 @@ namespace Notification.Controllers
                 var notifications = await _notificationService.GetByUserId(userId, role);
                 if (notifications.Result == null || notifications.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<NotificationApiResponseDto>(), NotificationResponseMessage.common_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<NotificationApiResponseDto>(), "No notifications found");
                     return Ok(apiResponse);
                 }
 
                 var mappedNotifications = await _mapperService.MapList<Entities.EntityClass.Notification, NotificationApiResponseDto>(notifications.Result);
                 apiResponse.Results = mappedNotifications;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, NotificationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Notifications retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<NotificationApiResponseDto>(), NotificationResponseMessage.common_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<NotificationApiResponseDto>(), $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }

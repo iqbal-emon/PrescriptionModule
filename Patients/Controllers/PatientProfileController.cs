@@ -6,10 +6,11 @@ using PatienFolowUp.Application.Services;
 using PatienFolowUp.Dtos.RequestDto.Patients;
 using PatienFolowUp.Dtos.RequestDto.PatientsDto;
 using PatienFolowUp.Dtos.ResponseDto.Patients;
+using Patients.Dtos.ResponseDto.DoctorDto;
 using Patients.Dtos.ResponseDto.PatientsDto;
 using SharedService.MapService;
-using Doctor.Application.Services;
-using Doctor.Dtos.ResponseDto.DoctorDto;
+using System.Net.Http;
+using System.Net.Http.Json;
 using Utility.ApiResponse;
 using Utility.Permission;
 using Utility.Response;
@@ -17,17 +18,15 @@ using Utility.Response;
 namespace PatienFolowUp.Controllers
 {
     [ApiController]
-    [Route("api/app/patient-profile")]
+    [Route("api/2025-02/patient-profile")]
     public class PatientProfileController : ControllerBase
     {
         private readonly PatientsService _patientService;
-        private readonly DoctorService _doctorService;
         private readonly MapperService _mapperService;
 
-        public PatientProfileController(PatientsService patientService, DoctorService doctorService, MapperService mapperService)
+        public PatientProfileController(PatientsService patientService, MapperService mapperService)
         {
             _patientService = patientService;
-            _doctorService = doctorService;
             _mapperService = mapperService;
         }
 
@@ -167,15 +166,45 @@ namespace PatienFolowUp.Controllers
             var apiResponse = new ApiResponse<List<DoctorApiResponseDto>>();
             try
             {
-                var doctors = await _doctorService.GetByCreatorId(profileId);
-                if (doctors.Result == null || !doctors.Result.Any())
+                // Call the API endpoint instead of direct service
+                using var httpClient = new HttpClient();
+                
+                // Get the base URL from the current request
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var apiEndpoint = $"/api/2025-02/doctor-profile/by-creator-id/{profileId}";
+                
+                // Get the authorization token from the current request and add to request message
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{apiEndpoint}");
+                
+                // Forward authorization header from current request
+                if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    var authToken = Request.Headers["Authorization"].ToString();
+                    if (!string.IsNullOrEmpty(authToken))
+                    {
+                        request.Headers.Add("Authorization", authToken);
+                    }
+                }
+
+                // Make the API call
+                var response = await httpClient.SendAsync(request);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorApiResponseDto>(), $"API call failed with status: {response.StatusCode}");
+                    return Ok(apiResponse);
+                }
+
+                // Parse the response
+                var apiResult = await response.Content.ReadFromJsonAsync<ApiResponse<List<DoctorApiResponseDto>>>();
+                
+                if (apiResult?.Results == null || apiResult.Results.Count == 0)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorApiResponseDto>(), "No doctors found");
                     return Ok(apiResponse);
                 }
 
-                var mappedDoctors = await _mapperService.MapList<Entities.EntityClass.Doctor, DoctorApiResponseDto>(doctors.Result);
-                apiResponse.Results = mappedDoctors;
+                apiResponse.Results = apiResult.Results;
                 ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Doctors retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)

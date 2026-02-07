@@ -12,10 +12,10 @@ using Utility.ApiResponse;
 using Utility.Permission;
 using Utility.Response;
 
-namespace AuthenticationSystem.Controllers
+namespace Speciality.Controllers
 {
     [ApiController]
-    [Route("api/app/speciality")]
+    [Route("api/2025-02/speciality")]
     public class SpecialityMainApiController : ControllerBase
     {
         private readonly SpecialityService _specialityService;
@@ -28,38 +28,31 @@ namespace AuthenticationSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = PermissionConstants.DegreeCreate)]
+        [Authorize(Policy = PermissionConstants.SpecialityCreate)]
         public async Task<ActionResult<ApiResponse<int>>> CreateSpeciality([FromBody] SpecialityInsertRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
             try
             {
-                if (ModelState.IsValid)
+                var response = await _specialityService.Insert(request);
+                if (response.IsSuccess)
                 {
-                    var response = await _specialityService.Insert(request);
-                    if (response.IsSuccess)
-                    {
-                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, SpecialityApiConstantsResponseMessage.speciality_insert_success_message);
-                    }
-                    else
-                    {
-                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
-                    }
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Speciality created successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecialityApiConstantsResponseMessage.speciality_inserted_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecialityApiConstantsResponseMessage.speciality_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = PermissionConstants.DegreeGetId)]
+        [Authorize(Policy = PermissionConstants.SpecialityGetId)]
         public async Task<ActionResult<ApiResponse<SpecialityApiResponseDto>>> GetSpecialityById(int id)
         {
             var apiResponse = new ApiResponse<SpecialityApiResponseDto>();
@@ -68,23 +61,23 @@ namespace AuthenticationSystem.Controllers
                 var speciality = await _specialityService.GetById(id);
                 if (speciality.Result == null)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, null, SpecialityApiConstantsResponseMessage.speciality_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Speciality not found");
                     return Ok(apiResponse);
                 }
 
                 var mappedSpeciality = await _mapperService.MapSingle<Entities.EntityClass.Speciality, SpecialityApiResponseDto>(speciality.Result);
                 apiResponse.Results = mappedSpeciality;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, SpecialityApiConstantsResponseMessage.speciality_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Speciality retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, null, SpecialityApiConstantsResponseMessage.speciality_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        [Authorize(Policy = PermissionConstants.SpecialityGetAll)]
         public async Task<ActionResult<ApiResponse<List<SpecialityApiResponseDto>>>> GetAllSpecialities()
         {
             var apiResponse = new ApiResponse<List<SpecialityApiResponseDto>>();
@@ -93,54 +86,47 @@ namespace AuthenticationSystem.Controllers
                 var specialities = await _specialityService.GetAll();
                 if (specialities.Result == null || specialities.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecialityApiResponseDto>(), SpecialityApiConstantsResponseMessage.speciality_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecialityApiResponseDto>(), "No specialities found");
                     return Ok(apiResponse);
                 }
 
                 var mappedSpecialities = await _mapperService.MapList<Entities.EntityClass.Speciality, SpecialityApiResponseDto>(specialities.Result);
                 apiResponse.Results = mappedSpecialities;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, SpecialityApiConstantsResponseMessage.speciality_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Specialities retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecialityApiResponseDto>(), SpecialityApiConstantsResponseMessage.speciality_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<SpecialityApiResponseDto>(), $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpPut]
-        [Authorize(Policy = PermissionConstants.DegreeUpdate)]
+        [Authorize(Policy = PermissionConstants.SpecialityUpdate)]
         public async Task<ActionResult<ApiResponse<int>>> UpdateSpeciality([FromBody] SpecialityUpdateRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
             try
             {
-                if (ModelState.IsValid)
+                var response = await _specialityService.Update(request);
+                if (response.IsSuccess)
                 {
-                    var response = await _specialityService.Update(request);
-                    if (response.IsSuccess)
-                    {
-                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, SpecialityApiConstantsResponseMessage.speciality_update_success_message);
-                    }
-                    else
-                    {
-                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
-                    }
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Speciality updated successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecialityApiConstantsResponseMessage.speciality_update_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, 0, SpecialityApiConstantsResponseMessage.speciality_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = PermissionConstants.DegreeDelete)]
+        [Authorize(Policy = PermissionConstants.SpecialityDelete)]
         public async Task<ActionResult<ApiResponse<bool>>> DeleteSpeciality(int id)
         {
             var apiResponse = new ApiResponse<bool>();
@@ -149,16 +135,16 @@ namespace AuthenticationSystem.Controllers
                 var response = await _specialityService.Delete(id);
                 if (response.IsSuccess)
                 {
-                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, SpecialityApiConstantsResponseMessage.speciality_delete_success_message);
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Speciality deleted successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, false, SpecialityApiConstantsResponseMessage.speciality_deleted_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, false, SpecialityApiConstantsResponseMessage.speciality_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, false, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }

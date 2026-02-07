@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ApiCallService.BaseApiCallService;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DIService.SharedDependcyService
 {
@@ -6,6 +7,8 @@ namespace DIService.SharedDependcyService
     {
         public static IServiceCollection AddDIServices(this IServiceCollection services)
         {
+            // Register shared services that are used across multiple plugins
+            services.AddScoped<IBaseRestClientApiService, BaseRestClientApiService>();
             return services;
         }
     }

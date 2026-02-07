@@ -37,9 +37,9 @@ namespace Speciality.Application.Services
             {
                 var speciality = await _specialityQueryRepository.GetAll();
 
-                if (speciality == null)
+                if (speciality == null || !speciality.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, speciality.Result, speciality.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, speciality?.Result, speciality?.Message ?? "Failed to retrieve specialities", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
@@ -68,9 +68,9 @@ namespace Speciality.Application.Services
             {
                 var speciality = await _specialityQueryRepository.GetById(id);
 
-                if (speciality == null)
+                if (speciality == null || !speciality.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, speciality.Result, speciality.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, speciality?.Result, speciality?.Message ?? "Speciality not found", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {

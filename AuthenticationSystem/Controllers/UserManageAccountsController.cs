@@ -7,7 +7,7 @@ using Utility.Response;
 
 namespace AuthenticationSystem.Controllers
 {
-    [Route("api/app/user-manage-accounts")]
+    [Route("api/2025-02/user-manage-accounts")]
     [ApiController]
     public class UserManageAccountsController : ControllerBase
     {
@@ -205,12 +205,12 @@ namespace AuthenticationSystem.Controllers
     }
 
     // DTOs
-    public class ResetPasswordRequestDto
-    {
-        public string UserName { get; set; }
-        public string NewPassword { get; set; }
-        public string OldPassword { get; set; }
-    }
+    //public class ResetPasswordRequestDto
+    //{
+    //    public string UserName { get; set; }
+    //    public string NewPassword { get; set; }
+    //    public string OldPassword { get; set; }
+    //}
 
     public class SaveOtpRequestDto
     {
@@ -223,23 +223,23 @@ namespace AuthenticationSystem.Controllers
         public string MobileNo { get; set; }
     }
 
-    public class SignUpRequestDto
-    {
-        public string UserName { get; set; }
-        public string Password { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Name { get; set; }
-        public string RoleId { get; set; }
-    }
+    //public class SignUpRequestDto
+    //{
+    //    public string UserName { get; set; }
+    //    public string Password { get; set; }
+    //    public string Email { get; set; }
+    //    public string PhoneNumber { get; set; }
+    //    public string Name { get; set; }
+    //    public string RoleId { get; set; }
+    //}
 
-    public class SignUpResponseDto
-    {
-        public int UserId { get; set; }
-        public string UserName { get; set; }
-        public bool Success { get; set; }
-        public string Message { get; set; }
-    }
+    //public class SignUpResponseDto
+    //{
+    //    public int UserId { get; set; }
+    //    public string UserName { get; set; }
+    //    public bool Success { get; set; }
+    //    public string Message { get; set; }
+    //}
 
     public class ChangePasswordRequestDto
     {

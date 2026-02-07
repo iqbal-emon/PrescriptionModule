@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Specialization.Utility
 {
-    public class SpecializationResponseMessage
+    public static class SpecializationResponseMessage
     {
         public const string common_null_of_get_list = "ERROR: There is no data available.";
         public const string common_get_all_success = "SUCCESS: gets successfully.";

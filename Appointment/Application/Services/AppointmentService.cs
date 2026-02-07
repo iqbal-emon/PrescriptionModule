@@ -196,7 +196,7 @@ namespace Appointment.Application.Services
             try
             {
                 var baseUrl = _apiBaseURL;
-                var endPoint = $"api/app/doctor-schedule-day-session/{sessionId}/session";
+                var endPoint = $"api/2025-02/doctor-schedule-day-session/{sessionId}/session";
 
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
@@ -225,7 +225,7 @@ namespace Appointment.Application.Services
             try
             {
                 var baseUrl = _apiBaseURL;
-                var endPoint = $"api/app/doctor-schedule/{scheduleId}";
+                var endPoint = $"api/2025-02/doctor-schedule/{scheduleId}";
 
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;

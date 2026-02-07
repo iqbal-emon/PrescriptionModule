@@ -12,10 +12,10 @@ using Utility.ApiResponse;
 using Utility.Permission;
 using Utility.Response;
 
-namespace AuthenticationSystem.Controllers
+namespace DocumentsAttachment.Controllers
 {
     [ApiController]
-    [Route("api/app/documents-attachment")]
+    [Route("api/2025-02/documents-attachment")]
     public class DocumentsAttachmentMainApiController : ControllerBase
     {
         private readonly DocumentsAttachmentService _attachmentService;
@@ -28,38 +28,31 @@ namespace AuthenticationSystem.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.DocumentsAttachmentCreate)]
         public async Task<ActionResult<ApiResponse<int>>> CreateDocumentAttachment([FromBody] DocumentsAttachmentInsertRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
             try
             {
-                if (ModelState.IsValid)
+                var response = await _attachmentService.Insert(request);
+                if (response.IsSuccess)
                 {
-                    var response = await _attachmentService.Insert(request);
-                    if (response.IsSuccess)
-                    {
-                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_insert_success_message);
-                    }
-                    else
-                    {
-                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
-                    }
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Document attachment created successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_inserted_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, 0, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.DocumentsAttachmentDelete)]
         public async Task<ActionResult<ApiResponse<bool>>> DeleteAttachment(int id)
         {
             var apiResponse = new ApiResponse<bool>();
@@ -68,22 +61,22 @@ namespace AuthenticationSystem.Controllers
                 var response = await _attachmentService.Delete(id);
                 if (response.IsSuccess)
                 {
-                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_delete_success_message);
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Document attachment deleted successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, false, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_deleted_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, false, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, false, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet("{id}")]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.DocumentsAttachmentGetId)]
         public async Task<ActionResult<ApiResponse<DocumentsAttachmentApiResponseDto>>> GetAttachmentById(int id)
         {
             var apiResponse = new ApiResponse<DocumentsAttachmentApiResponseDto>();
@@ -92,23 +85,23 @@ namespace AuthenticationSystem.Controllers
                 var attachment = await _attachmentService.GetById(id);
                 if (attachment.Result == null)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, null, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Document attachment not found");
                     return Ok(apiResponse);
                 }
 
                 var mappedAttachment = await _mapperService.MapSingle<Entities.EntityClass.DocumentsAttachment, DocumentsAttachmentApiResponseDto>(attachment.Result);
                 apiResponse.Results = mappedAttachment;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Document attachment retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, null, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet("attachment-info/{entityId}")]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.DocumentsAttachmentGetAll)]
         public async Task<ActionResult<ApiResponse<List<DocumentsAttachmentApiResponseDto>>>> GetAttachmentInfo(
             int entityId,
             [FromQuery] string entityType = "",
@@ -121,23 +114,23 @@ namespace AuthenticationSystem.Controllers
                 var attachments = await _attachmentService.GetByEntityIdAndType(entityId, entityType, attachmentType, relatedEntityid);
                 if (attachments.Result == null || attachments.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), "No attachments found");
                     return Ok(apiResponse);
                 }
 
                 var mappedAttachments = await _mapperService.MapList<Entities.EntityClass.DocumentsAttachment, DocumentsAttachmentApiResponseDto>(attachments.Result);
                 apiResponse.Results = mappedAttachments;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Attachments retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet("document-info/{entityId}")]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.DocumentsAttachmentGetId)]
         public async Task<ActionResult<ApiResponse<DocumentsAttachmentApiResponseDto>>> GetDocumentInfo(
             int entityId,
             [FromQuery] string entityType = "",
@@ -149,23 +142,23 @@ namespace AuthenticationSystem.Controllers
                 var attachment = await _attachmentService.GetDocumentInfo(entityId, entityType, attachmentType);
                 if (attachment.Result == null)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, null, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Document info not found");
                     return Ok(apiResponse);
                 }
 
                 var mappedAttachment = await _mapperService.MapSingle<Entities.EntityClass.DocumentsAttachment, DocumentsAttachmentApiResponseDto>(attachment.Result);
                 apiResponse.Results = mappedAttachment;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Document info retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, null, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.DocumentsAttachmentGetAll)]
         public async Task<ActionResult<ApiResponse<List<DocumentsAttachmentApiResponseDto>>>> GetPaginatedAttachments(
             [FromQuery] string sorting = "",
             [FromQuery] int skipCount = 0,
@@ -177,49 +170,42 @@ namespace AuthenticationSystem.Controllers
                 var attachments = await _attachmentService.GetPaginated(sorting, skipCount, maxResultCount);
                 if (attachments.Result == null || attachments.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_null_of_get_list);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), "No attachments found");
                     return Ok(apiResponse);
                 }
 
                 var mappedAttachments = await _mapperService.MapList<Entities.EntityClass.DocumentsAttachment, DocumentsAttachmentApiResponseDto>(attachments.Result);
                 apiResponse.Results = mappedAttachments;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Attachments retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<DocumentsAttachmentApiResponseDto>(), $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }
 
         [HttpPut("{id}")]
-        [Authorize]
+        [Authorize(Policy = PermissionConstants.DocumentsAttachmentUpdate)]
         public async Task<ActionResult<ApiResponse<int>>> UpdateAttachment(int id, [FromBody] DocumentsAttachmentUpdateRequestDto request)
         {
             var apiResponse = new ApiResponse<int>();
             try
             {
-                if (ModelState.IsValid)
+                request.DocumentsAttachmentID = id;
+                var response = await _attachmentService.Update(request);
+                if (response.IsSuccess)
                 {
-                    request.DocumentsAttachmentID = id;
-                    var response = await _attachmentService.Update(request);
-                    if (response.IsSuccess)
-                    {
-                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_update_success_message);
-                    }
-                    else
-                    {
-                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
-                    }
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Document attachment updated successfully");
                 }
                 else
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_update_failed_message);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
                 }
             }
             catch (Exception ex)
             {
-                ApiResponseHelper.SetFailedResponse(apiResponse, 0, DocumentsAttachmentApiConstantsResponseMessage.documentsAttachment_see_try_catch);
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
             }
             return Ok(apiResponse);
         }

@@ -37,9 +37,9 @@ namespace Specialization.Application.Services
             {
                 var specialization = await _specializationQueryRepository.GetAll();
 
-                if (specialization == null)
+                if (specialization == null || !specialization.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, specialization.Result, specialization.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, specialization?.Result, specialization?.Message ?? "Failed to retrieve specializations", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
@@ -68,9 +68,9 @@ namespace Specialization.Application.Services
             {
                 var specialization = await _specializationQueryRepository.GetById(id);
 
-                if (specialization == null)
+                if (specialization == null || !specialization.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, specialization.Result, specialization.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, specialization?.Result, specialization?.Message ?? "Specialization not found", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
@@ -99,9 +99,9 @@ namespace Specialization.Application.Services
             {
                 var specializations = await _specializationQueryRepository.GetBySpecialityId(specialityId);
 
-                if (specializations == null)
+                if (specializations == null || !specializations.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, specializations?.Result, specializations?.Message ?? "Failed to retrieve specializations by speciality ID", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {

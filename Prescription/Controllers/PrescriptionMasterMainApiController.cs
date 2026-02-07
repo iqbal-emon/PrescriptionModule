@@ -14,7 +14,7 @@ using Utility.Response;
 namespace Prescription.Controllers
 {
     [ApiController]
-    [Route("api/app/prescription-master")]
+    [Route("api/2025-02/prescription-master")]
     public class PrescriptionMasterMainApiController : ControllerBase
     {
         private readonly PrescriptionService _prescriptionService;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Speciality.Utility
 {
-    public class SpecialityApiConstantsResponseMessage
+    public static class SpecialityApiConstantsResponseMessage
     {
         public const string speciality_null_of_get_list = "ERROR: There is no data available.";
         public const string speciality_get_all_success = "SUCCESS: gets successfully.";

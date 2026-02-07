@@ -18,7 +18,7 @@ using Utility.Response;
 namespace Appointment.Controllers
 {
     [ApiController]
-    [Route("api/2025-20/appointment")]
+    [Route("api/2025-02/appointment")]
     public class AppointmentController : ControllerBase
     {
         private readonly SharedCommonService _sharedCommonService;

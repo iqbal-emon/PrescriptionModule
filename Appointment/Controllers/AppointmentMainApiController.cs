@@ -1,6 +1,6 @@
 using Appointment.Application.Services;
 using Appointment.Dtos.ResponseDto.AppointmentDto;
-using Doctor.Application.Services;
+using Doctor.Dtos.ResponseDto.DoctorScheduleDaySessionDto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +8,8 @@ using SharedService.MapService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using Utility.ApiResponse;
 using Utility.Permission;
 using Utility.Response;
@@ -15,17 +17,17 @@ using Utility.Response;
 namespace Appointment.Controllers
 {
     [ApiController]
-    [Route("api/app/appointment")]
+    [Route("api/2025-02/appointment")]
     public class AppointmentMainApiController : ControllerBase
     {
         private readonly AppointmentService _appointmentService;
-        private readonly DoctorScheduleDaySessionService _daySessionService;
         private readonly MapperService _mapperService;
 
-        public AppointmentMainApiController(AppointmentService appointmentService, DoctorScheduleDaySessionService daySessionService, MapperService mapperService)
+        public AppointmentMainApiController(
+            AppointmentService appointmentService, 
+            MapperService mapperService)
         {
             _appointmentService = appointmentService;
-            _daySessionService = daySessionService;
             _mapperService = mapperService;
         }
 
@@ -47,16 +49,16 @@ namespace Appointment.Controllers
 
                 // Extract unique patients from appointments
                 var uniquePatients = appointmentsResponse.Result.Result
-                    .Where(a => a.PatientId.HasValue)
-                    .GroupBy(a => a.PatientId.Value)
+                    .Where(a => a.PatientID.HasValue)
+                    .GroupBy(a => a.PatientID.Value)
                     .Select(g => g.First())
                     .Select(a => new PatientListByDoctorDto
                     {
-                        PatientId = a.PatientId ?? 0,
+                        PatientId = a.PatientID ?? 0,
                         PatientName = a.PatientName ?? "N/A",
-                        PatientCode = a.PatientCode ?? "N/A",
-                        PatientMobileNo = a.PatientMobileNo ?? "N/A",
-                        PatientEmail = a.PatientEmail ?? "N/A"
+                        //PatientCode = a.PatientCode ?? "N/A",
+                        //PatientMobileNo = a.PatientMobileNo ?? "N/A",
+                        //PatientEmail = a.PatientEmail ?? "N/A"
                     })
                     .ToList();
 
@@ -70,23 +72,55 @@ namespace Appointment.Controllers
         }
 
         // Note: session-list endpoint moved to DoctorScheduleDaySessionMainApiController
-        // This endpoint is kept for backward compatibility but should use /api/app/doctor-schedule-day-session/session-list
+        // This endpoint calls the API service instead of direct service dependency
         [HttpGet("session-list")]
         [Authorize(Policy = PermissionConstants.AppointmentGetAll)]
-        [Obsolete("Use /api/app/doctor-schedule-day-session/session-list instead")]
+        [Obsolete("Use /api/2025-02/doctor-schedule-day-session/session-list instead")]
         public async Task<ActionResult<ApiResponse<List<SessionListDto>>>> GetSessionList()
         {
             var apiResponse = new ApiResponse<List<SessionListDto>>();
             try
             {
-                var daySessions = await _daySessionService.GetAll();
-                if (daySessions.Result == null || daySessions.Result.Count == 0)
+                // Call the API endpoint instead of direct service
+                using var httpClient = new HttpClient();
+                
+                // Get the base URL from the current request
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var apiEndpoint = "/api/2025-02/doctor-schedule-day-session/session-list";
+                
+                // Get the authorization token from the current request and add to request message
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{apiEndpoint}");
+                
+                // Forward authorization header from current request
+                if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    var authToken = Request.Headers["Authorization"].ToString();
+                    if (!string.IsNullOrEmpty(authToken))
+                    {
+                        request.Headers.Add("Authorization", authToken);
+                    }
+                }
+
+                // Make the API call
+                var response = await httpClient.SendAsync(request);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<SessionListDto>(), $"API call failed with status: {response.StatusCode}");
+                    return Ok(apiResponse);
+                }
+
+                // Parse the response
+                var apiResult = await response.Content.ReadFromJsonAsync<ApiResponse<List<DoctorScheduleDaySessionApiResponseDto>>>();
+                
+                if (apiResult?.Results == null || apiResult.Results.Count == 0)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, new List<SessionListDto>(), "No sessions found");
                     return Ok(apiResponse);
                 }
 
-                var sessionList = daySessions.Result.Select(s => new SessionListDto
+                // Map to SessionListDto
+                var sessionList = apiResult.Results.Select(s => new SessionListDto
                 {
                     SessionId = s.DoctorScheduleDaySessionID,
                     SessionName = $"{s.ScheduleDayofWeek} - {s.StartTime} to {s.EndTime}",

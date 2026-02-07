@@ -37,9 +37,9 @@ namespace DocumentsAttachment.Application.Services
             {
                 var attachments = await _attachmentQueryRepository.GetAll();
 
-                if (attachments == null)
+                if (attachments == null || !attachments.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, attachments.Result, attachments.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, attachments?.Result, attachments?.Message ?? "Failed to retrieve documents attachments", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
@@ -68,9 +68,9 @@ namespace DocumentsAttachment.Application.Services
             {
                 var attachment = await _attachmentQueryRepository.GetById(id);
 
-                if (attachment == null)
+                if (attachment == null || !attachment.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, attachment.Result, attachment.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, attachment?.Result, attachment?.Message ?? "Document attachment not found", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
@@ -99,9 +99,9 @@ namespace DocumentsAttachment.Application.Services
             {
                 var attachments = await _attachmentQueryRepository.GetByEntityIdAndType(entityId, entityType, attachmentType, relatedEntityid);
 
-                if (attachments == null)
+                if (attachments == null || !attachments.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, attachments.Result, attachments.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, attachments?.Result, attachments?.Message ?? "Failed to retrieve documents attachments", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
@@ -130,9 +130,9 @@ namespace DocumentsAttachment.Application.Services
             {
                 var attachment = await _attachmentQueryRepository.GetDocumentInfo(entityId, entityType, attachmentType);
 
-                if (attachment == null)
+                if (attachment == null || !attachment.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, attachment.Result, attachment.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, attachment?.Result, attachment?.Message ?? "Document info not found", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
@@ -161,9 +161,9 @@ namespace DocumentsAttachment.Application.Services
             {
                 var attachments = await _attachmentQueryRepository.GetPaginated(sorting, skipCount, maxResultCount);
 
-                if (attachments == null)
+                if (attachments == null || !attachments.IsSuccess)
                 {
-                    ResponseHelper.SetFailedResponse(response, attachments.Result, attachments.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, attachments?.Result, attachments?.Message ?? "Failed to retrieve paginated documents attachments", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {

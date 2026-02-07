@@ -12,7 +12,7 @@ using Utility.Response;
 
 namespace AuthenticationSystem.Controllers
 {
-    [Route("api/app/user-accounts")]
+    [Route("api/2025-02/user-accounts")]
     [ApiController]
     public class UserAccountsController : ControllerBase
     {
@@ -80,9 +80,9 @@ namespace AuthenticationSystem.Controllers
         public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] UserLoginRequestDto request)
         {
             // This should redirect to AuthController or use the same logic
-            // For now, return a response indicating to use /api/app/auth/login-api
+            // For now, return a response indicating to use /api/2025-02/auth/login-api
             var apiResponse = new ApiResponse<LoginResponseDto>();
-            ApiResponseHelper.SetFailedResponse(apiResponse, null, "Please use /api/app/auth/login-api endpoint");
+            ApiResponseHelper.SetFailedResponse(apiResponse, null, "Please use /api/2025-02/auth/login-api endpoint");
             return Ok(apiResponse);
         }
 
@@ -91,7 +91,7 @@ namespace AuthenticationSystem.Controllers
         {
             // This should redirect to AuthController or use the same logic
             var apiResponse = new ApiResponse<LoginResponseDto>();
-            ApiResponseHelper.SetFailedResponse(apiResponse, null, "Please use /api/app/auth/refresh-token endpoint");
+            ApiResponseHelper.SetFailedResponse(apiResponse, null, "Please use /api/2025-02/auth/refresh-token endpoint");
             return Ok(apiResponse);
         }
 
@@ -210,6 +210,7 @@ namespace AuthenticationSystem.Controllers
     public class SignUpRequestDto
     {
         public string UserName { get; set; }
+        public string Password { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Name { get; set; }

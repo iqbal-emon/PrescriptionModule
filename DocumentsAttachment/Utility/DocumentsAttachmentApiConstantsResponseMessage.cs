@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DocumentsAttachment.Utility
 {
-    public class DocumentsAttachmentApiConstantsResponseMessage
+    public static class DocumentsAttachmentApiConstantsResponseMessage
     {
         public const string documentsAttachment_null_of_get_list = "ERROR: There is no data available.";
         public const string documentsAttachment_get_all_success = "SUCCESS: gets successfully.";

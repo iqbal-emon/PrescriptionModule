@@ -12,7 +12,7 @@ using Utility.Response;
 
 namespace AuthenticationSystem.Controllers
 {
-    [Route("api/app/auth")]
+    [Route("api/2025-02/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -56,7 +56,7 @@ namespace AuthenticationSystem.Controllers
                 }
 
                 // Get user permissions/roles
-                var permissions = await _authUserService.GetUserPermissions(userResponse.Result.Id);
+                var permissions = await _authUserService.GetUserPermissions(userResponse.Result.UserID);
                 var roles = permissions; // Assuming permissions contain role names
 
                 // Generate tokens
@@ -65,7 +65,7 @@ namespace AuthenticationSystem.Controllers
 
                 var loginResponse = new LoginResponseDto
                 {
-                    UserId = userResponse.Result.Id,
+                    UserId = userResponse.Result.UserID,
                     UserName = userResponse.Result.UserName,
                     RoleName = roles,
                     Success = true,
@@ -119,7 +119,7 @@ namespace AuthenticationSystem.Controllers
                     return Ok(apiResponse);
                 }
 
-                var permissions = await _authUserService.GetUserPermissions(userResponse.Result.Id);
+                var permissions = await _authUserService.GetUserPermissions(userResponse.Result.UserID);
                 var roles = permissions;
 
                 var newAccessToken = GenerateJwtToken(userResponse.Result, roles);
@@ -127,7 +127,7 @@ namespace AuthenticationSystem.Controllers
 
                 var loginResponse = new LoginResponseDto
                 {
-                    UserId = userResponse.Result.Id,
+                    UserId = userResponse.Result.UserID,
                     UserName = userResponse.Result.UserName,
                     RoleName = roles,
                     Success = true,
@@ -204,7 +204,7 @@ namespace AuthenticationSystem.Controllers
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "YourSuperSecretKeyForJWTTokenGeneration");
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email ?? "")
             };
@@ -231,7 +231,7 @@ namespace AuthenticationSystem.Controllers
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:RefreshKey"] ?? "YourSuperSecretKeyForRefreshTokenGeneration");
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName)
             };
 
@@ -276,7 +276,8 @@ namespace AuthenticationSystem.Controllers
             // TODO: Implement proper password verification using BCrypt or similar
             // For now, this is a placeholder
             // You should use BCrypt.Net or similar library
-            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+            //return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+            return false;
         }
     }
 }

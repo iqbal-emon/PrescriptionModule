@@ -16,7 +16,7 @@ using Utility.Response;
 namespace Doctor.Controllers
 {
     [ApiController]
-    [Route("api/app/doctor-profile")]
+    [Route("api/2025-02/doctor-profile")]
     public class DoctorProfileController : ControllerBase
     {
         private readonly DoctorService _doctorService;
@@ -331,6 +331,31 @@ namespace Doctor.Controllers
                 var mappedDoctors = await _mapperService.MapList<Entities.EntityClass.Doctor, DoctorApiResponseDto>(doctors.Result);
                 apiResponse.Results = mappedDoctors;
                 ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Live online doctors retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("by-creator-id/{profileId}")]
+        [Authorize(Policy = PermissionConstants.DoctorGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorApiResponseDto>>>> GetDoctorListByCreatorId(int profileId)
+        {
+            var apiResponse = new ApiResponse<List<DoctorApiResponseDto>>();
+            try
+            {
+                var doctors = await _doctorService.GetByCreatorId(profileId);
+                if (doctors.Result == null || doctors.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorApiResponseDto>(), "No doctors found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedDoctors = await _mapperService.MapList<Entities.EntityClass.Doctor, DoctorApiResponseDto>(doctors.Result);
+                apiResponse.Results = mappedDoctors;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Doctors retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {

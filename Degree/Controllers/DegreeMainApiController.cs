@@ -14,7 +14,7 @@ using Utility.Response;
 namespace Degree.Controllers
 {
     [ApiController]
-    [Route("api/app/degree")]
+    [Route("api/2025-02/degree")]
     public class DegreeMainApiController : ControllerBase
     {
         private readonly Degreervice _degreeService;
