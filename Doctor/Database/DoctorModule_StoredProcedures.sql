@@ -554,7 +554,7 @@ BEGIN
         fs.[UpdatedAt],
         fs.[IsDeleted]
     FROM [dbo].[DoctorFeesSetup] fs
-    INNER JOIN [dbo].[DoctorSchedule] ds ON fs.[DoctorScheduleID] = ds.[ScheduleID]
+    INNER JOIN [dbo].[DoctorSchedule] ds ON fs.[DoctorScheduleID] = ds.[DoctorScheduleID]
     WHERE ds.[DoctorID] = @DoctorID
         AND fs.[IsDeleted] = 0
     ORDER BY fs.[CreatedAt] DESC;
@@ -1053,14 +1053,10 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SELECT 
-        [ScheduleID],
+        [DoctorScheduleID],
         [DoctorID],
-        [DoctorChamberID],
-        [ScheduleName],
-        [ConsultationFee],
-        [ReportShowDuration],
-        [FollowUpPeriod],
-        [IsActive],
+        [ScheduleID],
+        [TenantID],
         [CreatedAt],
         [UpdatedAt],
         [IsDeleted]
@@ -1103,8 +1099,7 @@ BEGIN
         [ProfileStep],
         [CreatedAt],
         [UpdatedAt],
-        [IsDeleted],
-        [DoctorReferenceID]
+        [IsDeleted]
     FROM [dbo].[Doctor]
     WHERE [DoctorID] = @DoctorID;
 END
@@ -1138,8 +1133,7 @@ BEGIN
         [ProfileStep],
         [CreatedAt],
         [UpdatedAt],
-        [IsDeleted],
-        [DoctorReferenceID]
+        [IsDeleted]
     FROM [dbo].[Doctor]
     WHERE [DoctorID] = @DoctorID;
 END
@@ -1167,8 +1161,7 @@ BEGIN
         d.[ProfileStep],
         d.[CreatedAt],
         d.[UpdatedAt],
-        d.[IsDeleted],
-        d.[DoctorReferenceID]
+        d.[IsDeleted]
     FROM [dbo].[Doctor] d
     INNER JOIN [dbo].[MasterDoctor] md ON d.[DoctorID] = md.[DoctorID]
     WHERE md.[AgentMasterID] = @CreatorID
