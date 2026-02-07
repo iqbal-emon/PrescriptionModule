@@ -145,12 +145,9 @@ namespace Appointment.Application.Services
 
             try
             {
-                var appointmentEntity = await _mapperService.MapSingle<AppointmentInsertRequestDto, Entities.EntityClass.Appointment>(appointmentDto);
-                appointmentEntity.CreatedAt = DateTime.Now;
-                appointmentEntity.UpdatedAt = DateTime.Now;
-
-                var insertResponse = await _appointmentCommandRepository.Insert(appointmentEntity);
-                response = insertResponse;
+                // Pass DTO directly to repository since stored procedure handles patient creation/update
+                var insertResponse = await _appointmentCommandRepository.Insert(appointmentDto);
+                response = await insertResponse;
             }
             catch (Exception ex)
             {

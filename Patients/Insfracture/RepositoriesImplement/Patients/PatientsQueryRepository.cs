@@ -40,7 +40,7 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
                 // 1️⃣ TotalCount SP
                 var totalCount = await _dataAccess.LoadSingleDataUsingProcedure<int, dynamic>(
                     "Patients_GetTotalCount",
-                    new { SearchTerm = searchTerm, DoctorID = doctorId,FollowupDate= followupdate }
+                    new { SearchTerm = searchTerm, DoctorID = doctorId, FollowupDate = followupdate }
                 );
                 response.TotalCount = totalCount;
 

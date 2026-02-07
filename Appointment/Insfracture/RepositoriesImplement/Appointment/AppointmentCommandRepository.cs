@@ -56,23 +56,16 @@ namespace Appointment.Infrastructure.RepositoriesImplement
 
         public async Task<Response<int>> Insert(Entities.EntityClass.Appointment entity)
         {
+            // This method is kept for interface compatibility but should not be used
+            // Use the Insert(AppointmentInsertRequestDto) method instead
+            throw new NotImplementedException("Use Insert(AppointmentInsertRequestDto) method instead. The Appointment entity no longer contains patient information fields.");
+        }
+
+        public async Task<Response<int>> Insert(AppointmentInsertRequestDto appointmentDto)
+        {
             var response = new Response<int>();
             try
             {
-
-                var appointmentDto = new AppointmentInsertRequestDto
-                {
-                    PatientName = entity.PatientName,
-                    Gender = entity.Gender,
-                    Age = entity.Age,
-                    PhoneNumber = entity.PhoneNumber,
-                    SessionId = entity.SessionId,
-                    ScheduleId = entity.ScheduleId,
-                    BloodGroup = entity.BloodGroup,
-                    DoctorProfileId=entity.DoctorProfileId,
-                    AppointmentDate = entity.AppointmentDate
-                };
-
                 var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<AppointmentInsertRequestDto>(
                     "Appointment_Insert",
                     appointmentDto

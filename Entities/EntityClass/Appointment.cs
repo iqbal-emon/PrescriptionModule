@@ -13,40 +13,22 @@ namespace Entities.EntityClass
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        [MaxLength(100)]
-        public string PatientName { get; set; }
-        [Required]
-        public int DoctorProfileId  { get; set; }
+        public int? SessionId { get; set; }
 
-        [Required]
-        [MaxLength(10)]
-        public string Gender { get; set; }
+        public int? ScheduleId { get; set; }
 
-        [Required]
-        public int Age { get; set; }
-        [Required]
-        [MaxLength(20)]
-        public string PhoneNumber { get; set; }
+        public bool? IsDeleted { get; set; } = false;
 
-        [Required]
-        public int SessionId { get; set; }
+        public DateTime? CreatedAt { get; set; } = DateTime.Now;
 
-        [Required]
-        public int ScheduleId { get; set; }
-        [Required]
-        public string BloodGroup { get; set; }  
-        [Required]
+        public DateTime? UpdatedAt { get; set; }
 
-        public DateTime AppointmentDate { get;set; }
-        [NotMapped]
+        public int? PatientId { get; set; }
+
+        public DateTime? AppointmentDate { get; set; }
+
         public int? SerialNo { get; set; }
 
-        public bool IsDeleted { get; set; } = false;
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-   
-
-        public DateTime UpdatedAt { get; set; }
+        public int? DoctorProfileId { get; set; }
     }
 }

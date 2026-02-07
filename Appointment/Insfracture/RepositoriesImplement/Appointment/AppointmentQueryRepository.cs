@@ -29,39 +29,29 @@ namespace Appointment.Infrastructure.RepositoriesImplement
             throw new NotImplementedException();
         }
 
+        // NOTE: This method is deprecated. Use the paginated GetAll method instead.
+        // The stored procedure Appointment_GetAll requires pagination parameters.
+        [Obsolete("Use GetAll(int doctorId, int pageNumber, int pageSize, string search, int? sessionId, int? scheduleId) instead")]
         public async Task<Response<List<AppointmentApiResponseDto>>> GetAll(int doctorId)
         {
+            // Redirect to paginated version with default values
+            var paginatedResponse = await GetAll(doctorId, 1, 1000, null, null, null);
+            
             var response = new Response<List<AppointmentApiResponseDto>>();
-            try
+            if (paginatedResponse?.Result?.Result != null)
             {
-                var result = await _dataAccess.LoadDataUsingProcedure<AppointmentApiResponseDto, dynamic>(
-                    "Appointment_GetAll",
-                    new { doctorId=doctorId }
-                );
-
-                response.Result = result.ToList();
-                response.IsSuccess = true;
-
-                ResponseHelper.SetSuccessResponse(
-                    response,
-                    result,
-                    AppointmentResponseMessage.common_get_all_success,
-                    StatusResponseMessage.success,
-                    StatusCodes.Status200OK
-                );
+                response.Result = paginatedResponse.Result.Result;
+                response.IsSuccess = paginatedResponse.IsSuccess;
+                response.Message = paginatedResponse.Message;
+                response.StatusCode = paginatedResponse.StatusCode;
             }
-            catch (Exception ex)
+            else
             {
-                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(
-                    response,
-                    null,
-                    response.Message,
-                    StatusResponseMessage.failed,
-                    StatusCodes.Status400BadRequest
-                );
+                response.Result = new List<AppointmentApiResponseDto>();
+                response.IsSuccess = false;
+                response.Message = "Failed to retrieve appointments";
             }
-
+            
             return response;
         }
         public async Task<Response<PagedWithResponse<List<AppointmentApiResponseDto>>>> GetAll(
@@ -83,8 +73,8 @@ namespace Appointment.Infrastructure.RepositoriesImplement
                 parameters.Add("@PageNumber", pageNumber);
                 parameters.Add("@PageSize", pageSize);
                 parameters.Add("@SearchText", search);
-                parameters.Add("@sessionId ", sessionId);
-                parameters.Add("@scheduleId ", scheduleId);
+                parameters.Add("@SessionId", sessionId);
+                parameters.Add("@ScheduleId", scheduleId);
                 parameters.Add("@TotalCount", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 // Execute stored procedure and map data
