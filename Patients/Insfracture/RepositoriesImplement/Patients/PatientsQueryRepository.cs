@@ -296,5 +296,238 @@ namespace PatienFolowUp.Insfracture.RepositoriesImplement.Patients
         {
             throw new NotImplementedException();
         }
+
+        public async Task<Response<PatientsApiResponseDto>> GetByPhoneAndCode(string pCode, string pPhone)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetByPhoneAndCode",
+                    new
+                    {
+                        PatientCode = pCode,
+                        PhoneNo = pPhone
+                    }
+                );
+
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PatientsResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<PatientsApiResponseDto>> GetByUserName(string userName)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+            try
+            {
+                // First get user by username, then get patient by user ID
+                var userResult = await _dataAccess.LoadSingleDataUsingProcedure<dynamic, dynamic>(
+                    "User_GetByUserName",
+                    new { UserName = userName }
+                );
+
+                if (userResult == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, null, "User not found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                    return response;
+                }
+
+                // Get patient by UserID
+                var patientResult = await _dataAccess.LoadSingleDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetByUserId",
+                    new { UserID = ((dynamic)userResult).UserID }
+                );
+
+                response.Result = patientResult;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, patientResult, PatientsResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<PatientsApiResponseDto>> GetByUserId(int userId)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetByUserId",
+                    new { UserID = userId }
+                );
+
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PatientsResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetAllPatients()
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetAllSimple",
+                    new { }
+                );
+
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result.ToList(), "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListByUserProfileId(int profileId, string role)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetByUserProfileId",
+                    new
+                    {
+                        ProfileId = profileId,
+                        Role = role
+                    }
+                );
+
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result.ToList(), "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListBySearchUserProfileId(int profileId, string role, string name)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetBySearchUserProfileId",
+                    new
+                    {
+                        ProfileId = profileId,
+                        Role = role,
+                        Name = name ?? ""
+                    }
+                );
+
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result.ToList(), "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListFilter(string searchTerm = "")
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetFiltered",
+                    new
+                    {
+                        SearchTerm = searchTerm ?? ""
+                    }
+                );
+
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result.ToList(), "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListByAgentMaster(int masterId)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetByAgentMaster",
+                    new
+                    {
+                        AgentMasterID = masterId
+                    }
+                );
+
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result.ToList(), "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListByAgentSupervisor(int supervisorId)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<PatientsApiResponseDto, dynamic>(
+                    "Patients_GetByAgentSupervisor",
+                    new
+                    {
+                        AgentSupervisorID = supervisorId
+                    }
+                );
+
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result.ToList(), "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
     }
 }

@@ -286,5 +286,284 @@ namespace PatienFolowUp.Application.Services
             return _patientsCommandRepository.Delete(id);
         }
 
+        public async Task<Response<PatientsApiResponseDto>> GetByPhoneAndCode(string pCode, string pPhone)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetByPhoneAndCode(pCode, pPhone);
+
+                if (patients == null || patients.Result == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, null, "Patient not found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message, StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the patient.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<PatientsApiResponseDto>> GetByUserName(string userName)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetByUserName(userName);
+
+                if (patients == null || patients.Result == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, null, "Patient not found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message, StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the patient.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<PatientsApiResponseDto>> GetByUserId(int userId)
+        {
+            var response = new Response<PatientsApiResponseDto>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetByUserId(userId);
+
+                if (patients == null || patients.Result == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, null, "Patient not found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message, StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the patient.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetAllPatients()
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetAllPatients();
+
+                if (patients == null || patients.Result == null || !patients.Result.Any())
+                {
+                    ResponseHelper.SetFailedResponse(response, new List<PatientsApiResponseDto>(), "No patients found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message ?? "Patients retrieved successfully", StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving patients.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListByUserProfileId(int profileId, string role)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetPatientListByUserProfileId(profileId, role);
+
+                if (patients == null || patients.Result == null || !patients.Result.Any())
+                {
+                    ResponseHelper.SetFailedResponse(response, new List<PatientsApiResponseDto>(), "No patients found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message ?? "Patients retrieved successfully", StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving patients.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListBySearchUserProfileId(int profileId, string role, string name)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetPatientListBySearchUserProfileId(profileId, role, name);
+
+                if (patients == null || patients.Result == null || !patients.Result.Any())
+                {
+                    ResponseHelper.SetFailedResponse(response, new List<PatientsApiResponseDto>(), "No patients found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message ?? "Patients retrieved successfully", StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving patients.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListFilter(string searchTerm = "")
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetPatientListFilter(searchTerm);
+
+                if (patients == null || patients.Result == null || !patients.Result.Any())
+                {
+                    ResponseHelper.SetFailedResponse(response, new List<PatientsApiResponseDto>(), "No patients found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message ?? "Patients retrieved successfully", StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving patients.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListByAgentMaster(int masterId)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetPatientListByAgentMaster(masterId);
+
+                if (patients == null || patients.Result == null || !patients.Result.Any())
+                {
+                    ResponseHelper.SetFailedResponse(response, new List<PatientsApiResponseDto>(), "No patients found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message ?? "Patients retrieved successfully", StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving patients by agent master.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<PatientsApiResponseDto>>> GetPatientListByAgentSupervisor(int supervisorId)
+        {
+            var response = new Response<List<PatientsApiResponseDto>>();
+
+            try
+            {
+                var patients = await _patientsQueryRepository.GetPatientListByAgentSupervisor(supervisorId);
+
+                if (patients == null || patients.Result == null || !patients.Result.Any())
+                {
+                    ResponseHelper.SetFailedResponse(response, new List<PatientsApiResponseDto>(), "No patients found", StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, patients.Result, patients.Message ?? "Patients retrieved successfully", StatusResponseMessage.success, patients.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving patients by agent supervisor.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
     }
 }

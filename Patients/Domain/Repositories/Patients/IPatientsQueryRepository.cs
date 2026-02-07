@@ -14,6 +14,15 @@ namespace PatienFolowUp.Domain.Repositories.Patients
 
         Task<Response<PatientsApiResponseDto>> GetById(int Id);
         Task<Response<PatientsApiResponseDto>> GetByPhoneNo(string phoneNo);
+        Task<Response<PatientsApiResponseDto>> GetByPhoneAndCode(string pCode, string pPhone);
+        Task<Response<PatientsApiResponseDto>> GetByUserName(string userName);
+        Task<Response<PatientsApiResponseDto>> GetByUserId(int userId);
+        Task<Response<List<PatientsApiResponseDto>>> GetAllPatients();
+        Task<Response<List<PatientsApiResponseDto>>> GetPatientListByUserProfileId(int profileId, string role);
+        Task<Response<List<PatientsApiResponseDto>>> GetPatientListBySearchUserProfileId(int profileId, string role, string name);
+        Task<Response<List<PatientsApiResponseDto>>> GetPatientListFilter(string searchTerm = "");
+        Task<Response<List<PatientsApiResponseDto>>> GetPatientListByAgentMaster(int masterId);
+        Task<Response<List<PatientsApiResponseDto>>> GetPatientListByAgentSupervisor(int supervisorId);
 
 
         Task<PagedWithResponse<List<PatientDataDto>>> GetAll(int pageNumber = 1, int pageSize = 10, string searchTerm = "", int? doctorId = null,string followupdate = "");

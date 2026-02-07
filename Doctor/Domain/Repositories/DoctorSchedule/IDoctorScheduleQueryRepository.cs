@@ -11,6 +11,7 @@ namespace Doctor.Domain.Repositories.DoctorSchedule
     public interface IDoctorScheduleQueryRepository : IBaseCommonQueryMethodRepository<Entities.EntityClass.DoctorEntity.DoctorSchedule>
     {
         Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSchedule>>> GetByDoctorId(int doctorId);
+        Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSchedule>>> GetByDoctorIdAndChamberId(int doctorId, int chamberId);
     }
 }
 

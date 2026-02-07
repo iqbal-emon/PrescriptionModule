@@ -180,7 +180,160 @@ namespace Prescription.Application.Services
             return _prescriptionCommandRepository.Delete(id);
         }
 
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByPatientId(int patientId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
 
+            try
+            {
+                var prescriptions = await _prescriptionQueryRepository.GetByPatientId(patientId);
+
+                if (prescriptions == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, prescriptions.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the prescriptions by patient ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByDoctorId(int doctorId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
+
+            try
+            {
+                var prescriptions = await _prescriptionQueryRepository.GetByDoctorId(doctorId);
+
+                if (prescriptions == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, prescriptions.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the prescriptions by doctor ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByDoctorIdAndPatientId(int doctorId, int patientId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
+
+            try
+            {
+                var prescriptions = await _prescriptionQueryRepository.GetByDoctorIdAndPatientId(doctorId, patientId);
+
+                if (prescriptions == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, prescriptions.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the prescriptions by doctor and patient ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByAppointmentCreatorId(int patientId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
+
+            try
+            {
+                var prescriptions = await _prescriptionQueryRepository.GetByAppointmentCreatorId(patientId);
+
+                if (prescriptions == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, prescriptions.Result, prescriptions.Message, StatusResponseMessage.success, prescriptions.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the prescriptions by appointment creator ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<object>>> GetPatientDiseaseList(int patientId)
+        {
+            var response = new Response<List<object>>();
+
+            try
+            {
+                var diseaseList = await _prescriptionQueryRepository.GetPatientDiseaseList(patientId);
+
+                if (diseaseList == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, diseaseList.Result, diseaseList.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, diseaseList.Result, diseaseList.Message, StatusResponseMessage.success, diseaseList.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the patient disease list.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
 
     }
 }

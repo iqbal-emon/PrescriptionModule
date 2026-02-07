@@ -360,5 +360,173 @@ namespace PatienFolowUp.Controllers
             return Ok(apiResponse);
         }
 
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        [HttpGet("get-patient-by-phone-and-code")]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetPatientByPhoneAndCode([FromQuery] string pCode, [FromQuery] string pPhone)
+        {
+            var apiResponse = new ApiResponse<PatientsApiResponseDto>();
+            try
+            {
+                var patients = await _patientService.GetByPhoneAndCode(pCode, pPhone);
+                if (patients.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        [HttpGet("get-patient-by-user-name")]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetPatientByUserName([FromQuery] string userName)
+        {
+            var apiResponse = new ApiResponse<PatientsApiResponseDto>();
+            try
+            {
+                var patients = await _patientService.GetByUserName(userName);
+                if (patients.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        [HttpGet("get-patient-by-user-id-direct")]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetPatientByUserIdDirect([FromQuery] int userId)
+        {
+            var apiResponse = new ApiResponse<PatientsApiResponseDto>();
+            try
+            {
+                var patients = await _patientService.GetByUserId(userId);
+                if (patients.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        [HttpGet("get-all-patients-list")]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetAllPatientsList()
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                var patients = await _patientService.GetAllPatients();
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        [HttpGet("get-patient-list-by-user-profile-id")]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetPatientListByUserProfileId([FromQuery] int profileId, [FromQuery] string role)
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                var patients = await _patientService.GetPatientListByUserProfileId(profileId, role);
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        [HttpGet("get-patient-list-by-search-user-profile-id")]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetPatientListBySearchUserProfileId([FromQuery] int profileId, [FromQuery] string role, [FromQuery] string name = "")
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                var patients = await _patientService.GetPatientListBySearchUserProfileId(profileId, role, name);
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        [HttpGet("get-patient-list-filter")]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetPatientListFilter([FromQuery] string searchTerm = "")
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                var patients = await _patientService.GetPatientListFilter(searchTerm);
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_null_of_get_list);
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, PatientsApiConstantsResponseMessage.patients_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_see_try_catch);
+            }
+            return Ok(apiResponse);
+        }
+
     }
 }

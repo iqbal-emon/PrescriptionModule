@@ -107,5 +107,111 @@ namespace Prescription.Insfracture.RepositoriesImplement.Prescription
             }
             return response;
         }
+
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByPatientId(int patientId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.Prescription, dynamic>("Prescription_GetByPatientId", new
+                {
+                    PatientId = patientId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByDoctorId(int doctorId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.Prescription, dynamic>("Prescription_GetByDoctorId", new
+                {
+                    DoctorId = doctorId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByDoctorIdAndPatientId(int doctorId, int patientId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.Prescription, dynamic>("Prescription_GetByDoctorIdAndPatientId", new
+                {
+                    DoctorId = doctorId,
+                    PatientId = patientId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByAppointmentCreatorId(int patientId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.Prescription, dynamic>("Prescription_GetByAppointmentCreatorId", new
+                {
+                    PatientId = patientId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<object>>> GetPatientDiseaseList(int patientId)
+        {
+            var response = new Response<List<object>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<object, dynamic>("Prescription_GetPatientDiseaseList", new
+                {
+                    PatientId = patientId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
     }
 }

@@ -178,6 +178,68 @@ namespace Doctor.Application.Services
 
             return response;
         }
+
+        public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>> GetBySpecialityId(int specialityId)
+        {
+            var response = new Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>();
+
+            try
+            {
+                var specializations = await _specializationQueryRepository.GetBySpecialityId(specialityId);
+
+                if (specializations == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the DoctorSpecializations by speciality ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>> GetByDoctorIdAndSpecialityId(int doctorId, int specialityId)
+        {
+            var response = new Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>();
+
+            try
+            {
+                var specializations = await _specializationQueryRepository.GetByDoctorIdAndSpecialityId(doctorId, specialityId);
+
+                if (specializations == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the DoctorSpecializations by doctor and speciality ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
     }
 }
 

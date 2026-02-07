@@ -2,6 +2,7 @@
 using Appointment.Domain.Repositories.Appointment;
 using Appointment.Infrastructure.RepositoriesImplement;
 using DataAccess.DatabaseAccessLayer;
+using Doctor.Application.Services;
 
 using Microsoft.Extensions.DependencyInjection;
 using PluginDIService.PluginDependencyRepository;
@@ -22,6 +23,8 @@ namespace Pharmacies
             services.AddScoped<ISqlDataAccessLayer, SqlDataAccessLayer>();
             services.AddScoped<MapperService>();
             services.AddScoped<AppointmentService>();
+            // Note: DoctorScheduleDaySessionService is registered in Doctor.RegisterService
+            // It will be available through DI if Doctor module is loaded
 
 
         }

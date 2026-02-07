@@ -88,6 +88,49 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
             }
             return response;
         }
+
+        public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>> GetBySpecialityId(int specialityId)
+        {
+            var response = new Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSpecialization, dynamic>("DoctorSpecialization_GetBySpecialityId", new
+                {
+                    SpecialityID = specialityId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>> GetByDoctorIdAndSpecialityId(int doctorId, int specialityId)
+        {
+            var response = new Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSpecialization, dynamic>("DoctorSpecialization_GetByDoctorIdAndSpecialityId", new
+                {
+                    DoctorID = doctorId,
+                    SpecialityID = specialityId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
     }
 }
 

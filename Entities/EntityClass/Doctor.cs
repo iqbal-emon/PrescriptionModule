@@ -34,5 +34,10 @@ namespace Entities.EntityClass
 
         public int DoctorReferenceID { get; set; }
 
+        [MaxLength(500)]
+        public string? Expertise { get; set; }
+
+        public int? ProfileStep { get; set; }
+
     }
 }

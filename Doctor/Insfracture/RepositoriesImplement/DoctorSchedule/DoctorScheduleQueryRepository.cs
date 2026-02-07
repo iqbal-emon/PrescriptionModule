@@ -112,6 +112,28 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSchedule
             }
             return response;
         }
+
+        public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSchedule>>> GetByDoctorIdAndChamberId(int doctorId, int chamberId)
+        {
+            var response = new Response<List<Entities.EntityClass.DoctorEntity.DoctorSchedule>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSchedule, dynamic>("DoctorSchedule_GetByDoctorIdAndChamberId", new
+                {
+                    DoctorID = doctorId,
+                    ChamberID = chamberId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorScheduleResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
     }
 }
 

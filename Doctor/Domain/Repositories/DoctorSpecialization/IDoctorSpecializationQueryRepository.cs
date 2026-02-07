@@ -11,6 +11,8 @@ namespace Doctor.Domain.Repositories.DoctorSpecialization
     public interface IDoctorSpecializationQueryRepository : IBaseCommonQueryMethodRepository<Entities.EntityClass.DoctorEntity.DoctorSpecialization>
     {
         Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>> GetByDoctorId(int doctorId);
+        Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>> GetBySpecialityId(int specialityId);
+        Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>>> GetByDoctorIdAndSpecialityId(int doctorId, int specialityId);
     }
 }
 

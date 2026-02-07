@@ -90,5 +90,89 @@ namespace Doctor.Insfracture.RepositoriesImplement.Doctor
             }
             return response;
         }
+
+        public async Task<Response<bool>> UpdateActiveStatus(int doctorId, bool isActive)
+        {
+            var response = new Response<bool>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_UpdateActiveStatus", new
+                {
+                    DoctorID = doctorId,
+                    IsActive = isActive
+                });
+
+                ResponseHelper.SetSuccessResponse(response, true, DoctorResponseMessage.common_update_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<bool>> UpdateOnlineStatus(int doctorId, bool isOnline)
+        {
+            var response = new Response<bool>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_UpdateOnlineStatus", new
+                {
+                    DoctorID = doctorId,
+                    IsOnline = isOnline
+                });
+
+                ResponseHelper.SetSuccessResponse(response, true, DoctorResponseMessage.common_update_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<bool>> UpdateExpertise(int doctorId, string expertise)
+        {
+            var response = new Response<bool>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_UpdateExpertise", new
+                {
+                    DoctorID = doctorId,
+                    Expertise = expertise
+                });
+
+                ResponseHelper.SetSuccessResponse(response, true, DoctorResponseMessage.common_update_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<bool>> UpdateProfileStep(int doctorId, int profileStep)
+        {
+            var response = new Response<bool>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_UpdateProfileStep", new
+                {
+                    DoctorID = doctorId,
+                    ProfileStep = profileStep
+                });
+
+                ResponseHelper.SetSuccessResponse(response, true, DoctorResponseMessage.common_update_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
     }
 }

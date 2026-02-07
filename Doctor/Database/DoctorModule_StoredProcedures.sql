@@ -1072,10 +1072,117 @@ END
 GO
 
 -- =============================================
+-- Doctor Additional Stored Procedures
+-- =============================================
+
+-- Doctor_UpdateExpertise
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Doctor_UpdateExpertise]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Doctor_UpdateExpertise]
+GO
+
+CREATE PROCEDURE [dbo].[Doctor_UpdateExpertise]
+    @DoctorID INT,
+    @Expertise NVARCHAR(500) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE [dbo].[Doctor]
+    SET 
+        [Expertise] = @Expertise,
+        [UpdatedAt] = GETDATE()
+    WHERE [DoctorID] = @DoctorID
+        AND [IsDeleted] = 0;
+    
+    SELECT 
+        [DoctorID],
+        [UserID],
+        [Specialization],
+        [LicenseNumber],
+        [HospitalAffiliation],
+        [Expertise],
+        [ProfileStep],
+        [CreatedAt],
+        [UpdatedAt],
+        [IsDeleted],
+        [DoctorReferenceID]
+    FROM [dbo].[Doctor]
+    WHERE [DoctorID] = @DoctorID;
+END
+GO
+
+-- Doctor_UpdateProfileStep
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Doctor_UpdateProfileStep]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Doctor_UpdateProfileStep]
+GO
+
+CREATE PROCEDURE [dbo].[Doctor_UpdateProfileStep]
+    @DoctorID INT,
+    @ProfileStep INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE [dbo].[Doctor]
+    SET 
+        [ProfileStep] = @ProfileStep,
+        [UpdatedAt] = GETDATE()
+    WHERE [DoctorID] = @DoctorID
+        AND [IsDeleted] = 0;
+    
+    SELECT 
+        [DoctorID],
+        [UserID],
+        [Specialization],
+        [LicenseNumber],
+        [HospitalAffiliation],
+        [Expertise],
+        [ProfileStep],
+        [CreatedAt],
+        [UpdatedAt],
+        [IsDeleted],
+        [DoctorReferenceID]
+    FROM [dbo].[Doctor]
+    WHERE [DoctorID] = @DoctorID;
+END
+GO
+
+-- Doctor_GetByCreatorId
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Doctor_GetByCreatorId]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Doctor_GetByCreatorId]
+GO
+
+CREATE PROCEDURE [dbo].[Doctor_GetByCreatorId]
+    @CreatorID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- This assumes there's a relationship between Doctor and Creator
+    -- Adjust the query based on your actual schema (e.g., through MasterDoctor, Appointment, etc.)
+    SELECT DISTINCT
+        d.[DoctorID],
+        d.[UserID],
+        d.[Specialization],
+        d.[LicenseNumber],
+        d.[HospitalAffiliation],
+        d.[Expertise],
+        d.[ProfileStep],
+        d.[CreatedAt],
+        d.[UpdatedAt],
+        d.[IsDeleted],
+        d.[DoctorReferenceID]
+    FROM [dbo].[Doctor] d
+    INNER JOIN [dbo].[MasterDoctor] md ON d.[DoctorID] = md.[DoctorID]
+    WHERE md.[AgentMasterID] = @CreatorID
+        AND d.[IsDeleted] = 0
+    ORDER BY d.[CreatedAt] DESC;
+END
+GO
+
+-- =============================================
 -- END OF STORED PROCEDURES
 -- =============================================
--- Total Procedures Created: 37
+-- Total Procedures Created: 40
 -- - 6 entities × 5 procedures (GetAll, GetById, Insert, Update, DeleteById) = 30
 -- - 7 GetByDoctorId procedures = 7
+-- - 3 Additional procedures (UpdateExpertise, UpdateProfileStep, GetByCreatorId) = 3
 -- =============================================
 

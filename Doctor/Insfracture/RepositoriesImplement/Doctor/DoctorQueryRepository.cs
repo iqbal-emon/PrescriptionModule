@@ -89,6 +89,110 @@ namespace Doctor.Insfracture.RepositoriesImplement.Doctor
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.Doctor>> GetByUserName(string userName)
+        {
+            var response = new Response<Entities.EntityClass.Doctor>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_GetByUserName", new
+                {
+                    UserName = userName
+                });
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<Entities.EntityClass.Doctor>> GetByEmail(string email)
+        {
+            var response = new Response<Entities.EntityClass.Doctor>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_GetByEmail", new
+                {
+                    Email = email
+                });
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.Doctor>>> GetByOnlineStatus(bool isOnline)
+        {
+            var response = new Response<List<Entities.EntityClass.Doctor>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_GetByOnlineStatus", new
+                {
+                    IsOnline = isOnline
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.Doctor>>> GetByActiveStatus(bool isActive)
+        {
+            var response = new Response<List<Entities.EntityClass.Doctor>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_GetByActiveStatus", new
+                {
+                    IsActive = isActive
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.Doctor>>> GetByCreatorId(int creatorId)
+        {
+            var response = new Response<List<Entities.EntityClass.Doctor>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_GetByCreatorId", new
+                {
+                    CreatorID = creatorId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
 
     }
 }

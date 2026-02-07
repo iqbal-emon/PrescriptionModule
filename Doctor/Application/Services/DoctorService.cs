@@ -120,7 +120,252 @@ namespace Doctor.Application.Services
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.Doctor>> GetByUserName(string userName)
+        {
+            var response = new Response<Entities.EntityClass.Doctor>();
 
+            try
+            {
+                var doctor = await _doctorQueryRepository.GetByUserName(userName);
+
+                if (doctor == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, doctor.Result, doctor.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, doctor.Result, doctor.Message, StatusResponseMessage.success, doctor.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the doctor by username.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<Entities.EntityClass.Doctor>> GetByEmail(string email)
+        {
+            var response = new Response<Entities.EntityClass.Doctor>();
+
+            try
+            {
+                var doctor = await _doctorQueryRepository.GetByEmail(email);
+
+                if (doctor == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, doctor.Result, doctor.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, doctor.Result, doctor.Message, StatusResponseMessage.success, doctor.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the doctor by email.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.Doctor>>> GetByOnlineStatus(bool isOnline)
+        {
+            var response = new Response<List<Entities.EntityClass.Doctor>>();
+
+            try
+            {
+                var doctors = await _doctorQueryRepository.GetByOnlineStatus(isOnline);
+
+                if (doctors == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, doctors.Result, doctors.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, doctors.Result, doctors.Message, StatusResponseMessage.success, doctors.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving doctors by online status.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.Doctor>>> GetByActiveStatus(bool isActive)
+        {
+            var response = new Response<List<Entities.EntityClass.Doctor>>();
+
+            try
+            {
+                var doctors = await _doctorQueryRepository.GetByActiveStatus(isActive);
+
+                if (doctors == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, doctors.Result, doctors.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, doctors.Result, doctors.Message, StatusResponseMessage.success, doctors.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving doctors by active status.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<bool>> UpdateActiveStatus(int doctorId, bool isActive)
+        {
+            var response = new Response<bool>();
+
+            try
+            {
+                var result = await _doctorCommandRepository.UpdateActiveStatus(doctorId, isActive);
+                response = result;
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while updating the doctor's active status.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred while updating the doctor's active status.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<bool>> UpdateOnlineStatus(int doctorId, bool isOnline)
+        {
+            var response = new Response<bool>();
+
+            try
+            {
+                var result = await _doctorCommandRepository.UpdateOnlineStatus(doctorId, isOnline);
+                response = result;
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while updating the doctor's online status.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred while updating the doctor's online status.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<bool>> UpdateExpertise(int doctorId, string expertise)
+        {
+            var response = new Response<bool>();
+
+            try
+            {
+                var result = await _doctorCommandRepository.UpdateExpertise(doctorId, expertise);
+                response = result;
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while updating the doctor's expertise.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred while updating the doctor's expertise.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<bool>> UpdateProfileStep(int doctorId, int profileStep)
+        {
+            var response = new Response<bool>();
+
+            try
+            {
+                var result = await _doctorCommandRepository.UpdateProfileStep(doctorId, profileStep);
+                response = result;
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while updating the doctor's profile step.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred while updating the doctor's profile step.";
+                ResponseHelper.SetFailedResponse(response, false, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<Entities.EntityClass.Doctor>>> GetByCreatorId(int creatorId)
+        {
+            var response = new Response<List<Entities.EntityClass.Doctor>>();
+
+            try
+            {
+                var doctors = await _doctorQueryRepository.GetByCreatorId(creatorId);
+
+                if (doctors == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, doctors.Result, doctors.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, doctors.Result, doctors.Message, StatusResponseMessage.success, doctors.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving doctors by creator ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
 
         
 
