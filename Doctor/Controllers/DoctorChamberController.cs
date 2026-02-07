@@ -5,6 +5,7 @@ using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -279,6 +280,43 @@ namespace Doctor.Controllers
                 ApiResponseHelper.SetFailedResponse(apiResponse, null, DoctorChamberApiConstantsResponseMessage.chamber_see_try_catch);
             }
             return Ok(apiResponse);
+        }
+
+        // ========== Merged from DoctorChamberMainApiController - Backward Compatibility Routes ==========
+
+        [HttpPost("doctor-chamber")]
+        [Authorize(Policy = PermissionConstants.DegreeCreate)]
+        public async Task<ActionResult<ApiResponse<int>>> CreateDoctorChamberMainApi([FromBody] DoctorChamberInsertRequestDto request)
+        {
+            return await CreateDoctorChamber(request);
+        }
+
+        [HttpPut("doctor-chamber")]
+        [Authorize(Policy = PermissionConstants.DegreeUpdate)]
+        public async Task<ActionResult<ApiResponse<int>>> UpdateDoctorChamberMainApi([FromBody] DoctorChamberUpdateRequestDto request)
+        {
+            return await UpdateDoctorChamber(request);
+        }
+
+        [HttpDelete("doctor-chamber/{id}")]
+        [Authorize(Policy = PermissionConstants.DegreeDelete)]
+        public async Task<ActionResult<ApiResponse<bool>>> DeleteDoctorChamberMainApi(int id)
+        {
+            return await DeleteDoctorChamber(id);
+        }
+
+        [HttpGet("doctor-chamber/{id}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetId)]
+        public async Task<ActionResult<ApiResponse<DoctorChamberApiResponseDto>>> GetDoctorChamberByIdMainApi(int id)
+        {
+            return await GetDoctorChamberById(id);
+        }
+
+        [HttpGet("doctor-chamber/doctor-chamber-list-by-doctor-id/{doctorProfileId}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorChamberApiResponseDto>>>> GetChambersByDoctorIdMainApi(int doctorProfileId)
+        {
+            return await GetDoctorChamberListByDoctorId(doctorProfileId);
         }
     }
 }

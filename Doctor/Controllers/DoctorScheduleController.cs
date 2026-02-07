@@ -5,6 +5,7 @@ using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -182,6 +183,68 @@ namespace Doctor.Controllers
                 ApiResponseHelper.SetFailedResponse(apiResponse, null, DoctorScheduleApiConstantsResponseMessage.schedule_see_try_catch);
             }
             return Ok(apiResponse);
+        }
+
+        // ========== Merged from DoctorScheduleMainApiController - Backward Compatibility Routes ==========
+
+        [HttpPost("doctor-schedule")]
+        [Authorize(Policy = PermissionConstants.DegreeCreate)]
+        public async Task<ActionResult<ApiResponse<int>>> CreateDoctorScheduleMainApi([FromBody] DoctorScheduleInsertRequestDto request)
+        {
+            return await CreateDoctorSchedule(request);
+        }
+
+        [HttpGet("doctor-schedule/{id}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetId)]
+        public async Task<ActionResult<ApiResponse<DoctorScheduleApiResponseDto>>> GetDoctorScheduleByIdMainApi(int id)
+        {
+            return await GetDoctorScheduleById(id);
+        }
+
+        [HttpGet("doctor-schedule/by-doctor-id-list/{doctorId}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorScheduleApiResponseDto>>>> GetSchedulesByDoctorIdMainApi(int doctorId)
+        {
+            return await GetDoctorScheduleListByDoctorId(doctorId);
+        }
+
+        [HttpGet("doctor-schedule/details-schedule-list-by-doctor-chamber-id")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorScheduleApiResponseDto>>>> GetDetailsScheduleListByDoctorChamberIdMainApi([FromQuery] int doctorId, [FromQuery] int chamberId)
+        {
+            var apiResponse = new ApiResponse<List<DoctorScheduleApiResponseDto>>();
+            try
+            {
+                var schedules = await _scheduleService.GetByDoctorIdAndChamberId(doctorId, chamberId);
+                if (schedules.Result == null || schedules.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorScheduleApiResponseDto>(), "No schedules found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedSchedules = await _mapperService.MapList<Entities.EntityClass.DoctorEntity.DoctorSchedule, DoctorScheduleApiResponseDto>(schedules.Result);
+                apiResponse.Results = mappedSchedules;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Schedules retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorScheduleApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpPut("doctor-schedule")]
+        [Authorize(Policy = PermissionConstants.DegreeUpdate)]
+        public async Task<ActionResult<ApiResponse<int>>> UpdateDoctorScheduleMainApi([FromBody] DoctorScheduleUpdateRequestDto request)
+        {
+            return await UpdateDoctorSchedule(request);
+        }
+
+        [HttpDelete("doctor-schedule/{id}")]
+        [Authorize(Policy = PermissionConstants.DegreeDelete)]
+        public async Task<ActionResult<ApiResponse<bool>>> DeleteDoctorScheduleMainApi(int id)
+        {
+            return await DeleteDoctorSchedule(id);
         }
     }
 }

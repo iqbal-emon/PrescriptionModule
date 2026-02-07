@@ -47,6 +47,50 @@ namespace Entities.EntityClass.PatientEntity
         
         [MaxLength(100)]
         public string? PatientCode { get; set; }
+
+        [MaxLength(255)]
+        public string? FullName { get; set; }
+
+        public bool? IsSelf { get; set; }
+
+        [MaxLength(255)]
+        public string? PatientName { get; set; }
+
+        public int? Age { get; set; }
+
+        [MaxLength(100)]
+        public string? City { get; set; }
+
+        [MaxLength(20)]
+        public string? ZipCode { get; set; }
+
+        [MaxLength(100)]
+        public string? Country { get; set; }
+
+        [MaxLength(20)]
+        public string? MobileNo { get; set; }
+
+        [MaxLength(20)]
+        public string? PatientMobileNo { get; set; }
+
+        [MaxLength(255)]
+        public string? Email { get; set; }
+
+        [MaxLength(255)]
+        public string? PatientEmail { get; set; }
+
+        [MaxLength(100)]
+        public string? CreatedBy { get; set; }
+
+        [MaxLength(100)]
+        public string? CreatorCode { get; set; }
+
+        [MaxLength(50)]
+        public string? CreatorRole { get; set; }
+
+        public int? CreatorEntityId { get; set; }
+
+        public bool? IsFirstTime { get; set; }
         // Navigation property
         //public virtual User User { get; set; }
     }

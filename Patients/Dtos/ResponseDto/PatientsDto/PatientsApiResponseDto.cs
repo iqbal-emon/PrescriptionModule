@@ -23,5 +23,22 @@ namespace PatienFolowUp.Dtos.ResponseDto.Patients
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? PatientCode { get; set; }
+        public string? FullName { get; set; }
+        public bool? IsSelf { get; set; }
+        public string? PatientName { get; set; }
+        public int? Age { get; set; }
+        public string? City { get; set; }
+        public string? ZipCode { get; set; }
+        public string? Country { get; set; }
+        public string? MobileNo { get; set; }
+        public string? PatientMobileNo { get; set; }
+        public string? Email { get; set; }
+        public string? PatientEmail { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatorCode { get; set; }
+        public string? CreatorRole { get; set; }
+        public int? CreatorEntityId { get; set; }
+        public bool? IsFirstTime { get; set; }
     }
 }

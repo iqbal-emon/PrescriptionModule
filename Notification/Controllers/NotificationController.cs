@@ -14,12 +14,12 @@ namespace Notification.Controllers
 {
     [ApiController]
     [Route("api/2025-02/notification")]
-    public class NotificationMainApiController : ControllerBase
+    public class NotificationController : ControllerBase
     {
         private readonly NotificationService _notificationService;
         private readonly MapperService _mapperService;
 
-        public NotificationMainApiController(NotificationService notificationService, MapperService mapperService)
+        public NotificationController(NotificationService notificationService, MapperService mapperService)
         {
             _notificationService = notificationService;
             _mapperService = mapperService;

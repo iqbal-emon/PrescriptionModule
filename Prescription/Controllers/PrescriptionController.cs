@@ -1680,7 +1680,212 @@ namespace Prescription.Controllers
             return Ok(apiResponse);
         }
 
+        // ========== Merged from PrescriptionMasterMainApiController - Backward Compatibility Routes ==========
 
+        [HttpPost("prescription-master")]
+        [Authorize(Policy = PermissionConstants.PrescriptionCreate)]
+        public async Task<ActionResult<ApiResponse<int>>> CreatePrescriptionMasterMainApi([FromBody] PrescriptionInsertRequestDto request)
+        {
+            var apiResponse = new ApiResponse<int>();
+            try
+            {
+                var response = await _prescriptionService.Insert(request);
+                if (response.IsSuccess)
+                {
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Prescription created successfully");
+                }
+                else
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("prescription-master/{id}")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetId)]
+        public async Task<ActionResult<ApiResponse<PrescriptionApiResponseDto>>> GetPrescriptionByIdMainApi(int id)
+        {
+            return await GetPrescriptionById(id);
+        }
+
+        [HttpGet("prescription-master")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionApiResponseDto>>>> GetAllPrescriptionsMainApi()
+        {
+            var apiResponse = new ApiResponse<List<PrescriptionApiResponseDto>>();
+            try
+            {
+                var prescriptions = await _prescriptionService.GetAll();
+                if (prescriptions.Result == null || prescriptions.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), "No prescriptions found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedPrescriptions = await _mapperService.MapList<Entities.EntityClass.PrescriptionEntity.Prescription, PrescriptionApiResponseDto>(prescriptions.Result);
+                apiResponse.Results = mappedPrescriptions;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Prescriptions retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("prescription-master/patient-disease-list/{patientId}")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        public async Task<ActionResult<ApiResponse<List<object>>>> GetPatientDiseaseListMainApi(int patientId)
+        {
+            var apiResponse = new ApiResponse<List<object>>();
+            try
+            {
+                var diseaseList = await _prescriptionService.GetPatientDiseaseList(patientId);
+                if (diseaseList.Result == null || diseaseList.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), "No disease list found");
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = diseaseList.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Patient disease list retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("prescription-master/prescription-count")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        public async Task<ActionResult<ApiResponse<int>>> GetPrescriptionCountMainApi()
+        {
+            var apiResponse = new ApiResponse<int>();
+            try
+            {
+                var prescriptions = await _prescriptionService.GetAll();
+                var count = prescriptions.Result?.Count ?? 0;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, count, "Prescription count retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("prescription-master/prescription-list-by-appointment-creator-id/{patientId}")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionApiResponseDto>>>> GetPrescriptionsByAppointmentCreatorIdMainApi(int patientId)
+        {
+            var apiResponse = new ApiResponse<List<PrescriptionApiResponseDto>>();
+            try
+            {
+                var prescriptions = await _prescriptionService.GetByAppointmentCreatorId(patientId);
+                if (prescriptions.Result == null || prescriptions.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), "No prescriptions found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedPrescriptions = await _mapperService.MapList<Entities.EntityClass.PrescriptionEntity.Prescription, PrescriptionApiResponseDto>(prescriptions.Result);
+                apiResponse.Results = mappedPrescriptions;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Prescriptions retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("prescription-master/prescription-master-list-by-doctor-id/{doctorId}")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionApiResponseDto>>>> GetPrescriptionsByDoctorIdMainApi(int doctorId)
+        {
+            var apiResponse = new ApiResponse<List<PrescriptionApiResponseDto>>();
+            try
+            {
+                var prescriptions = await _prescriptionService.GetByDoctorId(doctorId);
+                if (prescriptions.Result == null || prescriptions.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), "No prescriptions found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedPrescriptions = await _mapperService.MapList<Entities.EntityClass.PrescriptionEntity.Prescription, PrescriptionApiResponseDto>(prescriptions.Result);
+                apiResponse.Results = mappedPrescriptions;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Prescriptions retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("prescription-master/prescription-master-list-by-doctor-id-patient-id")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionApiResponseDto>>>> GetPrescriptionsByDoctorIdAndPatientIdMainApi([FromQuery] int doctorId, [FromQuery] int patientId)
+        {
+            var apiResponse = new ApiResponse<List<PrescriptionApiResponseDto>>();
+            try
+            {
+                var prescriptions = await _prescriptionService.GetByDoctorIdAndPatientId(doctorId, patientId);
+                if (prescriptions.Result == null || prescriptions.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), "No prescriptions found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedPrescriptions = await _mapperService.MapList<Entities.EntityClass.PrescriptionEntity.Prescription, PrescriptionApiResponseDto>(prescriptions.Result);
+                apiResponse.Results = mappedPrescriptions;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Prescriptions retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("prescription-master/prescription-master-list-by-patient-id/{patientId}")]
+        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PrescriptionApiResponseDto>>>> GetPrescriptionsByPatientIdMainApi(int patientId)
+        {
+            var apiResponse = new ApiResponse<List<PrescriptionApiResponseDto>>();
+            try
+            {
+                var prescriptions = await _prescriptionService.GetByPatientId(patientId);
+                if (prescriptions.Result == null || prescriptions.Result.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), "No prescriptions found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedPrescriptions = await _mapperService.MapList<Entities.EntityClass.PrescriptionEntity.Prescription, PrescriptionApiResponseDto>(prescriptions.Result);
+                apiResponse.Results = mappedPrescriptions;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Prescriptions retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PrescriptionApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpPut("prescription-master")]
+        [Authorize(Policy = PermissionConstants.PrescriptionUpdate)]
+        public async Task<ActionResult<ApiResponse<int>>> UpdatePrescriptionMasterMainApi([FromBody] PrescriptionUpdateRequestDto request)
+        {
+            return await UpdatePrescription(request);
+        }
        
 
 

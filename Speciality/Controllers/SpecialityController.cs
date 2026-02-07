@@ -16,12 +16,12 @@ namespace Speciality.Controllers
 {
     [ApiController]
     [Route("api/2025-02/speciality")]
-    public class SpecialityMainApiController : ControllerBase
+    public class SpecialityController : ControllerBase
     {
         private readonly SpecialityService _specialityService;
         private readonly MapperService _mapperService;
 
-        public SpecialityMainApiController(SpecialityService specialityService, MapperService mapperService)
+        public SpecialityController(SpecialityService specialityService, MapperService mapperService)
         {
             _specialityService = specialityService;
             _mapperService = mapperService;

@@ -6,6 +6,7 @@ using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -156,6 +157,40 @@ namespace Degree.Controllers
                 ApiResponseHelper.SetFailedResponse(apiResponse, false, DegreeApiConstantsResponseMessage.degree_see_try_catch);
             }
             return Ok(apiResponse);
+        }
+
+        // ========== Merged from DegreeMainApiController - Backward Compatibility Routes ==========
+
+        [HttpPost("degree")]
+        [Authorize(Policy = PermissionConstants.DegreeCreate)]
+        public async Task<ActionResult<ApiResponse<int>>> CreateDegreeMainApi([FromBody] DegreeInsertRequestDto request)
+        {
+            // Redirect to CreateDegree method
+            return await CreateDegree(request);
+        }
+
+        [HttpGet("degree/{id}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetId)]
+        public async Task<ActionResult<ApiResponse<DegreeApiResponseDto>>> GetDegreeByIdMainApi(int id)
+        {
+            // Redirect to GetDegreeById method
+            return await GetDegreeById(id);
+        }
+
+        [HttpGet("degree")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DegreeApiResponseDto>>>> GetAllDegreesMainApi()
+        {
+            // Redirect to GetAllDegrees method
+            return await GetAllDegrees();
+        }
+
+        [HttpPut("degree")]
+        [Authorize(Policy = PermissionConstants.DegreeUpdate)]
+        public async Task<ActionResult<ApiResponse<int>>> UpdateDegreeMainApi([FromBody] DegreeUpdateRequestDto request)
+        {
+            // Redirect to UpdateDegree method
+            return await UpdateDegree(request);
         }
     }
 }

@@ -16,12 +16,12 @@ namespace DocumentsAttachment.Controllers
 {
     [ApiController]
     [Route("api/2025-02/documents-attachment")]
-    public class DocumentsAttachmentMainApiController : ControllerBase
+    public class DocumentsAttachmentController : ControllerBase
     {
         private readonly DocumentsAttachmentService _attachmentService;
         private readonly MapperService _mapperService;
 
-        public DocumentsAttachmentMainApiController(DocumentsAttachmentService attachmentService, MapperService mapperService)
+        public DocumentsAttachmentController(DocumentsAttachmentService attachmentService, MapperService mapperService)
         {
             _attachmentService = attachmentService;
             _mapperService = mapperService;

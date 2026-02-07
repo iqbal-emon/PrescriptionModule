@@ -7,9 +7,12 @@ using PatienFolowUp.Dtos.RequestDto.Patients;
 using PatienFolowUp.Dtos.RequestDto.PatientsDto;
 using PatienFolowUp.Dtos.ResponseDto.Patients;
 using PatienFolowUp.Utility;
+using Patients.Dtos.ResponseDto.DoctorDto;
 using Patients.Dtos.ResponseDto.PatientsDto;
 using SharedService.CommonService;
 using SharedService.MapService;
+using System.Net.Http;
+using System.Net.Http.Json;
 using Utility.ApiResponse;
 using Utility.Permission;
 using Utility.Response;
@@ -526,6 +529,194 @@ namespace PatienFolowUp.Controllers
                 ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), PatientsApiConstantsResponseMessage.patients_see_try_catch);
             }
             return Ok(apiResponse);
+        }
+
+        [HttpGet("doctor-list-by-creator-id-filter/{profileId}")]
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorApiResponseDto>>>> GetDoctorListByCreatorIdFilter(int profileId)
+        {
+            var apiResponse = new ApiResponse<List<DoctorApiResponseDto>>();
+            try
+            {
+                // Call the API endpoint instead of direct service
+                using var httpClient = new HttpClient();
+                
+                // Get the base URL from the current request
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var apiEndpoint = $"/api/2025-02/doctor-profile/by-creator-id/{profileId}";
+                
+                // Get the authorization token from the current request and add to request message
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{apiEndpoint}");
+                
+                // Forward authorization header from current request
+                if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    var authToken = Request.Headers["Authorization"].ToString();
+                    if (!string.IsNullOrEmpty(authToken))
+                    {
+                        request.Headers.Add("Authorization", authToken);
+                    }
+                }
+
+                // Make the API call
+                var response = await httpClient.SendAsync(request);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorApiResponseDto>(), $"API call failed with status: {response.StatusCode}");
+                    return Ok(apiResponse);
+                }
+
+                // Parse the response
+                var apiResult = await response.Content.ReadFromJsonAsync<ApiResponse<List<DoctorApiResponseDto>>>();
+                
+                if (apiResult?.Results == null || apiResult.Results.Count == 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorApiResponseDto>(), "No doctors found");
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = apiResult.Results;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Doctors retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<DoctorApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("patient-list-by-admin")]
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetPatientListByAdmin()
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                // TODO: Implement admin-specific filtering
+                // For now, return all patients
+                var patients = await _patientService.GetAllPatients();
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), "No patients found");
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("patient-list-filter-by-admin/{userId}")]
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetPatientListFilterByAdmin(int userId, [FromQuery] string role)
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                // TODO: Implement admin-specific filtering with role
+                // For now, return filtered list
+                var patients = await _patientService.GetPatientListFilter("");
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), "No patients found");
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("patient-list-by-agent-master/{masterId}")]
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetPatientListByAgentMaster(int masterId)
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                var patients = await _patientService.GetPatientListByAgentMaster(masterId);
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), "No patients found");
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        [HttpGet("patient-list-by-agent-super-visor/{supervisorId}")]
+        [Authorize(Policy = PermissionConstants.PatientsGetAll)]
+        public async Task<ActionResult<ApiResponse<List<PatientsApiResponseDto>>>> GetPatientListByAgentSupervisor(int supervisorId)
+        {
+            var apiResponse = new ApiResponse<List<PatientsApiResponseDto>>();
+            try
+            {
+                var patients = await _patientService.GetPatientListByAgentSupervisor(supervisorId);
+                if (patients.Result == null || !patients.Result.Any())
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), "No patients found");
+                    return Ok(apiResponse);
+                }
+
+                apiResponse.Results = patients.Result;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Patients retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, new List<PatientsApiResponseDto>(), $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
+        // Alternative routes for backward compatibility with patient-profile endpoints
+        [HttpPost("patient-profile")]
+        [Authorize(Policy = PermissionConstants.PatientsCreate)]
+        public async Task<ActionResult<ApiResponse<int>>> CreatePatientProfile([FromBody] PatientsInsertRequestDto request)
+        {
+            // Redirect to CreatePatients
+            return await CreatePatients(request);
+        }
+
+        [HttpGet("patient-profile/{id}")]
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetPatientProfileById(int id)
+        {
+            // Redirect to GetPatientsById
+            return await GetPatientsById(id);
+        }
+
+        [HttpGet("patient-profile/by-user-id/{userId}")]
+        [Authorize(Policy = PermissionConstants.PatientsGetId)]
+        public async Task<ActionResult<ApiResponse<PatientsApiResponseDto>>> GetPatientByUserIdRoute(int userId)
+        {
+            // Redirect to GetPatientByUserIdDirect
+            return await GetPatientByUserIdDirect(userId);
+        }
+
+        [HttpPut("patient-profile")]
+        [Authorize(Policy = PermissionConstants.PatientsUpdate)]
+        public async Task<ActionResult<ApiResponse<int>>> UpdatePatientProfile([FromBody] PatientsUpdateRequestDto request)
+        {
+            // Redirect to UpdatePatients
+            return await UpdatePatients(request);
         }
 
     }

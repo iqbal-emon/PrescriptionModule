@@ -5,6 +5,7 @@ using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -182,6 +183,64 @@ namespace Doctor.Controllers
                 ApiResponseHelper.SetFailedResponse(apiResponse, null, DoctorDegreeApiConstantsResponseMessage.degree_see_try_catch);
             }
             return Ok(apiResponse);
+        }
+
+        // ========== Merged from DoctorDegreeMainApiController - Backward Compatibility Routes ==========
+
+        [HttpPost("doctor-degree")]
+        [Authorize(Policy = PermissionConstants.DegreeCreate)]
+        public async Task<ActionResult<ApiResponse<int>>> CreateDoctorDegreeMainApi([FromBody] DoctorDegreeInsertRequestDto request)
+        {
+            // Redirect to CreateDoctorDegree method
+            return await CreateDoctorDegree(request);
+        }
+
+        [HttpDelete("doctor-degree/{id}")]
+        [Authorize(Policy = PermissionConstants.DegreeDelete)]
+        public async Task<ActionResult<ApiResponse<bool>>> DeleteDoctorDegreeMainApi(int id)
+        {
+            // Redirect to DeleteDoctorDegree method
+            return await DeleteDoctorDegree(id);
+        }
+
+        [HttpGet("doctor-degree/{id}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetId)]
+        public async Task<ActionResult<ApiResponse<DoctorDegreeApiResponseDto>>> GetDoctorDegreeByIdMainApi(int id)
+        {
+            // Redirect to GetDoctorDegreeById method
+            return await GetDoctorDegreeById(id);
+        }
+
+        [HttpGet("doctor-degree/doctor-degree-list-by-doctor-id/{doctorId}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorDegreeApiResponseDto>>>> GetDegreesByDoctorIdMainApi(int doctorId)
+        {
+            // Redirect to GetDoctorDegreeListByDoctorId method
+            return await GetDoctorDegreeListByDoctorId(doctorId);
+        }
+
+        [HttpGet("doctor-degree")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorDegreeApiResponseDto>>>> GetAllDoctorDegreesMainApi()
+        {
+            // Redirect to GetAllDoctorDegrees method
+            return await GetAllDoctorDegrees();
+        }
+
+        [HttpGet("doctor-degree/by-doctor-id/{doctorId}")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorDegreeApiResponseDto>>>> GetDegreesByDoctorIdAltMainApi(int doctorId)
+        {
+            // Alternative endpoint - redirects to GetDoctorDegreeListByDoctorId
+            return await GetDoctorDegreeListByDoctorId(doctorId);
+        }
+
+        [HttpPut("doctor-degree")]
+        [Authorize(Policy = PermissionConstants.DegreeUpdate)]
+        public async Task<ActionResult<ApiResponse<int>>> UpdateDoctorDegreeMainApi([FromBody] DoctorDegreeUpdateRequestDto request)
+        {
+            // Redirect to UpdateDoctorDegree method
+            return await UpdateDoctorDegree(request);
         }
     }
 }

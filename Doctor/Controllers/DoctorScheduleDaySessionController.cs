@@ -5,6 +5,7 @@ using SharedService.CommonService;
 using SharedService.MapService;
 using Utility.ApiResponse;
 using Utility.Permission;
+using Utility.Response;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -155,6 +156,16 @@ namespace Doctor.Controllers
                 ApiResponseHelper.SetFailedResponse(apiResponse, false, DoctorScheduleDaySessionApiConstantsResponseMessage.daysession_see_try_catch);
             }
             return Ok(apiResponse);
+        }
+
+        // ========== Merged from DoctorScheduleDaySessionMainApiController - Backward Compatibility Routes ==========
+
+        [HttpGet("doctor-schedule-day-session/session-list")]
+        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        public async Task<ActionResult<ApiResponse<List<DoctorScheduleDaySessionApiResponseDto>>>> GetSessionListMainApi()
+        {
+            // Redirect to GetAllDoctorScheduleDaySessions method
+            return await GetAllDoctorScheduleDaySessions();
         }
     }
 }
