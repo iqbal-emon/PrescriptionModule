@@ -146,8 +146,7 @@ namespace Appointment.Application.Services
             try
             {
                 // Pass DTO directly to repository since stored procedure handles patient creation/update
-                var insertResponse = await _appointmentCommandRepository.Insert(appointmentDto);
-                response = await insertResponse;
+                response = await _appointmentCommandRepository.Insert(appointmentDto);
             }
             catch (Exception ex)
             {
