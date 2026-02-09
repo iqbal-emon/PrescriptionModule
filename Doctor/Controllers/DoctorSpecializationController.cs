@@ -264,13 +264,8 @@ namespace Doctor.Controllers
             return Ok(apiResponse);
         }
 
-        [HttpGet("doctor-specialization/doctor-specialization-list-by-speciality-id/{specialityId}")]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
-        public async Task<ActionResult<ApiResponse<List<DoctorSpecializationApiResponseDto>>>> GetBySpecialityIdAltMainApi(int specialityId)
-        {
-            // Same as by-speciality-id endpoint
-            return await GetBySpecialityIdMainApi(specialityId);
-        }
+        // Removed duplicate route: doctor-specialization/doctor-specialization-list-by-speciality-id/{specialityId}
+        // Use doctor-specialization/by-speciality-id/{specialityId} instead
 
         [HttpGet("doctor-specialization")]
         [Authorize(Policy = PermissionConstants.DegreeGetAll)]
@@ -279,13 +274,8 @@ namespace Doctor.Controllers
             return await GetAllDoctorSpecializations();
         }
 
-        [HttpGet("doctor-specialization/by-doctor-id-sp-id")]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
-        public async Task<ActionResult<ApiResponse<List<DoctorSpecializationApiResponseDto>>>> GetByDoctorIdAndSpecialityIdAltMainApi([FromQuery] int doctorId, [FromQuery] int specialityId)
-        {
-            // Same as doctor-specialization-list-by-doctor-id-speciality-id
-            return await GetByDoctorIdAndSpecialityIdMainApi(doctorId, specialityId);
-        }
+        // Removed duplicate route: doctor-specialization/by-doctor-id-sp-id
+        // Use doctor-specialization/doctor-specialization-list-by-doctor-id-speciality-id instead
 
         [HttpPut("doctor-specialization")]
         [Authorize(Policy = PermissionConstants.DegreeUpdate)]

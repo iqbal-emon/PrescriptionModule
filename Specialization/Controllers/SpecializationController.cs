@@ -16,7 +16,7 @@ using Utility.Response;
 namespace Specialization.Controllers
 {
     [ApiController]
-    [Route("api/app/specialization")]
+    [Route("api/2025-02/specialization")]
     public class SpecializationController : ControllerBase
     {
         private readonly SpecializationService _specializationService;
@@ -127,13 +127,8 @@ namespace Specialization.Controllers
             return Ok(apiResponse);
         }
 
-        [HttpGet("by-specialty-id/{specialityId}")]
-        [Authorize(Policy = PermissionConstants.SpecialityGetAll)]
-        public async Task<ActionResult<ApiResponse<List<SpecializationApiResponseDto>>>> GetSpecializationsBySpecialtyId(int specialityId)
-        {
-            // Same as by-speciality-id, just alternative route name
-            return await GetSpecializationsBySpecialityId(specialityId);
-        }
+        // Removed duplicate route: by-specialty-id (typo variant of by-speciality-id)
+        // Use by-speciality-id/{specialityId} instead
 
         [HttpGet("filtering")]
         [Authorize(Policy = PermissionConstants.SpecialityGetAll)]
