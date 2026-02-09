@@ -563,5 +563,31 @@ namespace Doctor.Controllers
             return await UpdateDoctor(request);
         }
 
+        [HttpGet("doctor-profile/{id}/doctor-details-by-admin")]
+        [Authorize(Policy = PermissionConstants.DoctorGetId)]
+        public async Task<ActionResult<ApiResponse<DoctorApiResponseDto>>> GetDoctorDetailsByAdmin(int id)
+        {
+            var apiResponse = new ApiResponse<DoctorApiResponseDto>();
+            try
+            {
+                // Call stored procedure to get comprehensive doctor details
+                var doctorDetails = await _doctorService.GetDetailsByAdmin(id);
+                if (doctorDetails.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Doctor not found");
+                    return Ok(apiResponse);
+                }
+
+                var mappedDoctor = await _mapperService.MapSingle<Entities.EntityClass.Doctor, DoctorApiResponseDto>(doctorDetails.Result);
+                apiResponse.Results = mappedDoctor;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Doctor details retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error: {ex.Message}");
+            }
+            return Ok(apiResponse);
+        }
+
     }
 }

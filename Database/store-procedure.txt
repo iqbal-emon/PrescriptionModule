@@ -1,6 +1,6 @@
-USE [SoowGood_System]
+﻿USE [SoowGood_System]
 GO
-/****** Object:  StoredProcedure [dbo].[AdviceTranslations_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[AdviceTranslations_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -32,7 +32,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[AdviceTranslations_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[AdviceTranslations_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -55,7 +55,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[AdviceTranslations_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[AdviceTranslations_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -78,7 +78,7 @@ BEGIN
     WHERE TranslationId = @AdviceTranslationsId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[AdviceTranslations_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[AdviceTranslations_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -116,7 +116,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS AdviceTranslationsId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[AdviceTranslations_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[AdviceTranslations_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -156,7 +156,37 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Appointment_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Appointment_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Appointment_DeleteById]
+    @AppointmentId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Soft delete: Update only if appointment exists and is not already deleted
+    UPDATE [dbo].[Appointment]
+    SET 
+        IsDeleted = 1,
+        UpdatedAt = GETUTCDATE()
+    WHERE Id = @AppointmentId AND IsDeleted = 0;
+    
+    -- Check if the update was successful
+    IF @@ROWCOUNT > 0
+    BEGIN
+        SELECT @AppointmentId AS DeletedAppointmentId;
+    END
+    ELSE
+    BEGIN
+        SELECT NULL AS DeletedAppointmentId;  -- Return NULL if no update happened
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[Appointment_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -237,7 +267,7 @@ BEGIN
     FETCH NEXT @PageSize ROWS ONLY;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Appointment_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Appointment_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -285,7 +315,7 @@ BEGIN
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Appointment_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Appointment_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -318,7 +348,7 @@ BEGIN
         BEGIN TRANSACTION;
 
         ----------------------------------------------------------------------
-        -- 1️⃣ CHECK EXISTING PATIENT BY PHONE NUMBER
+        -- 1ï¸âƒ£ CHECK EXISTING PATIENT BY PHONE NUMBER
         ----------------------------------------------------------------------
         SELECT TOP 1
             @NewPatientID = p.PatientID,
@@ -329,7 +359,7 @@ BEGIN
 
 
         ----------------------------------------------------------------------
-        -- 2️⃣ IF NEW → INSERT USER & PATIENT
+        -- 2ï¸âƒ£ IF NEW â†’ INSERT USER & PATIENT
         ----------------------------------------------------------------------
         IF @NewPatientID IS NULL
         BEGIN
@@ -393,7 +423,7 @@ BEGIN
 
 
         ----------------------------------------------------------------------
-        -- 3️⃣ GET NEXT SERIAL NUMBER
+        -- 3ï¸âƒ£ GET NEXT SERIAL NUMBER
         ----------------------------------------------------------------------
         SELECT @SerialNo = ISNULL(MAX(SerialNo), 0) + 1
         FROM [dbo].[Appointment]
@@ -403,7 +433,7 @@ BEGIN
 
 
         ----------------------------------------------------------------------
-        -- 4️⃣ INSERT APPOINTMENT
+        -- 4ï¸âƒ£ INSERT APPOINTMENT
         ----------------------------------------------------------------------
         INSERT INTO [dbo].[Appointment]
         (
@@ -433,7 +463,7 @@ BEGIN
         SET @NewAppointmentID = SCOPE_IDENTITY();
 
         ----------------------------------------------------------------------
-        -- 5️⃣ COMMIT + RETURN SERIAL NUMBER
+        -- 5ï¸âƒ£ COMMIT + RETURN SERIAL NUMBER
         ----------------------------------------------------------------------
         COMMIT TRANSACTION;
 
@@ -447,7 +477,48 @@ BEGIN
     END CATCH
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CampaignDoctor_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Appointment_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Appointment_Update]
+(
+    @Id INT,
+    @SessionId INT = NULL,
+    @ScheduleId INT = NULL,
+    @PatientId INT = NULL,
+    @AppointmentDate DATETIME = NULL,
+    @DoctorProfileId INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Update only if appointment exists and is not deleted
+    UPDATE [dbo].[Appointment]
+    SET 
+        SessionId = CASE WHEN @SessionId IS NOT NULL THEN @SessionId ELSE SessionId END,
+        ScheduleId = CASE WHEN @ScheduleId IS NOT NULL THEN @ScheduleId ELSE ScheduleId END,
+        PatientId = CASE WHEN @PatientId IS NOT NULL THEN @PatientId ELSE PatientId END,
+        AppointmentDate = CASE WHEN @AppointmentDate IS NOT NULL THEN @AppointmentDate ELSE AppointmentDate END,
+        DoctorProfileId = CASE WHEN @DoctorProfileId IS NOT NULL THEN @DoctorProfileId ELSE DoctorProfileId END,
+        UpdatedAt = GETUTCDATE()
+    WHERE Id = @Id AND IsDeleted = 0;
+    
+    -- Check if the update was successful
+    IF @@ROWCOUNT > 0
+    BEGIN
+        SELECT @Id AS UpdatedAppointmentId;
+    END
+    ELSE
+    BEGIN
+        SELECT NULL AS UpdatedAppointmentId;  -- Return NULL if no update happened
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[CampaignDoctor_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -464,7 +535,7 @@ BEGIN
     WHERE [CampaignDoctorID] = @CampaignDoctorID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CampaignDoctor_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CampaignDoctor_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -486,7 +557,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CampaignDoctor_GetByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CampaignDoctor_GetByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -510,7 +581,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CampaignDoctor_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CampaignDoctor_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -533,7 +604,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CampaignDoctor_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CampaignDoctor_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -565,7 +636,7 @@ BEGIN
     SET @CampaignDoctorID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CampaignDoctor_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CampaignDoctor_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -589,7 +660,7 @@ BEGIN
     SET @UpdatedId = @CampaignDoctorID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonAdvices_BookMarks]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonAdvices_BookMarks]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -612,7 +683,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[CommonAdvices_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonAdvices_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -629,7 +700,7 @@ BEGIN
     WHERE [CommonAdviceID] = @CommonAdviceID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonAdvices_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonAdvices_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -652,7 +723,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonAdvices_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonAdvices_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -676,7 +747,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonAdvices_GetByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonAdvices_GetByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -701,7 +772,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonAdvices_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonAdvices_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -736,7 +807,7 @@ BEGIN
     SET @CommonAdviceID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonAdvices_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonAdvices_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -762,7 +833,7 @@ BEGIN
     SET @UpdatedId = @CommonAdviceID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonHistory_BookMarks]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonHistory_BookMarks]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -786,7 +857,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[CommonHistory_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonHistory_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -803,7 +874,7 @@ BEGIN
     WHERE [CommonHistoryId] = @CommonHistoryId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonHistory_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonHistory_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -826,7 +897,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonHistory_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonHistory_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -850,7 +921,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonHistory_GetByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonHistory_GetByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -875,7 +946,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonHistory_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonHistory_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -910,7 +981,7 @@ BEGIN
     SET @CommonHistoryId = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CommonHistory_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CommonHistory_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -936,7 +1007,7 @@ BEGIN
     SET @UpdatedId = @CommonHistoryId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Company_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Company_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -951,7 +1022,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Company_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Company_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -975,7 +1046,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Company_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Company_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1000,7 +1071,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Company_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Company_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1043,7 +1114,7 @@ BEGIN
     SET @Id = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Company_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Company_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1075,7 +1146,7 @@ BEGIN
     SET @UpdatedId = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CompanyBranch_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CompanyBranch_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1090,7 +1161,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CompanyBranch_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CompanyBranch_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1112,7 +1183,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CompanyBranch_GetByCompanyId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CompanyBranch_GetByCompanyId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1136,7 +1207,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CompanyBranch_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CompanyBranch_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1159,7 +1230,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CompanyBranch_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CompanyBranch_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1196,7 +1267,7 @@ BEGIN
     SET @Id = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CompanyBranch_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[CompanyBranch_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1224,7 +1295,7 @@ BEGIN
     SET @UpdatedId = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Degree_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Degree_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1256,7 +1327,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Degree_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Degree_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1280,7 +1351,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Degree_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Degree_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1305,7 +1376,7 @@ BEGIN
     WHERE DegreeID = @DegreeID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Degree_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Degree_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1347,7 +1418,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS DegreeID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Degree_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Degree_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1389,7 +1460,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Diagnosis_BookMarks]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagnosis_BookMarks]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1412,7 +1483,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Diagnosis_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagnosis_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1429,7 +1500,7 @@ BEGIN
     WHERE [DiagonosisID] = @DiagonosisID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Diagnosis_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagnosis_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1453,7 +1524,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Diagnosis_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagnosis_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1478,7 +1549,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Diagnosis_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagnosis_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1516,7 +1587,7 @@ BEGIN
     SET @DiagonosisID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Diagnosis_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagnosis_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1544,7 +1615,7 @@ BEGIN
     SET @UpdatedId = @DiagonosisID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Diagonosis_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagonosis_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1576,7 +1647,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Diagonosis_GetDiagnosesByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagonosis_GetDiagnosesByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1602,7 +1673,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Diagonosis_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagonosis_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1644,7 +1715,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS DiagnosisID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Diagonosis_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Diagonosis_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1688,7 +1759,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Disease_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Disease_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1720,7 +1791,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Disease_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Disease_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1743,7 +1814,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Disease_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Disease_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1766,7 +1837,7 @@ BEGIN
     WHERE DiseaseId = @DiseaseId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Disease_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Disease_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1804,7 +1875,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS DiseaseID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Disease_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Disease_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1844,7 +1915,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[District_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[District_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1878,7 +1949,7 @@ BEGIN
     END CATCH
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Division_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Division_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1897,7 +1968,7 @@ BEGIN
         DivisionName ASC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Doctor_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Doctor_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1929,7 +2000,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Doctor_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Doctor_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1948,12 +2019,15 @@ BEGIN
 		 ISNULL(HospitalAffiliation, '') AS HospitalAffiliation,
         CreatedAt,
         UpdatedAt,
-        IsDeleted
+        IsDeleted,
+		DoctorReferenceID,
+		Expertise,
+		ProfileStep
     FROM Doctors
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Doctor_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Doctor_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1973,12 +2047,15 @@ BEGIN
 		 ISNULL(HospitalAffiliation, '') AS HospitalAffiliation,
         CreatedAt,
         UpdatedAt,
-        IsDeleted
+        IsDeleted,
+		DoctorReferenceID,
+		Expertise,
+		ProfileStep
     FROM Doctors
     WHERE DoctorID = @DoctorID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Doctor_GetByReferenceId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Doctor_GetByReferenceId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1999,12 +2076,14 @@ BEGIN
         CreatedAt,
         UpdatedAt,
         IsDeleted,
-		DoctorReferenceID
+		DoctorReferenceID,
+		Expertise,
+		ProfileStep
     FROM Doctors
     WHERE DoctorReferenceID = @ReferenceId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Doctor_GetByUserId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Doctor_GetByUserId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2025,12 +2104,14 @@ BEGIN
         CreatedAt,
         UpdatedAt,
         IsDeleted,
-		DoctorReferenceID
+		DoctorReferenceID,
+		Expertise,
+		ProfileStep
     FROM Doctors
     WHERE UserId = @UserId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Doctor_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Doctor_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2043,6 +2124,8 @@ CREATE PROCEDURE [dbo].[Doctor_Insert]
     @LicenseNumber NVARCHAR(50),
 	@DoctorReferenceID INT = NULL,
     @HospitalAffiliation NVARCHAR(100) = NULL,
+    @Expertise NVARCHAR(500) = NULL,
+    @ProfileStep INT = NULL,
     @CreatedAt DATETIME = NULL,
     @UpdatedAt DATETIME = NULL,
     @IsDeleted BIT = NULL
@@ -2056,6 +2139,8 @@ BEGIN
         Specialization,
         LicenseNumber,
         HospitalAffiliation,
+        Expertise,
+        ProfileStep,
         CreatedAt,
         UpdatedAt,
         IsDeleted
@@ -2066,6 +2151,8 @@ BEGIN
        ISNULL( @Specialization, ''),
 		ISNULL(@LicenseNumber, ''),
         ISNULL(@HospitalAffiliation, ''),
+        @Expertise,
+        @ProfileStep,
         GETUTCDATE(),
         GETUTCDATE(),
         0
@@ -2075,7 +2162,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS DoctorID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Doctor_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Doctor_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2088,6 +2175,8 @@ CREATE PROCEDURE [dbo].[Doctor_Update]
     @LicenseNumber NVARCHAR(50) = NULL,
 	@DoctorReferenceID INT=NULL,
     @HospitalAffiliation NVARCHAR(100) = NULL,
+    @Expertise NVARCHAR(500) = NULL,
+    @ProfileStep INT = NULL,
     @UpdatedAt DATETIME = NULL,
     @IsDeleted BIT = NULL,
     @CreatedAt DATETIME = NULL
@@ -2103,6 +2192,8 @@ BEGIN
         Specialization = ISNULL(@Specialization, Specialization),
         LicenseNumber = ISNULL(@LicenseNumber, LicenseNumber),
         HospitalAffiliation = ISNULL(@HospitalAffiliation, HospitalAffiliation),
+        Expertise = ISNULL(@Expertise, Expertise),
+        ProfileStep = ISNULL(@ProfileStep, ProfileStep),
         UpdatedAt = GETUTCDATE()
     WHERE 
         DoctorID = @DoctorID 
@@ -2119,7 +2210,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorChamber_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorChamber_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2151,7 +2242,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorChamber_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorChamber_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2182,7 +2273,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorChamber_GetByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorChamber_GetByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2218,7 +2309,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorChamber_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorChamber_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2250,7 +2341,7 @@ BEGIN
     WHERE ChamberID = @ChamberID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorChamber_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorChamber_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2313,7 +2404,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS ChamberID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorChamber_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorChamber_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2369,7 +2460,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorDegree_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorDegree_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2401,7 +2492,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorDegree_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorDegree_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2433,7 +2524,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorDegree_GetByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorDegree_GetByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2459,7 +2550,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorDegree_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorDegree_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2492,7 +2583,7 @@ BEGIN
     WHERE DoctorDegreeID = @DoctorDegreeID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorDegree_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorDegree_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2558,7 +2649,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS DoctorDegreeID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorDegree_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorDegree_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2617,7 +2708,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorExpertise_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorExpertise_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2649,7 +2740,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorExpertise_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorExpertise_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2674,7 +2765,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorExpertise_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorExpertise_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2700,7 +2791,7 @@ BEGIN
     WHERE DoctorExpertiseID = @DoctorExpertiseID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorExpertise_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorExpertise_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2745,7 +2836,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS DoctorExpertiseID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorExpertise_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorExpertise_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2789,7 +2880,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2806,7 +2897,7 @@ BEGIN
     WHERE [DoctorFeesSetupID] = @DoctorFeesSetupID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2838,7 +2929,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_GetByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_GetByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2873,7 +2964,7 @@ BEGIN
     ORDER BY fs.[CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2906,7 +2997,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2968,7 +3059,7 @@ BEGIN
     SET @DoctorFeesSetupID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorFeesSetup_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3012,7 +3103,7 @@ BEGIN
     SET @UpdatedId = @DoctorFeesSetupID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSchedule_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSchedule_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3044,7 +3135,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSchedule_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSchedule_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3067,7 +3158,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSchedule_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSchedule_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3091,7 +3182,7 @@ BEGIN
     WHERE DoctorScheduleID = @ScheduleID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSchedule_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSchedule_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3130,7 +3221,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS DoctorScheduleID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSchedule_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSchedule_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3170,7 +3261,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3187,7 +3278,7 @@ BEGIN
     WHERE [DoctorScheduleDaySessionID] = @DoctorScheduleDaySessionID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3213,7 +3304,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3240,7 +3331,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3284,7 +3375,7 @@ BEGIN
     SET @DoctorScheduleDaySessionID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduleDaySession_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3316,7 +3407,7 @@ BEGIN
     SET @UpdatedId = @DoctorScheduleDaySessionID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3333,7 +3424,7 @@ BEGIN
     WHERE [DoctorScheduledDayOffID] = @DoctorScheduledDayOffID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3356,7 +3447,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3380,7 +3471,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3415,7 +3506,7 @@ BEGIN
     SET @DoctorScheduledDayOffID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorScheduledDayOff_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3441,7 +3532,7 @@ BEGIN
     SET @UpdatedId = @DoctorScheduledDayOffID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3458,7 +3549,7 @@ BEGIN
     WHERE [DoctorSpecializationID] = @DoctorSpecializationID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3483,7 +3574,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_GetByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_GetByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3510,7 +3601,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3536,7 +3627,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3577,7 +3668,7 @@ BEGIN
     SET @DoctorSpecializationID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DoctorSpecialization_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3607,7 +3698,7 @@ BEGIN
     SET @UpdatedId = @DoctorSpecializationID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3625,7 +3716,7 @@ BEGIN
     WHERE [DocumentsAttachmentID] = @DocumentsAttachmentID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3653,7 +3744,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetByEntityIdAndType]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetByEntityIdAndType]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3689,7 +3780,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3718,7 +3809,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetDocumentInfo]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetDocumentInfo]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3752,7 +3843,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetPaginated]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_GetPaginated]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3798,7 +3889,7 @@ BEGIN
     EXEC sp_executesql @SQL;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3846,7 +3937,7 @@ BEGIN
     SET @DocumentsAttachmentID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[DocumentsAttachment_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3883,7 +3974,7 @@ BEGIN
     SET @UpdatedDocumentsAttachmentID = @DocumentsAttachmentID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[EmailTemplate_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[EmailTemplate_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3905,7 +3996,7 @@ BEGIN
     FROM EmailTemplate
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[EmailTemplate_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[EmailTemplate_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3929,7 +4020,7 @@ BEGIN
     WHERE Id = @EmailTemplateId 
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[EmailTemplate_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[EmailTemplate_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3975,7 +4066,7 @@ BEGIN
     -- The @Id will be passed back as OUTPUT, no need to generate it again
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[EmailTemplate_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[EmailTemplate_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4016,7 +4107,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Examinations_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Examinations_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4048,7 +4139,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Examinations_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Examinations_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4074,7 +4165,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Examinations_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Examinations_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4101,7 +4192,7 @@ BEGIN
     WHERE ExaminationId = @ExaminationId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Examinations_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Examinations_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4157,7 +4248,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS ExaminationID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Examinations_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Examinations_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4203,7 +4294,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4235,7 +4326,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4257,7 +4348,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4280,7 +4371,7 @@ BEGIN
     WHERE ExpertiseID = @CategoryId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4316,7 +4407,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS ExpertiseID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ExpertiseCategory_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4354,7 +4445,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[FollowUp_BookMarks]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[FollowUp_BookMarks]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4377,7 +4468,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[FollowUp_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[FollowUp_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4394,7 +4485,7 @@ BEGIN
     WHERE [FollowUpId] = @FollowUpId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[FollowUp_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[FollowUp_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4417,7 +4508,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[FollowUp_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[FollowUp_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4441,7 +4532,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[FollowUp_GetFollowUpsByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[FollowUp_GetFollowUpsByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4466,7 +4557,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[FollowUp_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[FollowUp_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4501,7 +4592,7 @@ BEGIN
     SET @FollowUpId = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[FollowUp_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[FollowUp_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4527,7 +4618,7 @@ BEGIN
     SET @UpdatedId = @FollowUpId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetBookMarksAdviceByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetBookMarksAdviceByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4554,7 +4645,7 @@ BEGIN
     ORDER BY ca.[CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetBookMarksDiagnosisByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetBookMarksDiagnosisByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4580,7 +4671,7 @@ BEGIN
     ORDER BY d.[CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetBookMarksHistoryByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetBookMarksHistoryByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4605,7 +4696,7 @@ BEGIN
     ORDER BY ch.[CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetBookMarksMedicationByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetBookMarksMedicationByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4638,7 +4729,7 @@ BEGIN
     ORDER BY m.[CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetBookMarksSymtomByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetBookMarksSymtomByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4662,7 +4753,7 @@ BEGIN
     ORDER BY s.[CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetMedicationByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetMedicationByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4739,7 +4830,7 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[InsertMedication]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[InsertMedication]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4783,7 +4874,7 @@ BEGIN
     );
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Investigation_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigation_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4800,7 +4891,7 @@ BEGIN
     WHERE [InvestigationID] = @InvestigationID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Investigation_GetInvestigationsByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigation_GetInvestigationsByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4826,7 +4917,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Investigation_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigation_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4864,7 +4955,7 @@ BEGIN
     SET @InvestigationID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Investigation_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigation_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4892,7 +4983,7 @@ BEGIN
     SET @UpdatedId = @InvestigationID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Investigations_BookMarks]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigations_BookMarks]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4917,7 +5008,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Investigations_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigations_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4941,7 +5032,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Investigations_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigations_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4966,7 +5057,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Investigations_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigations_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5007,7 +5098,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS InvestigationId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Investigations_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Investigations_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5048,7 +5139,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Languages_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Languages_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5080,7 +5171,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Languages_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Languages_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5102,7 +5193,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Languages_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Languages_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5124,7 +5215,7 @@ BEGIN
     WHERE LanguageID = @LanguageId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Languages_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Languages_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5159,7 +5250,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS LanguageID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Languages_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Languages_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5197,7 +5288,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MasterDoctor_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MasterDoctor_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5214,7 +5305,7 @@ BEGIN
     WHERE [MasterDoctorID] = @MasterDoctorID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MasterDoctor_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MasterDoctor_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5236,7 +5327,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MasterDoctor_GetByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MasterDoctor_GetByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5260,7 +5351,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MasterDoctor_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MasterDoctor_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5283,7 +5374,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MasterDoctor_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MasterDoctor_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5315,7 +5406,7 @@ BEGIN
     SET @MasterDoctorID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MasterDoctor_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MasterDoctor_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5339,7 +5430,7 @@ BEGIN
     SET @UpdatedId = @MasterDoctorID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_BookMarks]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_BookMarks]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5370,7 +5461,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_DeledeById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_DeledeById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5387,7 +5478,7 @@ BEGIN
     WHERE [MedicationId] = @MedicationId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5418,7 +5509,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5450,7 +5541,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_GetByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_GetByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5483,7 +5574,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_GetManufacturers]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_GetManufacturers]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5503,7 +5594,7 @@ BEGIN
     ORDER BY m.Manufacturer;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_GetMostUsed]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_GetMostUsed]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5521,7 +5612,7 @@ BEGIN
     DECLARE @StartDate DATETIME = NULL;
     DECLARE @EndDate DATETIME = NULL;
 
-    -- 🕓 Determine date range
+    -- ðŸ•“ Determine date range
     IF @DateFilter = 'today'
     BEGIN
         SET @StartDate = CAST(GETDATE() AS DATE);
@@ -5558,20 +5649,20 @@ BEGIN
             AND pi.IsDeleted = 0
             AND p.IsDeleted = 0
 
-            -- 🧩 Company filter
+            -- ðŸ§© Company filter
             AND (
                 @CompanyName IS NULL 
                 OR m.Manufacturer = @CompanyName
             )
 
-            -- 🧩 Search filter
+            -- ðŸ§© Search filter
             AND (
                 @SearchTerm IS NULL
                 OR m.MedicationName LIKE '%' + @SearchTerm + '%'
                 OR m.GenericName LIKE '%' + @SearchTerm + '%'
             )
 
-            -- 🧩 Date filter (unified)
+            -- ðŸ§© Date filter (unified)
             AND (
                 @DateFilter IS NULL
                 OR (p.CreatedAt >= @StartDate AND p.CreatedAt < @EndDate)
@@ -5591,7 +5682,7 @@ BEGIN
     FETCH NEXT @PageSize ROWS ONLY;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_GetMostUsed_Combined]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_GetMostUsed_Combined]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5602,7 +5693,7 @@ CREATE PROCEDURE [dbo].[Medication_GetMostUsed_Combined]
     @SearchTerm NVARCHAR(100) = NULL,
     @CompanyName NVARCHAR(100) = NULL,
     @DateFilter NVARCHAR(20) = NULL,
-    -- 🔑 New Output Parameter for Total Count
+    -- ðŸ”‘ New Output Parameter for Total Count
     @TotalCount INT OUTPUT
 AS
 BEGIN
@@ -5611,7 +5702,7 @@ BEGIN
     DECLARE @StartDate DATETIME = NULL;
     DECLARE @EndDate DATETIME = NULL;
 
-    -- 📅 Date filter logic (Same)
+    -- ðŸ“… Date filter logic (Same)
     IF @DateFilter = 'today'
     BEGIN
         SET @StartDate = CAST(GETDATE() AS DATE);
@@ -5632,7 +5723,7 @@ BEGIN
         SET @EndDate = DATEADD(MONTH, 1, @StartDate);
     END;
 
-    -- 🧩 Temp table
+    -- ðŸ§© Temp table
     IF OBJECT_ID('tempdb..#MedicationUsage') IS NOT NULL
         DROP TABLE #MedicationUsage;
 
@@ -5663,10 +5754,10 @@ BEGIN
     GROUP BY 
         m.MedicationID, m.MedicationName, m.Manufacturer, m.GenericName;
 
-    -- 🔑 Assign Total Count to OUTPUT Parameter
+    -- ðŸ”‘ Assign Total Count to OUTPUT Parameter
     SELECT @TotalCount = COUNT(*) FROM #MedicationUsage;
 
-    -- 🧾 Only ONE result set: Paged data
+    -- ðŸ§¾ Only ONE result set: Paged data
     SELECT 
         MedicationID,
         MedicationName,
@@ -5681,7 +5772,7 @@ BEGIN
     DROP TABLE #MedicationUsage;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_GetMostUsed_TotalCount]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_GetMostUsed_TotalCount]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5697,7 +5788,7 @@ BEGIN
     DECLARE @StartDate DATETIME = NULL;
     DECLARE @EndDate DATETIME = NULL;
 
-    -- 🕓 Determine date range
+    -- ðŸ•“ Determine date range
     IF @DateFilter = 'today'
     BEGIN
         SET @StartDate = CAST(GETDATE() AS DATE);
@@ -5737,20 +5828,20 @@ BEGIN
             AND pi.IsDeleted = 0
             AND p.IsDeleted = 0
 
-            -- 🧩 Company filter
+            -- ðŸ§© Company filter
             AND (
                 @CompanyName IS NULL 
                 OR m.Manufacturer = @CompanyName
             )
 
-            -- 🧩 Search filter
+            -- ðŸ§© Search filter
             AND (
                 @SearchTerm IS NULL
                 OR m.MedicationName LIKE '%' + @SearchTerm + '%'
                 OR m.GenericName LIKE '%' + @SearchTerm + '%'
             )
 
-            -- 🧩 Date filter (applied only if @StartDate is not null)
+            -- ðŸ§© Date filter (applied only if @StartDate is not null)
             AND (
                 @DateFilter IS NULL
                 OR (p.CreatedAt >= @StartDate AND p.CreatedAt < @EndDate)
@@ -5763,7 +5854,7 @@ BEGIN
     FROM MedicationUsage;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5822,7 +5913,7 @@ BEGIN
     SET @MedicationId = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Medication_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Medication_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5864,7 +5955,7 @@ BEGIN
     SET @UpdatedId = @MedicationId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationBrand_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationBrand_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5896,7 +5987,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationBrand_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationBrand_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5918,7 +6009,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationBrand_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationBrand_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5941,7 +6032,7 @@ BEGIN
     WHERE MedicationBrandId = @MedicationBrandId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationBrand_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationBrand_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5978,7 +6069,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS MedicationBrandID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationBrand_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationBrand_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6017,7 +6108,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6049,7 +6140,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6071,7 +6162,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6094,7 +6185,7 @@ BEGIN
     WHERE ManufacturerID = @ManufacturerID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_GetMostUsed_Combined]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_GetMostUsed_Combined]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6178,7 +6269,7 @@ BEGIN
     DROP TABLE #ManufacturerUsage;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6213,7 +6304,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS ManufacturerId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[MedicationManufacturer_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6250,7 +6341,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6282,7 +6373,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetAgeDistribution]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetAgeDistribution]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6294,9 +6385,9 @@ BEGIN
 
     SELECT 
         CASE 
-            WHEN PatientAge BETWEEN 18 AND 25 THEN '18–25 years'
-            WHEN PatientAge BETWEEN 26 AND 40 THEN '26–40 years'
-            WHEN PatientAge BETWEEN 41 AND 55 THEN '41–55 years'
+            WHEN PatientAge BETWEEN 18 AND 25 THEN '18â€“25 years'
+            WHEN PatientAge BETWEEN 26 AND 40 THEN '26â€“40 years'
+            WHEN PatientAge BETWEEN 41 AND 55 THEN '41â€“55 years'
             WHEN PatientAge >= 56 THEN '56+ years'
             ELSE 'Unknown'
         END AS AgeGroup,
@@ -6305,16 +6396,16 @@ BEGIN
     WHERE IsDeleted = 0
     GROUP BY 
         CASE 
-            WHEN PatientAge BETWEEN 18 AND 25 THEN '18–25 years'
-            WHEN PatientAge BETWEEN 26 AND 40 THEN '26–40 years'
-            WHEN PatientAge BETWEEN 41 AND 55 THEN '41–55 years'
+            WHEN PatientAge BETWEEN 18 AND 25 THEN '18â€“25 years'
+            WHEN PatientAge BETWEEN 26 AND 40 THEN '26â€“40 years'
+            WHEN PatientAge BETWEEN 41 AND 55 THEN '41â€“55 years'
             WHEN PatientAge >= 56 THEN '56+ years'
             ELSE 'Unknown'
         END
     ORDER BY AgeGroup;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6380,7 +6471,59 @@ BEGIN
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetByAgentMaster]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetAllSimple]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Patients_GetAllSimple]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        p.PatientID,
+        p.UserID,
+        p.PatientReferenceID,
+        p.DateOfBirth,
+        ISNULL(p.Gender, '') AS Gender,
+        ISNULL(p.Address, '') AS Address,
+        ISNULL(p.BloodGroup, '') AS BloodGroup,
+        ISNULL(p.InsuranceProvider, '') AS InsuranceProvider,
+        ISNULL(p.InsurancePolicyNumber, '') AS InsurancePolicyNumber,
+        CONVERT(NVARCHAR(10), ISNULL(p.PatientAge, 0)) AS PatientAge,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted,
+        ISNULL(p.PatientCode, '') AS PatientCode,
+        ISNULL(p.FullName, '') AS FullName,
+        ISNULL(p.IsSelf, 0) AS IsSelf,
+        ISNULL(p.PatientName, '') AS PatientName,
+        ISNULL(p.Age, 0) AS Age,
+        ISNULL(p.City, '') AS City,
+        ISNULL(p.ZipCode, '') AS ZipCode,
+        ISNULL(p.Country, '') AS Country,
+        ISNULL(p.MobileNo, '') AS MobileNo,
+        ISNULL(p.PatientMobileNo, '') AS PatientMobileNo,
+        ISNULL(p.Email, '') AS Email,
+        ISNULL(p.PatientEmail, '') AS PatientEmail,
+        ISNULL(p.CreatedBy, '') AS CreatedBy,
+        ISNULL(p.CreatorCode, '') AS CreatorCode,
+        ISNULL(p.CreatorRole, '') AS CreatorRole,
+        ISNULL(p.CreatorEntityId, 0) AS CreatorEntityId,
+        ISNULL(p.IsFirstTime, 0) AS IsFirstTime,
+        u.PhoneNumber,
+        u.FirstName,
+        u.LastName,
+        u.Email AS UserEmail
+    FROM Patients p
+    LEFT JOIN Users u ON u.UserID = p.UserID
+    WHERE p.IsDeleted = 0
+    ORDER BY p.CreatedAt DESC;
+END;
+GO
+/****** Object:  StoredProcedure [dbo].[Patients_GetByAgentMaster]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6418,7 +6561,7 @@ BEGIN
     -- WHERE p.[AgentMasterID] = @AgentMasterID AND p.[IsDeleted] = 0
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetByAgentSupervisor]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetByAgentSupervisor]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6456,7 +6599,7 @@ BEGIN
     -- WHERE p.[AgentSupervisorID] = @AgentSupervisorID AND p.[IsDeleted] = 0
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6488,7 +6631,58 @@ LEFT JOIN Users u ON u.UserID = p.UserID
     WHERE p.PatientID = @PatientID AND p.IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetByPhoneNo]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetByPhoneAndCode]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Patients_GetByPhoneAndCode]
+    @PatientCode NVARCHAR(100),
+    @PhoneNo NVARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1
+        p.PatientID,
+        p.UserID,
+        p.PatientReferenceID,
+        p.DateOfBirth,
+        ISNULL(p.Gender, '') AS Gender,
+        ISNULL(p.Address, '') AS Address,
+        ISNULL(p.BloodGroup, '') AS BloodGroup,
+        ISNULL(p.InsuranceProvider, '') AS InsuranceProvider,
+        ISNULL(p.InsurancePolicyNumber, '') AS InsurancePolicyNumber,
+        CONVERT(NVARCHAR(10), ISNULL(p.PatientAge, 0)) AS PatientAge,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted,
+        ISNULL(p.PatientCode, '') AS PatientCode,
+        ISNULL(p.FullName, '') AS FullName,
+        ISNULL(p.IsSelf, 0) AS IsSelf,
+        ISNULL(p.PatientName, '') AS PatientName,
+        ISNULL(p.Age, 0) AS Age,
+        ISNULL(p.City, '') AS City,
+        ISNULL(p.ZipCode, '') AS ZipCode,
+        ISNULL(p.Country, '') AS Country,
+        ISNULL(p.MobileNo, '') AS MobileNo,
+        ISNULL(p.PatientMobileNo, '') AS PatientMobileNo,
+        ISNULL(p.Email, '') AS Email,
+        ISNULL(p.PatientEmail, '') AS PatientEmail,
+        ISNULL(p.CreatedBy, '') AS CreatedBy,
+        ISNULL(p.CreatorCode, '') AS CreatorCode,
+        ISNULL(p.CreatorRole, '') AS CreatorRole,
+        ISNULL(p.CreatorEntityId, 0) AS CreatorEntityId,
+        ISNULL(p.IsFirstTime, 0) AS IsFirstTime,
+        u.PhoneNumber
+    FROM Patients p
+    LEFT JOIN Users u ON u.UserID = p.UserID
+    WHERE (p.PatientCode = @PatientCode OR u.PhoneNumber = @PhoneNo)
+        AND p.IsDeleted = 0;
+END;
+GO
+/****** Object:  StoredProcedure [dbo].[Patients_GetByPhoneNo]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6519,7 +6713,7 @@ BEGIN
     WHERE u.PhoneNumber = @PhoneNo;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetByreferenceId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetByreferenceId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6548,7 +6742,70 @@ BEGIN
     WHERE PatientReferenceID = @PatientReferenceID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetByUserId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetBySearchUserProfileId]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Patients_GetBySearchUserProfileId]
+    @ProfileId INT,
+    @Role NVARCHAR(50),
+    @Name NVARCHAR(100) = ''
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        p.PatientID,
+        p.UserID,
+        p.PatientReferenceID,
+        p.DateOfBirth,
+        ISNULL(p.Gender, '') AS Gender,
+        ISNULL(p.Address, '') AS Address,
+        ISNULL(p.BloodGroup, '') AS BloodGroup,
+        ISNULL(p.InsuranceProvider, '') AS InsuranceProvider,
+        ISNULL(p.InsurancePolicyNumber, '') AS InsurancePolicyNumber,
+        CONVERT(NVARCHAR(10), ISNULL(p.PatientAge, 0)) AS PatientAge,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted,
+        ISNULL(p.PatientCode, '') AS PatientCode,
+        ISNULL(p.FullName, '') AS FullName,
+        ISNULL(p.IsSelf, 0) AS IsSelf,
+        ISNULL(p.PatientName, '') AS PatientName,
+        ISNULL(p.Age, 0) AS Age,
+        ISNULL(p.City, '') AS City,
+        ISNULL(p.ZipCode, '') AS ZipCode,
+        ISNULL(p.Country, '') AS Country,
+        ISNULL(p.MobileNo, '') AS MobileNo,
+        ISNULL(p.PatientMobileNo, '') AS PatientMobileNo,
+        ISNULL(p.Email, '') AS Email,
+        ISNULL(p.PatientEmail, '') AS PatientEmail,
+        ISNULL(p.CreatedBy, '') AS CreatedBy,
+        ISNULL(p.CreatorCode, '') AS CreatorCode,
+        ISNULL(p.CreatorRole, '') AS CreatorRole,
+        ISNULL(p.CreatorEntityId, 0) AS CreatorEntityId,
+        ISNULL(p.IsFirstTime, 0) AS IsFirstTime,
+        u.PhoneNumber,
+        u.FirstName,
+        u.LastName,
+        u.Email AS UserEmail
+    FROM Patients p
+    LEFT JOIN Users u ON u.UserID = p.UserID
+    WHERE p.CreatorEntityId = @ProfileId
+        AND ISNULL(p.CreatorRole, '') = @Role
+        AND (
+            @Name = '' OR 
+            ISNULL(p.FullName, '') LIKE '%' + @Name + '%' OR
+            ISNULL(p.PatientName, '') LIKE '%' + @Name + '%' OR
+            ISNULL(u.FirstName, '') + ' ' + ISNULL(u.LastName, '') LIKE '%' + @Name + '%'
+        )
+        AND p.IsDeleted = 0
+    ORDER BY p.CreatedAt DESC;
+END;
+GO
+/****** Object:  StoredProcedure [dbo].[Patients_GetByUserId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6577,7 +6834,65 @@ BEGIN
     WHERE UserId = @UserId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetCount]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetByUserProfileId]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Patients_GetByUserProfileId]
+    @ProfileId INT,
+    @Role NVARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- This procedure retrieves patients based on profile ID and role
+    -- Adjust the query based on your actual schema relationships
+    SELECT 
+        p.PatientID,
+        p.UserID,
+        p.PatientReferenceID,
+        p.DateOfBirth,
+        ISNULL(p.Gender, '') AS Gender,
+        ISNULL(p.Address, '') AS Address,
+        ISNULL(p.BloodGroup, '') AS BloodGroup,
+        ISNULL(p.InsuranceProvider, '') AS InsuranceProvider,
+        ISNULL(p.InsurancePolicyNumber, '') AS InsurancePolicyNumber,
+        CONVERT(NVARCHAR(10), ISNULL(p.PatientAge, 0)) AS PatientAge,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted,
+        ISNULL(p.PatientCode, '') AS PatientCode,
+        ISNULL(p.FullName, '') AS FullName,
+        ISNULL(p.IsSelf, 0) AS IsSelf,
+        ISNULL(p.PatientName, '') AS PatientName,
+        ISNULL(p.Age, 0) AS Age,
+        ISNULL(p.City, '') AS City,
+        ISNULL(p.ZipCode, '') AS ZipCode,
+        ISNULL(p.Country, '') AS Country,
+        ISNULL(p.MobileNo, '') AS MobileNo,
+        ISNULL(p.PatientMobileNo, '') AS PatientMobileNo,
+        ISNULL(p.Email, '') AS Email,
+        ISNULL(p.PatientEmail, '') AS PatientEmail,
+        ISNULL(p.CreatedBy, '') AS CreatedBy,
+        ISNULL(p.CreatorCode, '') AS CreatorCode,
+        ISNULL(p.CreatorRole, '') AS CreatorRole,
+        ISNULL(p.CreatorEntityId, 0) AS CreatorEntityId,
+        ISNULL(p.IsFirstTime, 0) AS IsFirstTime,
+        u.PhoneNumber,
+        u.FirstName,
+        u.LastName,
+        u.Email AS UserEmail
+    FROM Patients p
+    LEFT JOIN Users u ON u.UserID = p.UserID
+    WHERE p.CreatorEntityId = @ProfileId
+        AND ISNULL(p.CreatorRole, '') = @Role
+        AND p.IsDeleted = 0
+    ORDER BY p.CreatedAt DESC;
+END;
+GO
+/****** Object:  StoredProcedure [dbo].[Patients_GetCount]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6608,7 +6923,69 @@ BEGIN
       AND (pr.IsDeleted = 0 OR pr.PrescriptionID IS NULL);
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetFollowUpPatients]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetFiltered]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[Patients_GetFiltered]
+    @SearchTerm NVARCHAR(100) = ''
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        p.PatientID,
+        p.UserID,
+        p.PatientReferenceID,
+        p.DateOfBirth,
+        ISNULL(p.Gender, '') AS Gender,
+        ISNULL(p.Address, '') AS Address,
+        ISNULL(p.BloodGroup, '') AS BloodGroup,
+        ISNULL(p.InsuranceProvider, '') AS InsuranceProvider,
+        ISNULL(p.InsurancePolicyNumber, '') AS InsurancePolicyNumber,
+        CONVERT(NVARCHAR(10), ISNULL(p.PatientAge, 0)) AS PatientAge,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted,
+        ISNULL(p.PatientCode, '') AS PatientCode,
+        ISNULL(p.FullName, '') AS FullName,
+        ISNULL(p.IsSelf, 0) AS IsSelf,
+        ISNULL(p.PatientName, '') AS PatientName,
+        ISNULL(p.Age, 0) AS Age,
+        ISNULL(p.City, '') AS City,
+        ISNULL(p.ZipCode, '') AS ZipCode,
+        ISNULL(p.Country, '') AS Country,
+        ISNULL(p.MobileNo, '') AS MobileNo,
+        ISNULL(p.PatientMobileNo, '') AS PatientMobileNo,
+        ISNULL(p.Email, '') AS Email,
+        ISNULL(p.PatientEmail, '') AS PatientEmail,
+        ISNULL(p.CreatedBy, '') AS CreatedBy,
+        ISNULL(p.CreatorCode, '') AS CreatorCode,
+        ISNULL(p.CreatorRole, '') AS CreatorRole,
+        ISNULL(p.CreatorEntityId, 0) AS CreatorEntityId,
+        ISNULL(p.IsFirstTime, 0) AS IsFirstTime,
+        u.PhoneNumber,
+        u.FirstName,
+        u.LastName,
+        u.Email AS UserEmail
+    FROM Patients p
+    LEFT JOIN Users u ON u.UserID = p.UserID
+    WHERE p.IsDeleted = 0
+        AND (
+            @SearchTerm = '' OR
+            ISNULL(p.PatientCode, '') LIKE '%' + @SearchTerm + '%' OR
+            ISNULL(p.FullName, '') LIKE '%' + @SearchTerm + '%' OR
+            ISNULL(p.PatientName, '') LIKE '%' + @SearchTerm + '%' OR
+            ISNULL(u.PhoneNumber, '') LIKE '%' + @SearchTerm + '%' OR
+            ISNULL(u.FirstName, '') + ' ' + ISNULL(u.LastName, '') LIKE '%' + @SearchTerm + '%' OR
+            ISNULL(u.Email, '') LIKE '%' + @SearchTerm + '%'
+        )
+    ORDER BY p.CreatedAt DESC;
+END;
+GO
+/****** Object:  StoredProcedure [dbo].[Patients_GetFollowUpPatients]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6649,7 +7026,7 @@ BEGIN
     ORDER BY pr.FollowUpDate ASC;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetFollowUpPatientsList]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetFollowUpPatientsList]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6702,7 +7079,7 @@ BEGIN
     ORDER BY pr.FollowUpDate ASC, u.FirstName ASC;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_GetTotalCount]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_GetTotalCount]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6738,7 +7115,7 @@ BEGIN
 	  AND (@FollowupDate = '' OR CONVERT(DATE, pr.FollowUpDate) = CONVERT(DATE, @FollowupDate));
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6747,7 +7124,7 @@ GO
 CREATE PROCEDURE [dbo].[Patients_Insert]
     @PatientID INT,
     @UserID INT,
-	@PatientReferenceID INT,
+	@PatientReferenceID INT = NULL,
     @DateOfBirth DATETIME = NULL,
     @Gender NVARCHAR(10) = NULL,
     @Address NVARCHAR(255) = NULL,
@@ -6757,8 +7134,24 @@ CREATE PROCEDURE [dbo].[Patients_Insert]
     @CreatedAt DATETIME = NULL,
     @UpdatedAt DATETIME = NULL,
     @IsDeleted BIT = NULL,
-	@PatientAge NVARCHAR(10)=NULL,
-	@PatientCode NVARCHAR(100)=NULL
+	@PatientAge NVARCHAR(10) = NULL,
+	@PatientCode NVARCHAR(100) = NULL,
+    @FullName NVARCHAR(255) = NULL,
+    @IsSelf BIT = NULL,
+    @PatientName NVARCHAR(255) = NULL,
+    @Age INT = NULL,
+    @City NVARCHAR(100) = NULL,
+    @ZipCode NVARCHAR(20) = NULL,
+    @Country NVARCHAR(100) = NULL,
+    @MobileNo NVARCHAR(20) = NULL,
+    @PatientMobileNo NVARCHAR(20) = NULL,
+    @Email NVARCHAR(255) = NULL,
+    @PatientEmail NVARCHAR(255) = NULL,
+    @CreatedBy NVARCHAR(100) = NULL,
+    @CreatorCode NVARCHAR(100) = NULL,
+    @CreatorRole NVARCHAR(50) = NULL,
+    @CreatorEntityId INT = NULL,
+    @IsFirstTime BIT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -6776,7 +7169,23 @@ BEGIN
         UpdatedAt,
         IsDeleted,
 		PatientAge,
-		PatientCode
+		PatientCode,
+        FullName,
+        IsSelf,
+        PatientName,
+        Age,
+        City,
+        ZipCode,
+        Country,
+        MobileNo,
+        PatientMobileNo,
+        Email,
+        PatientEmail,
+        CreatedBy,
+        CreatorCode,
+        CreatorRole,
+        CreatorEntityId,
+        IsFirstTime
     )
     VALUES (
         @UserID,
@@ -6790,15 +7199,31 @@ BEGIN
         GETUTCDATE(),
         GETUTCDATE(),
         0,
-		ISNULL(@PatientAge,''),
-		ISNULL(@PatientCode, '')
+		ISNULL(@PatientAge, ''),
+		ISNULL(@PatientCode, ''),
+        ISNULL(@FullName, ''),
+        @IsSelf,
+        ISNULL(@PatientName, ''),
+        @Age,
+        ISNULL(@City, ''),
+        ISNULL(@ZipCode, ''),
+        ISNULL(@Country, ''),
+        ISNULL(@MobileNo, ''),
+        ISNULL(@PatientMobileNo, ''),
+        ISNULL(@Email, ''),
+        ISNULL(@PatientEmail, ''),
+        ISNULL(@CreatedBy, ''),
+        ISNULL(@CreatorCode, ''),
+        ISNULL(@CreatorRole, ''),
+        @CreatorEntityId,
+        @IsFirstTime
     );
 
     -- Return the newly inserted ID
     SELECT SCOPE_IDENTITY() AS PatientID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Patients_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Patients_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6806,7 +7231,7 @@ GO
 
 CREATE PROCEDURE [dbo].[Patients_Update] 
     @PatientID INT,
-	@PatientReferenceID INT=NULL,
+	@PatientReferenceID INT = NULL,
     @UserID INT = NULL,
     @DateOfBirth DATETIME = NULL,
     @Gender NVARCHAR(10) = NULL,
@@ -6817,7 +7242,24 @@ CREATE PROCEDURE [dbo].[Patients_Update]
     @UpdatedAt DATETIME = NULL,
     @IsDeleted BIT = NULL,
     @CreatedAt DATETIME = NULL,
-    @PatientAge NVARCHAR(10)=NULL
+    @PatientAge NVARCHAR(10) = NULL,
+    @PatientCode NVARCHAR(100) = NULL,
+    @FullName NVARCHAR(255) = NULL,
+    @IsSelf BIT = NULL,
+    @PatientName NVARCHAR(255) = NULL,
+    @Age INT = NULL,
+    @City NVARCHAR(100) = NULL,
+    @ZipCode NVARCHAR(20) = NULL,
+    @Country NVARCHAR(100) = NULL,
+    @MobileNo NVARCHAR(20) = NULL,
+    @PatientMobileNo NVARCHAR(20) = NULL,
+    @Email NVARCHAR(255) = NULL,
+    @PatientEmail NVARCHAR(255) = NULL,
+    @CreatedBy NVARCHAR(100) = NULL,
+    @CreatorCode NVARCHAR(100) = NULL,
+    @CreatorRole NVARCHAR(50) = NULL,
+    @CreatorEntityId INT = NULL,
+    @IsFirstTime BIT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -6826,7 +7268,7 @@ BEGIN
     UPDATE Patients
     SET 
         UserID = CASE WHEN @UserID > 0 THEN @UserID ELSE UserID END,
-		  PatientReferenceID = CASE WHEN @PatientReferenceID > 0 THEN @PatientReferenceID ELSE PatientReferenceID END,
+		PatientReferenceID = CASE WHEN @PatientReferenceID > 0 THEN @PatientReferenceID ELSE PatientReferenceID END,
         DateOfBirth = ISNULL(@DateOfBirth, DateOfBirth),
         Gender = ISNULL(@Gender, Gender),
         Address = ISNULL(@Address, Address),
@@ -6834,8 +7276,24 @@ BEGIN
         InsuranceProvider = ISNULL(@InsuranceProvider, InsuranceProvider),
         InsurancePolicyNumber = ISNULL(@InsurancePolicyNumber, InsurancePolicyNumber),
         UpdatedAt = GETUTCDATE(),
-		PatientAge = ISNULL(@PatientAge, @PatientAge)
-		
+		PatientAge = ISNULL(@PatientAge, PatientAge),
+        PatientCode = ISNULL(@PatientCode, PatientCode),
+        FullName = ISNULL(@FullName, FullName),
+        IsSelf = ISNULL(@IsSelf, IsSelf),
+        PatientName = ISNULL(@PatientName, PatientName),
+        Age = ISNULL(@Age, Age),
+        City = ISNULL(@City, City),
+        ZipCode = ISNULL(@ZipCode, ZipCode),
+        Country = ISNULL(@Country, Country),
+        MobileNo = ISNULL(@MobileNo, MobileNo),
+        PatientMobileNo = ISNULL(@PatientMobileNo, PatientMobileNo),
+        Email = ISNULL(@Email, Email),
+        PatientEmail = ISNULL(@PatientEmail, PatientEmail),
+        CreatedBy = ISNULL(@CreatedBy, CreatedBy),
+        CreatorCode = ISNULL(@CreatorCode, CreatorCode),
+        CreatorRole = ISNULL(@CreatorRole, CreatorRole),
+        CreatorEntityId = ISNULL(@CreatorEntityId, CreatorEntityId),
+        IsFirstTime = ISNULL(@IsFirstTime, IsFirstTime)
     WHERE 
         PatientID = @PatientID 
         AND IsDeleted = 0;
@@ -6851,7 +7309,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Permission_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Permission_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6866,7 +7324,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Permission_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Permission_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6884,7 +7342,7 @@ BEGIN
     ORDER BY [DisplayName];
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Permission_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Permission_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6903,7 +7361,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Permission_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Permission_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6929,7 +7387,7 @@ BEGIN
     SET @Id = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Permission_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Permission_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6951,7 +7409,7 @@ BEGIN
     SET @UpdatedId = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Pharmacy_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Pharmacy_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -6983,7 +7441,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Pharmacy_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Pharmacy_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7008,7 +7466,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Pharmacy_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Pharmacy_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7033,7 +7491,7 @@ BEGIN
     WHERE PharmacyId = @PharmacyId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Pharmacy_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Pharmacy_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7078,7 +7536,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PharmacyID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Pharmacy_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Pharmacy_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7122,7 +7580,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Prescription_DeledeById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Prescription_DeledeById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7154,7 +7612,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Prescription_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Prescription_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7186,7 +7644,7 @@ BEGIN
  
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Prescription_GetAnaytics]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Prescription_GetAnaytics]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7207,7 +7665,7 @@ BEGIN
       AND p.IsDeleted = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Prescription_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Prescription_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7240,7 +7698,7 @@ BEGIN
 END;
 
 GO
-/****** Object:  StoredProcedure [dbo].[Prescription_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Prescription_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7314,7 +7772,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Prescription_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Prescription_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7374,7 +7832,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7406,7 +7864,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7430,7 +7888,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7454,7 +7912,7 @@ BEGIN
     WHERE PrescriptionAdviceId = @AdviceId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_GetByPrescriptionId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_GetByPrescriptionId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7478,7 +7936,7 @@ BEGIN
         pa.PrescriptionID = @PrescriptionId
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7517,7 +7975,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS AdviceId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionAdvice_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7558,7 +8016,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnoses_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnoses_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7587,7 +8045,7 @@ BEGIN
     WHERE PrescriptionId = @PrescriptionId ;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnoses_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnoses_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7631,7 +8089,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionDiagnosisId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnoses_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnoses_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7671,7 +8129,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnosis_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionDiagnosis_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7693,7 +8151,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionDiagonosis_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionDiagonosis_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7726,7 +8184,7 @@ BEGIN
 END;
 
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7758,7 +8216,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7782,7 +8240,7 @@ BEGIN
 
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7807,7 +8265,7 @@ BEGIN
 
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_GetByPrescriptionId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_GetByPrescriptionId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7869,7 +8327,7 @@ BEGIN
         pe.PrescriptionId = @PrescriptionId
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7908,7 +8366,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionExaminationID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionExamination_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7948,7 +8406,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -7980,7 +8438,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8003,7 +8461,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8027,7 +8485,7 @@ BEGIN
     WHERE PrescriptionFollowUpId = @PrescriptionFollowUpId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8067,7 +8525,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionFollowUpID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionFollowUp_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8109,7 +8567,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8141,7 +8599,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8164,7 +8622,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8188,7 +8646,7 @@ BEGIN
     WHERE PrescriptionID = @PrescriptionId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_GetByPrescriptionId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_GetByPrescriptionId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8214,7 +8672,7 @@ BEGIN
         AND i.IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8255,7 +8713,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionInvestigationID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionInvestigation_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8296,7 +8754,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionItem_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionItem_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8328,7 +8786,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionItem_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionItem_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8356,7 +8814,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionItem_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionItem_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8385,7 +8843,7 @@ BEGIN
     WHERE PrescriptionItemId = @PrescriptionItemId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionItem_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionItem_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8439,7 +8897,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionItemId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionItem_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionItem_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8489,7 +8947,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionItems_GetByPrescriptionId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionItems_GetByPrescriptionId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8520,7 +8978,7 @@ BEGIN
         pi.PrescriptionID = @PrescriptionId AND pi.IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8552,7 +9010,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8577,7 +9035,7 @@ BEGIN
 END;
 
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8601,7 +9059,7 @@ BEGIN
     WHERE PrescriptionPatientHistoryID = @PrescriptionPatientHistoryID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8646,7 +9104,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetByPrescriptionId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_GetByPrescriptionId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8672,7 +9130,7 @@ BEGIN
         pp.PrescriptionID = @PrescriptionId ;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8720,7 +9178,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionPatientHistoryID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_Previous]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_Previous]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8744,7 +9202,7 @@ BEGIN
       AND p.IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPatientHistory_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8785,7 +9243,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8817,7 +9275,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetByAppointmentId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetByAppointmentId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8847,7 +9305,7 @@ BEGIN
     ORDER BY CreatedAt DESC; -- Sorting in descending order to get the most recent record
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8876,7 +9334,7 @@ BEGIN
     WHERE PrescriptionPdfID = @PrescriptionPdfId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetByPatientDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetByPatientDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8918,7 +9376,7 @@ BEGIN
       
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetPrehandByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_GetPrehandByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -8965,7 +9423,7 @@ BEGIN
 
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9017,7 +9475,7 @@ BEGIN
 	SELECT SCOPE_IDENTITY() AS PrescriptionPdfID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionPdf_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9067,7 +9525,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionSymptom_GetByPrescriptionId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionSymptom_GetByPrescriptionId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9093,7 +9551,7 @@ BEGIN
         ps.PrescriptionID = @PrescriptionId 
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9125,7 +9583,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9151,7 +9609,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9178,7 +9636,7 @@ BEGIN
     WHERE PrescriptionSymtomID = @PrescriptionSymtomID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9228,7 +9686,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionSymtomID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionSymtom_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9273,7 +9731,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_DeleteByTemplateId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_DeleteByTemplateId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9289,7 +9747,7 @@ BEGIN
 END;
 
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9314,7 +9772,7 @@ BEGIN
     WHERE PrescriptionTemplateID = @PrescriptionTemplateID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9359,7 +9817,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS PrescriptionTemplateID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionTemplate_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9387,7 +9845,7 @@ BEGIN
 END;
 
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionTemplates_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionTemplates_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9401,7 +9859,7 @@ BEGIN
     WHERE IsDeleted IS NULL OR IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[PrescriptionTemplates_GetByDoctorId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[PrescriptionTemplates_GetByDoctorId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9421,7 +9879,7 @@ BEGIN
   AND (@TemplateName IS NULL OR pt.Name LIKE '%' + @TemplateName + '%');
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Role_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Role_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9436,7 +9894,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Role_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Role_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9455,7 +9913,7 @@ BEGIN
     ORDER BY [Name];
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Role_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Role_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9475,7 +9933,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Role_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Role_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9504,7 +9962,7 @@ BEGIN
     SET @Id = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Role_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Role_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9528,7 +9986,7 @@ BEGIN
     SET @UpdatedId = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RolePermission_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[RolePermission_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9543,7 +10001,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RolePermission_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[RolePermission_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9561,7 +10019,7 @@ BEGIN
     ORDER BY [RoleId], [PermissionId];
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RolePermission_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[RolePermission_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9580,7 +10038,7 @@ BEGIN
     WHERE [Id] = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RolePermission_GetByPermissionId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[RolePermission_GetByPermissionId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9599,7 +10057,7 @@ BEGIN
     WHERE [PermissionId] = @PermissionId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RolePermission_GetByRoleId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[RolePermission_GetByRoleId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9618,7 +10076,7 @@ BEGIN
     WHERE [RoleId] = @RoleId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RolePermission_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[RolePermission_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9644,7 +10102,7 @@ BEGIN
     SET @Id = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RolePermission_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[RolePermission_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9666,7 +10124,7 @@ BEGIN
     SET @UpdatedId = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ScannedPrescription_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ScannedPrescription_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9698,7 +10156,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ScannedPrescription_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ScannedPrescription_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9722,7 +10180,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ScannedPrescription_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ScannedPrescription_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9746,7 +10204,7 @@ BEGIN
     WHERE ScannedPrescriptionId = @ScannedPrescriptionId AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ScannedPrescription_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ScannedPrescription_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9785,7 +10243,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS ScannedPrescriptionId;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[ScannedPrescription_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[ScannedPrescription_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9825,7 +10283,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Schedule_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Schedule_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9857,7 +10315,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Schedule_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Schedule_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9880,7 +10338,7 @@ BEGIN
     WHERE IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Schedule_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Schedule_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9903,7 +10361,7 @@ BEGIN
     WHERE ScheduleID = @ScheduleID AND IsDeleted = 0;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Schedule_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Schedule_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9941,7 +10399,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS ScheduleID;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Schedule_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Schedule_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9980,7 +10438,7 @@ BEGIN
     END
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Speciality_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Speciality_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9998,7 +10456,7 @@ BEGIN
     WHERE [SpecialityID] = @SpecialityID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Speciality_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Speciality_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10021,7 +10479,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Speciality_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Speciality_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10045,7 +10503,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Speciality_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Speciality_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10078,7 +10536,7 @@ BEGIN
     SET @SpecialityID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Speciality_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Speciality_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10105,7 +10563,7 @@ BEGIN
     SET @UpdatedSpecialityID = @SpecialityID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Symptom_BookMarks]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Symptom_BookMarks]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10129,7 +10587,7 @@ BEGIN
 
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[Symptom_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Symptom_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10146,7 +10604,7 @@ BEGIN
     WHERE [SymptomID] = @SymptomID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Symptom_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Symptom_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10169,7 +10627,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Symptom_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Symptom_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10193,7 +10651,7 @@ BEGIN
         AND [IsDeleted] = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Symptom_GetSymptomsByName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Symptom_GetSymptomsByName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10218,7 +10676,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Symptom_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Symptom_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10253,7 +10711,7 @@ BEGIN
     SET @SymptomID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Symptom_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[Symptom_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10279,7 +10737,7 @@ BEGIN
     SET @UpdatedId = @SymptomID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_DeleteById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10298,7 +10756,7 @@ BEGIN
     WHERE [UserID] = @UserID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetAll]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10331,7 +10789,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetByEmail]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetByEmail]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10365,7 +10823,7 @@ BEGIN
         AND ([IsDeleted] = 0 OR [IsDeleted] IS NULL);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetById]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10398,7 +10856,7 @@ BEGIN
     WHERE [UserID] = @UserID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetByreferenceId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetByreferenceId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10432,7 +10890,7 @@ BEGIN
 
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetByRoleId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetByRoleId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10467,7 +10925,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetByTenantId]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetByTenantId]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10502,7 +10960,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetByUserName]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetByUserName]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10536,7 +10994,7 @@ BEGIN
         AND ([IsDeleted] = 0 OR [IsDeleted] IS NULL);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_GetByUserType]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_GetByUserType]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10571,7 +11029,7 @@ BEGIN
     ORDER BY [CreatedAt] DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_Insert]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10634,7 +11092,7 @@ BEGIN
     SET @UserID = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[User_Update]    Script Date: 2/7/2026 3:08:14 AM ******/
+/****** Object:  StoredProcedure [dbo].[User_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -10681,3 +11139,200 @@ BEGIN
     SET @UpdatedId = @UserID;
 END
 GO
+/****** Object:  StoredProcedure [dbo].[Specialization_GetAll]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Specialization_GetAll]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Specialization_GetAll]
+GO
+CREATE PROCEDURE [dbo].[Specialization_GetAll]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        [SpecializationID],
+        [SpecialityID],
+        [SpecializationName],
+        [Description],
+        [TenantID],
+        [CreatedAt],
+        [UpdatedAt],
+        [IsDeleted]
+    FROM [dbo].[Specialization]
+    WHERE [IsDeleted] = 0
+    ORDER BY [CreatedAt] DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[Specialization_GetById]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Specialization_GetById]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Specialization_GetById]
+GO
+CREATE PROCEDURE [dbo].[Specialization_GetById]
+    @SpecializationID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        [SpecializationID],
+        [SpecialityID],
+        [SpecializationName],
+        [Description],
+        [TenantID],
+        [CreatedAt],
+        [UpdatedAt],
+        [IsDeleted]
+    FROM [dbo].[Specialization]
+    WHERE [SpecializationID] = @SpecializationID
+        AND [IsDeleted] = 0;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[Specialization_GetBySpecialityId]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Specialization_GetBySpecialityId]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Specialization_GetBySpecialityId]
+GO
+CREATE PROCEDURE [dbo].[Specialization_GetBySpecialityId]
+    @SpecialityID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        [SpecializationID],
+        [SpecialityID],
+        [SpecializationName],
+        [Description],
+        [TenantID],
+        [CreatedAt],
+        [UpdatedAt],
+        [IsDeleted]
+    FROM [dbo].[Specialization]
+    WHERE [SpecialityID] = @SpecialityID
+        AND [IsDeleted] = 0
+    ORDER BY [CreatedAt] DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[Specialization_GetFiltered]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Specialization_GetFiltered]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Specialization_GetFiltered]
+GO
+CREATE PROCEDURE [dbo].[Specialization_GetFiltered]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT DISTINCT
+        s.[SpecializationID],
+        s.[SpecialityID],
+        s.[SpecializationName],
+        s.[Description],
+        s.[TenantID],
+        s.[CreatedAt],
+        s.[UpdatedAt],
+        s.[IsDeleted]
+    FROM [dbo].[Specialization] s
+    INNER JOIN [dbo].[DoctorSpecialization] ds ON s.[SpecializationID] = ds.[SpecializationID]
+    WHERE s.[IsDeleted] = 0
+        AND ds.[IsDeleted] = 0
+    ORDER BY s.[CreatedAt] DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[Specialization_Insert]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Specialization_Insert]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Specialization_Insert]
+GO
+CREATE PROCEDURE [dbo].[Specialization_Insert]
+    @SpecializationName NVARCHAR(200),
+    @Description NVARCHAR(500) = NULL,
+    @SpecialityID INT = NULL,
+    @TenantID INT,
+    @SpecializationID INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO [dbo].[Specialization]
+    (
+        [SpecializationName],
+        [Description],
+        [SpecialityID],
+        [TenantID],
+        [CreatedAt],
+        [IsDeleted]
+    )
+    VALUES
+    (
+        @SpecializationName,
+        @Description,
+        @SpecialityID,
+        @TenantID,
+        GETDATE(),
+        0
+    );
+    SET @SpecializationID = SCOPE_IDENTITY();
+END
+GO
+/****** Object:  StoredProcedure [dbo].[Specialization_Update]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Specialization_Update]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Specialization_Update]
+GO
+CREATE PROCEDURE [dbo].[Specialization_Update]
+    @SpecializationID INT,
+    @SpecializationName NVARCHAR(200) = NULL,
+    @Description NVARCHAR(500) = NULL,
+    @SpecialityID INT = NULL,
+    @UpdatedSpecializationID INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE [dbo].[Specialization]
+    SET 
+        [SpecializationName] = ISNULL(@SpecializationName, [SpecializationName]),
+        [Description] = ISNULL(@Description, [Description]),
+        [SpecialityID] = @SpecialityID,
+        [UpdatedAt] = GETDATE()
+    WHERE [SpecializationID] = @SpecializationID
+        AND [IsDeleted] = 0;
+    
+    SET @UpdatedSpecializationID = @SpecializationID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[Specialization_DeleteById]    Script Date: 2/8/2026 6:49:45 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Specialization_DeleteById]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[Specialization_DeleteById]
+GO
+CREATE PROCEDURE [dbo].[Specialization_DeleteById]
+    @SpecializationID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE [dbo].[Specialization]
+    SET 
+        [IsDeleted] = 1,
+        [UpdatedAt] = GETDATE()
+    WHERE [SpecializationID] = @SpecializationID;
+END
+GO
+

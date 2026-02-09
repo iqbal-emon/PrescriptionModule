@@ -273,6 +273,37 @@ namespace Prescription.Application.Services
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.PrescriptionEntity.Prescription>> GetByAppointmentId(int appointmentId)
+        {
+            var response = new Response<Entities.EntityClass.PrescriptionEntity.Prescription>();
+
+            try
+            {
+                var prescription = await _prescriptionQueryRepository.GetByAppointmentId(appointmentId);
+
+                if (prescription == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, prescription.Result, prescription.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, prescription.Result, prescription.Message, StatusResponseMessage.success, prescription.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the prescription by appointment ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
         public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>> GetByAppointmentCreatorId(int patientId)
         {
             var response = new Response<List<Entities.EntityClass.PrescriptionEntity.Prescription>>();
@@ -324,6 +355,37 @@ namespace Prescription.Application.Services
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the patient disease list.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        public async Task<Response<List<object>>> GetMedicationDivisionUsage(int? tenantId, DateTime? startDate, DateTime? endDate)
+        {
+            var response = new Response<List<object>>();
+
+            try
+            {
+                var usage = await _prescriptionQueryRepository.GetMedicationDivisionUsage(tenantId, startDate, endDate);
+
+                if (usage == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, usage.Result, usage.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, usage.Result, usage.Message, StatusResponseMessage.success, usage.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving medication division usage.";
                 ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)

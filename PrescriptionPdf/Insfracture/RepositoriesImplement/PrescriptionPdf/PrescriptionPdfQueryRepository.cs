@@ -102,6 +102,27 @@ namespace PrescriptionPdf.Infrastructure.RepositoriesImplement.PrescriptionPdf
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.PrescriptionEntity.PrescriptionPdf>> GetByAppointmentId(int appointmentId)
+        {
+            var response = new Response<Entities.EntityClass.PrescriptionEntity.PrescriptionPdf>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.PrescriptionPdf, dynamic>("PrescriptionPdf_GetByAppointmentId", new
+                {
+                    appointmentId = appointmentId
+                });
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionPdfResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
       
     }
 }

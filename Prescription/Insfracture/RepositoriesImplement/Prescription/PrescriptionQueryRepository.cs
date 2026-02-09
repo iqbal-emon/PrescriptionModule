@@ -193,6 +193,27 @@ namespace Prescription.Insfracture.RepositoriesImplement.Prescription
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.PrescriptionEntity.Prescription>> GetByAppointmentId(int appointmentId)
+        {
+            var response = new Response<Entities.EntityClass.PrescriptionEntity.Prescription>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.Prescription, dynamic>("Prescription_GetByAppointmentId", new
+                {
+                    AppointmentId = appointmentId
+                });
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
         public async Task<Response<List<object>>> GetPatientDiseaseList(int patientId)
         {
             var response = new Response<List<object>>();
@@ -201,6 +222,29 @@ namespace Prescription.Insfracture.RepositoriesImplement.Prescription
                 var result = await _dataAccess.LoadDataUsingProcedure<object, dynamic>("Prescription_GetPatientDiseaseList", new
                 {
                     PatientId = patientId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, PrescriptionResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        public async Task<Response<List<object>>> GetMedicationDivisionUsage(int? tenantId, DateTime? startDate, DateTime? endDate)
+        {
+            var response = new Response<List<object>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<object, dynamic>("Medication_GetDivisionUsage", new
+                {
+                    TenantId = tenantId,
+                    StartDate = startDate,
+                    EndDate = endDate
                 });
                 response.Result = result.ToList();
                 response.IsSuccess = true;

@@ -367,6 +367,37 @@ namespace Doctor.Application.Services
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.Doctor>> GetDetailsByAdmin(int doctorId)
+        {
+            var response = new Response<Entities.EntityClass.Doctor>();
+
+            try
+            {
+                var doctor = await _doctorQueryRepository.GetDetailsByAdmin(doctorId);
+
+                if (doctor == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, doctor.Result, doctor.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, doctor.Result, doctor.Message, StatusResponseMessage.success, doctor.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving doctor details by admin.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
         
 
         public async Task<Response<int>> Insert(DoctorInsertRequestDto doctorDto)

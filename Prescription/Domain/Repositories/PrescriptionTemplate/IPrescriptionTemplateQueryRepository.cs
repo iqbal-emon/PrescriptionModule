@@ -11,5 +11,6 @@ namespace Prescription.Domain.Repositories.PrescriptionTemplate
     public interface IPrescriptionTemplateQueryRepository : IBaseCommonQueryMethodRepository<Entities.EntityClass.PrescriptionEntity.PrescriptionTemplate>
     {
         Task<Response<List<Entities.EntityClass.PrescriptionEntity.PrescriptionTemplate>>> GetPrescriptionTemplatesByDoctorId(int doctorId,string name);
+        Task<Response<List<Entities.EntityClass.PrescriptionEntity.PrescriptionTemplate>>> GetAllByDoctorId(int doctorId);
     }
 }

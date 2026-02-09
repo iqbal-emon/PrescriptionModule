@@ -16,5 +16,6 @@ namespace Doctor.Domain.Repositories.Doctor
         Task<Response<List<Entities.EntityClass.Doctor>>> GetByOnlineStatus(bool isOnline);
         Task<Response<List<Entities.EntityClass.Doctor>>> GetByActiveStatus(bool isActive);
         Task<Response<List<Entities.EntityClass.Doctor>>> GetByCreatorId(int creatorId);
+        Task<Response<Entities.EntityClass.Doctor>> GetDetailsByAdmin(int doctorId);
     }
 }

@@ -14,8 +14,7 @@ namespace Entities.EntityClass
         public int DoctorID { get; set; }
 
         [ForeignKey("User")]
-        [Required]
-        public int UserID { get; set; }
+        public int? UserID { get; set; }
 
         [MaxLength(100)] // Max length for NVARCHAR(100)
         public string Specialization { get; set; }
@@ -32,7 +31,7 @@ namespace Entities.EntityClass
 
         public bool IsDeleted { get; set; } = false;
 
-        public int DoctorReferenceID { get; set; }
+        public int? DoctorReferenceID { get; set; }
 
         [MaxLength(500)]
         public string? Expertise { get; set; }

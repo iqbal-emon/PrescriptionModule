@@ -194,5 +194,26 @@ namespace Doctor.Insfracture.RepositoriesImplement.Doctor
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.Doctor>> GetDetailsByAdmin(int doctorId)
+        {
+            var response = new Response<Entities.EntityClass.Doctor>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_GetDetailsByAdmin", new
+                {
+                    DoctorId = doctorId
+                });
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
     }
 }

@@ -128,6 +128,37 @@ namespace PrescriptionPdf.Application.Services
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.PrescriptionEntity.PrescriptionPdf>> GetByAppointmentId(int appointmentId)
+        {
+            var response = new Response<Entities.EntityClass.PrescriptionEntity.PrescriptionPdf>();
+
+            try
+            {
+                var prescription = await _prescriptionPdfQueryRepository.GetByAppointmentId(appointmentId);
+
+                if (prescription == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, prescription.Result, prescription.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, prescription.Result, prescription.Message, StatusResponseMessage.success, prescription.StatusCode);
+                }
+            }
+            catch (SqlException)
+            {
+                response.Message = "A database error occurred while retrieving the prescription by appointment ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
         public async Task<Response<int>> Insert(PrescriptionPdfInsertRequestDto prescription)
         {
             var response = new Response<int>();

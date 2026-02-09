@@ -113,6 +113,34 @@ namespace Prescription.Application.Services
             return response;
         }
 
+        public async Task<Response<List<Entities.EntityClass.PrescriptionEntity.PrescriptionTemplate>>> GetAllByDoctorId(int doctorId)
+        {
+            var response = new Response<List<Entities.EntityClass.PrescriptionEntity.PrescriptionTemplate>>();
+            try
+            {
+                var prescriptionTemplates = await _prescriptionTemplateQueryRepository.GetAllByDoctorId(doctorId);
+                if (prescriptionTemplates == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, prescriptionTemplates.Result, prescriptionTemplates.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, prescriptionTemplates.Result, prescriptionTemplates.Message, StatusResponseMessage.success, prescriptionTemplates.StatusCode);
+                }
+            }
+            catch (SqlException)
+            {
+                response.Message = "A database error occurred while retrieving the prescription templates.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            return response;
+        }
+
         public async Task<Response<int>> Insert(PrescriptionTemplateInsertRequestDto scannedPrescription)
         {
             var response = new Response<int>();
