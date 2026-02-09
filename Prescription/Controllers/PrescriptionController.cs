@@ -1925,7 +1925,7 @@ namespace Prescription.Controllers
             return Ok(apiResponse);
         }
 
-        [HttpGet("get-template-prescription-by-id")]
+        [HttpGet("get-template-prescription-by-ids")]
         [Authorize(Policy = PermissionConstants.PrescriptionGetId)]
         public async Task<ActionResult<ApiResponse<object>>> GetTemplatePrescriptionById([FromQuery] int templateId)
         {
@@ -1949,60 +1949,60 @@ namespace Prescription.Controllers
             return Ok(apiResponse);
         }
 
-        [HttpGet("gets-all-prescription-template-by-doctor-id")]
-        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
-        public async Task<ActionResult<ApiResponse<List<object>>>> GetAllPrescriptionTemplatesByDoctorId([FromQuery] int doctorId)
-        {
-            var apiResponse = new ApiResponse<List<object>>();
-            try
-            {
-                var templates = await _prescriptionTemplateService.GetAllByDoctorId(doctorId);
-                if (templates.Result == null || templates.Result.Count == 0)
-                {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), "No templates found");
-                    return Ok(apiResponse);
-                }
+        //[HttpGet("gets-all-prescription-template-by-doctor-id")]
+        //[Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        //public async Task<ActionResult<ApiResponse<List<object>>>> GetAllPrescriptionTemplatesByDoctorId([FromQuery] int doctorId)
+        //{
+        //    var apiResponse = new ApiResponse<List<object>>();
+        //    try
+        //    {
+        //        var templates = await _prescriptionTemplateService.GetAllByDoctorId(doctorId);
+        //        if (templates.Result == null || templates.Result.Count == 0)
+        //        {
+        //            ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), "No templates found");
+        //            return Ok(apiResponse);
+        //        }
 
-                apiResponse.Results = templates.Result.Cast<object>().ToList();
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Templates retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
-            }
-            catch (Exception ex)
-            {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), $"Error: {ex.Message}");
-            }
-            return Ok(apiResponse);
-        }
+        //        apiResponse.Results = templates.Result.Cast<object>().ToList();
+        //        ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "Templates retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), $"Error: {ex.Message}");
+        //    }
+        //    return Ok(apiResponse);
+        //}
 
-        [HttpGet("get-pdf-prescriptions-by-patient-doctor-id")]
-        [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
-        public async Task<ActionResult<ApiResponse<List<object>>>> GetPdfPrescriptionsByPatientDoctorId([FromQuery] int patientId, [FromQuery] int doctorId)
-        {
-            var apiResponse = new ApiResponse<List<object>>();
-            try
-            {
-                var baseUrl = _configuration.GetSection("GeneralSettings:PrescriptionBaseURL").Value;
-                var endPoint = $"api/2025-02/get-pdf-prescriptions-by-patient-doctor-id?patientId={patientId}&doctorId={doctorId}";
-                string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+        //[HttpGet("get-pdf-prescriptions-by-patient-doctor-id")]
+        //[Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
+        //public async Task<ActionResult<ApiResponse<List<object>>>> GetPdfPrescriptionsByPatientDoctorId([FromQuery] int patientId, [FromQuery] int doctorId)
+        //{
+        //    var apiResponse = new ApiResponse<List<object>>();
+        //    try
+        //    {
+        //        var baseUrl = _configuration.GetSection("GeneralSettings:PrescriptionBaseURL").Value;
+        //        var endPoint = $"api/2025-02/get-pdf-prescriptions-by-patient-doctor-id?patientId={patientId}&doctorId={doctorId}";
+        //        string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
                 
-                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
-                var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
-                var pdfs = deSerializedJsonResult["results"]?.ToObject<List<object>>();
+        //        var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+        //        var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
+        //        var pdfs = deSerializedJsonResult["results"]?.ToObject<List<object>>();
 
-                if (pdfs == null || pdfs.Count == 0)
-                {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), "No PDF prescriptions found");
-                    return Ok(apiResponse);
-                }
+        //        if (pdfs == null || pdfs.Count == 0)
+        //        {
+        //            ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), "No PDF prescriptions found");
+        //            return Ok(apiResponse);
+        //        }
 
-                apiResponse.Results = pdfs;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "PDF prescriptions retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
-            }
-            catch (Exception ex)
-            {
-                ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), $"Error: {ex.Message}");
-            }
-            return Ok(apiResponse);
-        }
+        //        apiResponse.Results = pdfs;
+        //        ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "PDF prescriptions retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApiResponseHelper.SetFailedResponse(apiResponse, new List<object>(), $"Error: {ex.Message}");
+        //    }
+        //    return Ok(apiResponse);
+        //}
 
         [HttpGet("get-pdf-prescriptions-by-doctor-prehand-id")]
         [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
@@ -2035,67 +2035,67 @@ namespace Prescription.Controllers
             return Ok(apiResponse);
         }
 
-        [HttpGet("get-prescription-pdf-by-appointment-id")]
-        [Authorize(Policy = PermissionConstants.PrescriptionGetId)]
-        public async Task<ActionResult<ApiResponse<object>>> GetPrescriptionPdfByAppointmentId([FromQuery] int appointmentId)
-        {
-            var apiResponse = new ApiResponse<object>();
-            try
-            {
-                var baseUrl = _configuration.GetSection("GeneralSettings:PrescriptionBaseURL").Value;
-                var endPoint = $"api/2025-02/get-prescription-pdf-by-appointment-id?appointmentId={appointmentId}";
-                string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+        //[HttpGet("get-prescription-pdf-by-appointment-id")]
+        //[Authorize(Policy = PermissionConstants.PrescriptionGetId)]
+        //public async Task<ActionResult<ApiResponse<object>>> GetPrescriptionPdfByAppointmentId([FromQuery] int appointmentId)
+        //{
+        //    var apiResponse = new ApiResponse<object>();
+        //    try
+        //    {
+        //        var baseUrl = _configuration.GetSection("GeneralSettings:PrescriptionBaseURL").Value;
+        //        var endPoint = $"api/2025-02/get-prescription-pdf-by-appointment-id?appointmentId={appointmentId}";
+        //        string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
                 
-                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
-                var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
-                var pdf = deSerializedJsonResult["results"]?.ToObject<object>();
+        //        var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+        //        var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
+        //        var pdf = deSerializedJsonResult["results"]?.ToObject<object>();
 
-                if (pdf == null)
-                {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "PDF prescription not found for this appointment");
-                    return Ok(apiResponse);
-                }
+        //        if (pdf == null)
+        //        {
+        //            ApiResponseHelper.SetFailedResponse(apiResponse, null, "PDF prescription not found for this appointment");
+        //            return Ok(apiResponse);
+        //        }
 
-                apiResponse.Results = pdf;
-                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "PDF prescription retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
-            }
-            catch (Exception ex)
-            {
-                ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error: {ex.Message}");
-            }
-            return Ok(apiResponse);
-        }
+        //        apiResponse.Results = pdf;
+        //        ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, "PDF prescription retrieved successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error: {ex.Message}");
+        //    }
+        //    return Ok(apiResponse);
+        //}
 
-        [HttpPost("prescription-upload")]
-        [Authorize(Policy = PermissionConstants.PrescriptionCreate)]
-        public async Task<ActionResult<ApiResponse<int>>> PrescriptionUpload([FromBody] ScannedPrescriptionInsertRequestDto request)
-        {
-            var apiResponse = new ApiResponse<int>();
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    var response = await _scannedPrescriptionService.Insert(request);
-                    if (response.IsSuccess)
-                    {
-                        ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Prescription uploaded successfully");
-                    }
-                    else
-                    {
-                        ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
-                    }
-                }
-                else
-                {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, 0, "Invalid request data");
-                }
-            }
-            catch (Exception ex)
-            {
-                ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
-            }
-            return Ok(apiResponse);
-        }
+        //[HttpPost("prescription-upload")]
+        //[Authorize(Policy = PermissionConstants.PrescriptionCreate)]
+        //public async Task<ActionResult<ApiResponse<int>>> PrescriptionUpload([FromBody] ScannedPrescriptionInsertRequestDto request)
+        //{
+        //    var apiResponse = new ApiResponse<int>();
+        //    try
+        //    {
+        //        if (ModelState.IsValid)
+        //        {
+        //            var response = await _scannedPrescriptionService.Insert(request);
+        //            if (response.IsSuccess)
+        //            {
+        //                ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, "Prescription uploaded successfully");
+        //            }
+        //            else
+        //            {
+        //                ApiResponseHelper.SetFailedResponse(apiResponse, 0, response.Message);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            ApiResponseHelper.SetFailedResponse(apiResponse, 0, "Invalid request data");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApiResponseHelper.SetFailedResponse(apiResponse, 0, $"Error: {ex.Message}");
+        //    }
+        //    return Ok(apiResponse);
+        //}
 
         [HttpGet("get-medication-division-usage")]
         [Authorize(Policy = PermissionConstants.PrescriptionGetAll)]
