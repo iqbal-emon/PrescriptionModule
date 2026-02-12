@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Sensitive configuration files and secrets
+**/wwwroot/config/serviceAccountKey.json
+**/config/serviceAccountKey.json
+**/serviceAccountKey.json
+*.serviceAccountKey.json
