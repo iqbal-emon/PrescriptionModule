@@ -792,6 +792,40 @@ BEGIN
 END
 GO
 
+-- User_GetByPhoneNo
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[User_GetByPhoneNo]') AND type in (N'P', N'PC'))
+    DROP PROCEDURE [dbo].[User_GetByPhoneNo]
+GO
+
+CREATE PROCEDURE [dbo].[User_GetByPhoneNo]
+    @PhoneNo NVARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        [UserID],
+        [TenantID],
+        [FirstName],
+        [LastName],
+        [FullName],
+        [UserName],
+        [Email],
+        [PasswordHash],
+        [UserType],
+        [PhoneNumber],
+        [ContactNo],
+        [RoleId],
+        [IsActive],
+        [IsDeleted],
+        [CreatedAt],
+        [UpdatedAt],
+        [ReferenceUserId]
+    FROM [dbo].[Users]
+    WHERE ([PhoneNumber] = @PhoneNo OR [ContactNo] = @PhoneNo)
+        AND ([IsDeleted] = 0 OR [IsDeleted] IS NULL);
+END
+GO
+
 -- User_GetByRoleId
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[User_GetByRoleId]') AND type in (N'P', N'PC'))
     DROP PROCEDURE [dbo].[User_GetByRoleId]

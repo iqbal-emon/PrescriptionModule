@@ -193,6 +193,34 @@ namespace AuthenticationSystem.Application.Services
             return response;
         }
 
+        public async Task<Response<User>> GetByPhoneNo(string phoneNo)
+        {
+            var response = new Response<User>();
+            try
+            {
+                var user = await _userQueryRepository.GetByPhoneNo(phoneNo);
+                if (user == null)
+                {
+                    ResponseHelper.SetFailedResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the user.";
+                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            return response;
+        }
+
         public async Task<Response<List<User>>> GetByRoleId(int roleId)
         {
             var response = new Response<List<User>>();

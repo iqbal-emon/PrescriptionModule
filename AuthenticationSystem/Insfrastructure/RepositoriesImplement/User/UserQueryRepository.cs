@@ -148,6 +148,27 @@ namespace AuthenticationSystem.Insfrastructure.RepositoriesImplement.User
             return response;
         }
 
+        public async Task<Response<Entities.EntityClass.User>> GetByPhoneNo(string phoneNo)
+        {
+            var response = new Response<Entities.EntityClass.User>();
+            try
+            {
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.User, dynamic>("User_GetByPhoneNo", new
+                {
+                    PhoneNo = phoneNo
+                });
+                response.Result = result;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse<Entities.EntityClass.User>(response, result, AuthResponseMessage.common_get_by_id_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
         public async Task<Response<List<Entities.EntityClass.User>>> GetByRoleId(int roleId)
         {
             var response = new Response<List<Entities.EntityClass.User>>();

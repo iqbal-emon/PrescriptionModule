@@ -56,7 +56,20 @@ namespace AuthenticationSystem.Controllers
                     return Ok(apiResponse);
                 }
 
+                // Try to get user by username first
                 var userResponse = await _userService.GetByUserName(request.Username);
+                
+                // If not found by username, try by phone number (for mobile login)
+                if (userResponse?.Result == null)
+                {
+                    // Check if username looks like a phone number (contains only digits, +, or spaces)
+                    var cleanedPhone = request.Username.Replace("+", "").Replace(" ", "").Replace("-", "").Trim();
+                    if (cleanedPhone.All(char.IsDigit) && cleanedPhone.Length >= 10)
+                    {
+                        userResponse = await _userService.GetByPhoneNo(cleanedPhone);
+                    }
+                }
+
                 if (userResponse?.Result == null)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, "Invalid username or password");
@@ -74,12 +87,80 @@ namespace AuthenticationSystem.Controllers
 
                 // Get user permissions/roles
                 var permissions = await _authUserService.GetUserPermissions(userResponse.Result.UserID);
-                var roles = permissions; // Assuming permissions contain role names
+                var roles = permissions ?? new List<string>();
+
+                // Validate userLoginType if provided (ensure user is logging into correct portal)
+                if (request.UserLoginType.HasValue && request.UserLoginType.Value > 0)
+                {
+                    // Map role names to login types: 1=Patient, 2=Doctor, 3=Agent, 4=Admin
+                    int expectedLoginType = 0;
+                    var primaryRole = roles.FirstOrDefault()?.ToLower();
+                    
+                    if (primaryRole == "patient")
+                        expectedLoginType = 1;
+                    else if (primaryRole == "doctor")
+                        expectedLoginType = 2;
+                    else if (primaryRole == "agent")
+                        expectedLoginType = 3;
+                    else if (primaryRole == "admin" || primaryRole == "sgadmin")
+                        expectedLoginType = 4;
+
+                    // Validate that the requested login type matches the user's role
+                    if (expectedLoginType > 0 && request.UserLoginType.Value != expectedLoginType)
+                    {
+                        ApiResponseHelper.SetFailedResponse(apiResponse, null, "Role does not match. You are not authorized for this portal.");
+                        return Ok(apiResponse);
+                    }
+                }
+
+                // Fetch doctor ID if user type is Doctor (same as firebase/verify)
+                int? doctorId = null;
+                if (userResponse.Result.UserType != null && userResponse.Result.UserType.Equals("Doctor", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        using var httpClient = new HttpClient();
+                        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                        var checkEndpoint = $"/api/2025-02/get-doctor-by-user-id?doctorUserId={userResponse.Result.UserID}";
+                        var checkRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{checkEndpoint}");
+
+                        if (Request.Headers.ContainsKey("Authorization"))
+                        {
+                            var authToken = Request.Headers["Authorization"].ToString();
+                            if (!string.IsNullOrEmpty(authToken))
+                            {
+                                checkRequest.Headers.Add("Authorization", authToken);
+                            }
+                        }
+
+                        var checkResponse = await httpClient.SendAsync(checkRequest);
+                        if (checkResponse.IsSuccessStatusCode)
+                        {
+                            var checkResponseContent = await checkResponse.Content.ReadAsStringAsync();
+                            var checkApiResponse = JsonSerializer.Deserialize<ApiResponse<DoctorApiResponseDto>>(checkResponseContent, new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+
+                            if (checkApiResponse?.IsSuccess == true && checkApiResponse.Results != null)
+                            {
+                                doctorId = checkApiResponse.Results.DoctorID;
+                                Log.Information("Retrieved DoctorID: {DoctorId} for user UserID: {UserId}", doctorId, userResponse.Result.UserID);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "Failed to fetch doctor ID for user UserID: {UserId}", userResponse.Result.UserID);
+                        // Don't fail login if doctor ID fetch fails
+                    }
+                }
 
                 // Generate tokens
                 var accessToken = GenerateJwtToken(userResponse.Result, roles);
                 var refreshToken = GenerateRefreshToken(userResponse.Result);
 
+                // Build login response with same structure as firebase/verify
                 var loginResponse = new LoginResponseDto
                 {
                     UserId = userResponse.Result.UserID,
@@ -90,7 +171,8 @@ namespace AuthenticationSystem.Controllers
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     LoginType = "standard",
-                    UserEmail = userResponse.Result.Email
+                    UserEmail = userResponse.Result.Email,
+                    DoctorId = doctorId
                 };
 
                 ApiResponseHelper.SetSuccessResponse(apiResponse, loginResponse, "Login successful", StatusResponseMessage.success, StatusCodes.Status200OK);
@@ -662,11 +744,58 @@ namespace AuthenticationSystem.Controllers
 
         private bool VerifyPassword(string password, string hashedPassword)
         {
-            // TODO: Implement proper password verification using BCrypt or similar
-            // For now, this is a placeholder
-            // You should use BCrypt.Net or similar library
-            //return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-            return false;
+            if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(hashedPassword))
+            {
+                return false;
+            }
+
+            // Trim the hashed password from database (may have whitespace)
+            hashedPassword = hashedPassword.Trim();
+
+            // Check if the hash is BCrypt format (starts with $2a$, $2b$, or $2y$)
+            if (hashedPassword.StartsWith("$2a$") || hashedPassword.StartsWith("$2b$") || hashedPassword.StartsWith("$2y$"))
+            {
+                // BCrypt hash - would need BCrypt.Net package
+                // For now, return false as BCrypt is not available
+                // TODO: Add BCrypt.Net package and implement: return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+                return false;
+            }
+
+            // SHA256 hash (matches HashPassword method)
+            try
+            {
+                using (var sha256 = SHA256.Create())
+                {
+                    var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                    var computedHash = Convert.ToBase64String(hashedBytes);
+                    
+                    // Use constant-time comparison to prevent timing attacks
+                    return ConstantTimeEquals(computedHash, hashedPassword);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error verifying password");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Constant-time string comparison to prevent timing attacks
+        /// </summary>
+        private bool ConstantTimeEquals(string a, string b)
+        {
+            if (a == null || b == null || a.Length != b.Length)
+            {
+                return false;
+            }
+
+            int result = 0;
+            for (int i = 0; i < a.Length; i++)
+            {
+                result |= a[i] ^ b[i];
+            }
+            return result == 0;
         }
     }
 }
