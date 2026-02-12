@@ -2125,7 +2125,7 @@ CREATE PROCEDURE [dbo].[Doctor_Insert]
 	@DoctorReferenceID INT = NULL,
     @HospitalAffiliation NVARCHAR(100) = NULL,
     @Expertise NVARCHAR(500) = NULL,
-    @ProfileStep INT = NULL,
+    @ProfileStep INT = 0, -- Default to 0 for new doctors (onboarding not completed)
     @CreatedAt DATETIME = NULL,
     @UpdatedAt DATETIME = NULL,
     @IsDeleted BIT = NULL
@@ -2152,7 +2152,7 @@ BEGIN
 		ISNULL(@LicenseNumber, ''),
         ISNULL(@HospitalAffiliation, ''),
         @Expertise,
-        @ProfileStep,
+        ISNULL(@ProfileStep, 0), -- Set ProfileStep to 0 for new doctors (onboarding not completed)
         GETUTCDATE(),
         GETUTCDATE(),
         0
