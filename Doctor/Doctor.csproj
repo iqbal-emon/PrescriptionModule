@@ -16,6 +16,7 @@
     <ProjectReference Include="..\Entities\Entities.csproj" />
     <ProjectReference Include="..\PluginDIService\PluginDIService.csproj" />
     <ProjectReference Include="..\SharedService\SharedService.csproj" />
+    <ProjectReference Include="..\Speciality\Speciality.csproj" />
     <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 

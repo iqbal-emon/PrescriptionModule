@@ -11,6 +11,7 @@ namespace AuthenticationSystem.Dtos.ResponseDto
         public string RefreshToken { get; set; }
         public string LoginType { get; set; }
         public string UserEmail { get; set; }
+        public int? DoctorId { get; set; }
     }
 }
 

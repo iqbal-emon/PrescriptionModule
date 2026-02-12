@@ -5,23 +5,24 @@ using SharedService.MapService;
 using Speciality.Application.Services;
 using Speciality.Dtos.RequestDto.SpecialityDto;
 using Speciality.Dtos.ResponseDto.SpecialityDto;
-using Speciality.Utility;
 using System;
 using System.Collections.Generic;
 using Utility.ApiResponse;
 using Utility.Permission;
 using Utility.Response;
 
-namespace Speciality.Controllers
+namespace Doctor.Controllers
 {
     [ApiController]
     [Route("api/2025-02/speciality")]
     public class SpecialityController : ControllerBase
     {
-        private readonly SpecialityService _specialityService;
+        private readonly Speciality.Application.Services.SpecialityService _specialityService;
         private readonly MapperService _mapperService;
 
-        public SpecialityController(SpecialityService specialityService, MapperService mapperService)
+        public SpecialityController(
+            Speciality.Application.Services.SpecialityService specialityService, 
+            MapperService mapperService)
         {
             _specialityService = specialityService;
             _mapperService = mapperService;

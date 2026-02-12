@@ -27,6 +27,9 @@ using PluginDIService.PluginDependencyRepository;
 using SharedService.CommonService;
 using SharedService.JWTTokenService;
 using SharedService.MapService;
+using Speciality.Application.Services;
+using Speciality.Domain.Repositories.Speciality;
+using Speciality.Insfracture.RepositoriesImplement.Speciality;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,6 +102,11 @@ namespace Doctor
             services.AddScoped<ICampaignDoctorQueryRepository, CampaignDoctorQueryRepository>();
             services.AddScoped<ICampaignDoctorCommandRepository, CampaignDoctorCommandRepository>();
             services.AddScoped<CampaignDoctorService>();
+
+            // Speciality Services
+            services.AddScoped<ISpecialityQueryRepository, SpecialityQueryRepository>();
+            services.AddScoped<ISpecialityCommandRepository, SpecialityCommandRepository>();
+            services.AddScoped<Speciality.Application.Services.SpecialityService>();
         }
     }
 }

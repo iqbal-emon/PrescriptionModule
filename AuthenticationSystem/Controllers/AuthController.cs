@@ -3,6 +3,7 @@ using AuthenticationSystem.Dtos.RequestDto;
 using AuthenticationSystem.Dtos.RequestDto.UserDto;
 using AuthenticationSystem.Dtos.ResponseDto;
 using Doctor.Dtos.RequestDto.DoctorDto;
+using Doctor.Dtos.ResponseDto.DoctorDto;
 using Entities.EntityClass;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -312,6 +313,7 @@ namespace AuthenticationSystem.Controllers
                 Log.Information("Using role: {RoleName} (ID: {RoleId}) for Firebase login", doctorRole.Name, doctorRole.Id);
 
                 LoginResponseDto loginResponse;
+                int? doctorId = null; // Declare doctorId at method scope
 
                 if (existingUser == null)
                 {
@@ -398,7 +400,9 @@ namespace AuthenticationSystem.Controllers
                             if (checkResponse.IsSuccessStatusCode)
                             {
                                 var checkResponseContent = await checkResponse.Content.ReadAsStringAsync();
-                                var checkApiResponse = JsonSerializer.Deserialize<ApiResponse<object>>(checkResponseContent, new JsonSerializerOptions
+                                
+                                // Try to deserialize as DoctorApiResponseDto first
+                                var checkApiResponse = JsonSerializer.Deserialize<ApiResponse<DoctorApiResponseDto>>(checkResponseContent, new JsonSerializerOptions
                                 {
                                     PropertyNameCaseInsensitive = true
                                 });
@@ -407,7 +411,9 @@ namespace AuthenticationSystem.Controllers
                                 if (checkApiResponse?.IsSuccess == true && checkApiResponse.Results != null)
                                 {
                                     doctorExists = true;
-                                    Log.Information("Doctor profile already exists for UserID: {UserId}. Skipping insertion.", existingUser.UserID);
+                                    doctorId = checkApiResponse.Results.DoctorID;
+                                    Log.Information("Doctor profile already exists for UserID: {UserId}, DoctorID: {DoctorId}. Skipping insertion.", 
+                                        existingUser.UserID, doctorId);
                                 }
                             }
 
@@ -459,8 +465,9 @@ namespace AuthenticationSystem.Controllers
 
                                     if (doctorApiResponse?.IsSuccess == true && doctorApiResponse.Results > 0)
                                     {
+                                        doctorId = doctorApiResponse.Results;
                                         Log.Information("Doctor profile created successfully for UserID: {UserId}, DoctorID: {DoctorId}", 
-                                            existingUser.UserID, doctorApiResponse.Results);
+                                            existingUser.UserID, doctorId);
                                     }
                                     else
                                     {
@@ -487,6 +494,47 @@ namespace AuthenticationSystem.Controllers
                 else
                 {
                     Log.Information("Existing user found. UserID: {UserId}", existingUser.UserID);
+                    
+                    // For existing users, fetch doctor ID if user type is Doctor
+                    if (existingUser.UserType != null && existingUser.UserType.Equals("Doctor", StringComparison.OrdinalIgnoreCase) && doctorId == null)
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                            var checkEndpoint = $"/api/2025-02/get-doctor-by-user-id?doctorUserId={existingUser.UserID}";
+                            var checkRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{checkEndpoint}");
+
+                            if (Request.Headers.ContainsKey("Authorization"))
+                            {
+                                var authToken = Request.Headers["Authorization"].ToString();
+                                if (!string.IsNullOrEmpty(authToken))
+                                {
+                                    checkRequest.Headers.Add("Authorization", authToken);
+                                }
+                            }
+
+                            var checkResponse = await httpClient.SendAsync(checkRequest);
+                            if (checkResponse.IsSuccessStatusCode)
+                            {
+                                var checkResponseContent = await checkResponse.Content.ReadAsStringAsync();
+                                var checkApiResponse = JsonSerializer.Deserialize<ApiResponse<DoctorApiResponseDto>>(checkResponseContent, new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+
+                                if (checkApiResponse?.IsSuccess == true && checkApiResponse.Results != null)
+                                {
+                                    doctorId = checkApiResponse.Results.DoctorID;
+                                    Log.Information("Retrieved DoctorID: {DoctorId} for existing user UserID: {UserId}", doctorId, existingUser.UserID);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Warning(ex, "Failed to fetch doctor ID for existing user UserID: {UserId}", existingUser.UserID);
+                        }
+                    }
                 }
 
                 // Get user permissions/roles
@@ -508,7 +556,8 @@ namespace AuthenticationSystem.Controllers
                     AccessToken = accessToken,
                     RefreshToken = refreshToken,
                     LoginType = loginType,
-                    UserEmail = existingUser.Email ?? email
+                    UserEmail = existingUser.Email ?? email,
+                    DoctorId = doctorId
                 };
 
                 ApiResponseHelper.SetSuccessResponse(apiResponse, loginResponse, loginResponse.Message, StatusResponseMessage.success, StatusCodes.Status200OK);
