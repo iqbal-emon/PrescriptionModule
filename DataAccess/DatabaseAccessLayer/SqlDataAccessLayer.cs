@@ -728,5 +728,45 @@ namespace DataAccess.DatabaseAccessLayer
             }
         }
 
+        /// <summary>
+        /// Data insert and return INT Id with custom output parameter name
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="storedProcedure"></param>
+        /// <param name="model"></param>
+        /// <param name="outputParameterName"></param>
+        /// <returns></returns>
+        public async Task<int> SaveDataUsingProcedureReturnIntIdWithCustomOutput<T>(string storedProcedure, T model, string outputParameterName = "@UserID")
+        {
+            using IDbConnection connection = new SqlConnection(_connectionString);
+
+            try
+            {
+                var parameters = new DynamicParameters();
+
+                // Add parameters for all properties of the model, including nested ones
+                await AddParameters(parameters, model);
+
+                // Add an output parameter with custom name to capture the ID (int)
+                parameters.Add(outputParameterName, dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                await connection.ExecuteAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+
+                // Retrieve the output parameter value (ID)
+                int id = parameters.Get<int>(outputParameterName);
+                return id;
+            }
+            catch (SqlException sqlEx)
+            {
+                Console.WriteLine($"SQL Exception: {sqlEx.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                throw;
+            }
+        }
+
     }
 }

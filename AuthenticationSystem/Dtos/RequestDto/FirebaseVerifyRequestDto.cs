@@ -1,9 +1,14 @@
+using System.Text.Json.Serialization;
+
 namespace AuthenticationSystem.Dtos.RequestDto
 {
     public class FirebaseVerifyRequestDto
     {
-        public string FirebaseToken { get; set; }
-        public string IdToken { get; set; }
+        [JsonPropertyName("firebaseToken")]
+        public string? FirebaseToken { get; set; }
+        
+        [JsonPropertyName("idToken")]
+        public string? IdToken { get; set; }
     }
 }
 

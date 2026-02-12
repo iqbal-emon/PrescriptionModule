@@ -1,29 +1,45 @@
 ﻿using AuthenticationSystem.Application.Services;
 using AuthenticationSystem.Dtos.RequestDto;
+using AuthenticationSystem.Dtos.RequestDto.UserDto;
 using AuthenticationSystem.Dtos.ResponseDto;
+using Doctor.Dtos.RequestDto.DoctorDto;
+using Entities.EntityClass;
+using FirebaseAdmin.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Utility.ApiResponse;
 using Utility.Response;
 
 namespace AuthenticationSystem.Controllers
 {
-    [Route("api/2025-02/auth")]
+    [Route("api/2025-02")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly UserService _userService;
-        private readonly AuthUserService _authUserService;
+        private readonly IUserService _authUserService;
+        private readonly RoleService _roleService;
+        private readonly FirebaseAuthService _firebaseAuthService;
         private readonly IConfiguration _configuration;
 
-        public AuthController(UserService userService, AuthUserService authUserService, IConfiguration configuration)
+        public AuthController(UserService userService, IUserService authUserService, RoleService roleService, 
+            FirebaseAuthService firebaseAuthService, IConfiguration configuration)
         {
             _userService = userService;
             _authUserService = authUserService;
+            _roleService = roleService;
+            _firebaseAuthService = firebaseAuthService;
             _configuration = configuration;
         }
 
@@ -171,39 +187,355 @@ namespace AuthenticationSystem.Controllers
             return Ok(apiResponse);
         }
 
+        [AllowAnonymous]
         [HttpPost("firebase/verify")]
-        public async Task<ActionResult<ApiResponse<LoginResponseDto>>> FirebaseVerify([FromBody] FirebaseVerifyRequestDto request)
+        public async Task<ActionResult<ApiResponse<LoginResponseDto>>> FirebaseVerify([FromBody] FirebaseVerifyRequestDto? request)
         {
             var apiResponse = new ApiResponse<LoginResponseDto>();
             try
             {
+                // Log received request for debugging
+                Log.Information("FirebaseVerify endpoint called. Request received: {@Request}", request);
+                Log.Information("ModelState.IsValid: {IsValid}", ModelState.IsValid);
+                
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    var errorMessage = string.Join("; ", errors);
+                    Log.Warning("ModelState validation failed. Errors: {Errors}", errorMessage);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Validation error: {errorMessage}");
+                    return BadRequest(apiResponse);
+                }
+
+                if (request == null)
+                {
+                    Log.Warning("FirebaseVerify: Request body is null");
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Request body is required");
+                    return BadRequest(apiResponse);
+                }
+
+                // Log received parameters
+                Log.Information("FirebaseVerify: Received IdToken: {HasIdToken}, FirebaseToken: {HasFirebaseToken}", 
+                    !string.IsNullOrWhiteSpace(request.IdToken), 
+                    !string.IsNullOrWhiteSpace(request.FirebaseToken));
+                Log.Debug("FirebaseVerify: IdToken value: {IdToken}, FirebaseToken value: {FirebaseToken}", 
+                    request.IdToken ?? "null", 
+                    request.FirebaseToken ?? "null");
+
                 if (string.IsNullOrWhiteSpace(request.FirebaseToken) && string.IsNullOrWhiteSpace(request.IdToken))
                 {
+                    Log.Warning("FirebaseVerify: Both tokens are null or empty");
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, "Firebase token is required");
-                    return Ok(apiResponse);
+                    return BadRequest(apiResponse);
                 }
 
                 var token = request.IdToken ?? request.FirebaseToken;
+                Log.Information("FirebaseVerify: Using token: {TokenLength} characters", token?.Length ?? 0);
 
-                // Verify Firebase token using stored procedure
-                // Note: This requires FirebaseAdmin package to be installed
-                // For now, we'll use a simplified approach that checks if user exists
-                // You should implement proper Firebase token verification using FirebaseAdmin
+                // Verify Firebase ID token using FirebaseAuthService
+                var decoded = await _firebaseAuthService.VerifyTokenAsync(token);
+                if (decoded == null)
+                {
+                    Log.Warning("Firebase token verification failed: Token is invalid or expired");
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Invalid or expired Firebase token");
+                    return Unauthorized(apiResponse);
+                }
                 
-                // Check if user exists by email from token (simplified - should verify token first)
-                // TODO: Implement proper Firebase token verification
-                // var firebaseToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(token);
-                // var email = firebaseToken.Claims.GetValueOrDefault("email")?.ToString();
+                Log.Information("Firebase token verified successfully. UID: {Uid}", decoded.Uid);
+
+                // Extract user info from Firebase token
+                decoded.Claims.TryGetValue("email", out var emailObj);
+                decoded.Claims.TryGetValue("name", out var nameObj);
+                decoded.Claims.TryGetValue("picture", out var pictureObj);
+
+                string? email = emailObj?.ToString();
+                string? name = nameObj?.ToString();
+                string? picture = pictureObj?.ToString();
+
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    Log.Warning("Firebase token does not contain email");
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Invalid token: email not found");
+                    return BadRequest(apiResponse);
+                }
+
+                // Determine login type from Firebase claims
+                string loginType = "google";
+                if (decoded.Claims.TryGetValue("firebase", out var firebaseObj) && firebaseObj != null)
+                {
+                    var firebaseClaim = firebaseObj.ToString();
+                    if (firebaseClaim.Contains("sign_in_provider"))
+                    {
+                        // Try to extract provider from claims
+                        loginType = firebaseClaim.Contains("google.com") ? "google" :
+                                   firebaseClaim.Contains("password") ? "email" :
+                                   firebaseClaim.Contains("phone") ? "phone" :
+                                   firebaseClaim.Contains("facebook.com") ? "facebook" : "unknown";
+                    }
+                }
+
+                Log.Information("Firebase login type: {LoginType}, Email: {Email}, Name: {Name}", loginType, email, name);
+
+                // Check if user exists by email
+                var existingUserResponse = await _userService.GetByEmail(email);
+                Entities.EntityClass.User? existingUser = existingUserResponse?.Result;
+
+                // Get doctor role - try multiple patterns similar to Mycompany
+                var roleListResponse = await _roleService.GetAll();
+                if (roleListResponse?.Result == null || !roleListResponse.Result.Any())
+                {
+                    Log.Error("No roles found in system");
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "No roles configured in system. Please contact administrator.");
+                    return BadRequest(apiResponse);
+                }
+
+                // Try to find doctor role with multiple patterns
+                var doctorRole = roleListResponse.Result.FirstOrDefault(x => 
+                    x.Name != null && x.Name.ToLowerInvariant().Contains("doctor")) ??
+                    roleListResponse.Result.FirstOrDefault(x => 
+                        x.Name != null && (x.Name.ToLowerInvariant().Contains("user") || 
+                                          x.Name.ToLowerInvariant().Contains("default"))) ??
+                    roleListResponse.Result.FirstOrDefault(x => x.IsDefault && x.IsActive) ??
+                    roleListResponse.Result.FirstOrDefault(x => x.IsActive);
                 
-                // For now, return a placeholder that indicates the endpoint exists
-                // The actual implementation should verify the Firebase token and create/login user
-                ApiResponseHelper.SetFailedResponse(apiResponse, null, "Firebase verification requires FirebaseAdmin package. Please implement proper token verification.");
+                if (doctorRole == null)
+                {
+                    Log.Error("No suitable role found. Available roles: {Roles}", 
+                        string.Join(", ", roleListResponse.Result.Select(r => r.Name ?? "Unknown")));
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "No suitable role found. Please contact administrator.");
+                    return BadRequest(apiResponse);
+                }
+
+                Log.Information("Using role: {RoleName} (ID: {RoleId}) for Firebase login", doctorRole.Name, doctorRole.Id);
+
+                LoginResponseDto loginResponse;
+
+                if (existingUser == null)
+                {
+                    // Create new user
+                    Log.Information("Creating new user for email: {Email}", email);
+                    
+                    // Generate a default password hash (users will need to reset password)
+                    var defaultPassword = "Prescripto@Zak.Com1431";
+                    var passwordHash = HashPassword(defaultPassword);
+
+                    // Split full name into first and last name
+                    var fullName = name ?? email.Split('@')[0];
+                    var nameParts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    var firstName = nameParts.Length > 0 ? nameParts[0] : fullName;
+                    var lastName = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : null;
+
+                    // Create DTO that matches exactly the stored procedure parameters
+                    var userInsertDto = new UserInsertStoredProcedureDto
+                    {
+                        TenantID = 1, // Default tenant - matches other controllers
+                        FirstName = firstName,
+                        LastName = lastName,
+                        FullName = fullName,
+                        UserName = email,
+                        Email = email,
+                        PasswordHash = passwordHash,
+                        UserType = "Doctor", // Set user type
+                        PhoneNumber = null,
+                        ContactNo = null,
+                        RoleId = doctorRole.Id,
+                        IsActive = true,
+                        ReferenceUserId = null
+                    };
+
+                    // Insert user using service layer
+                    var insertResponse = await _userService.InsertWithStoredProcedureDto(userInsertDto);
+                    if (!insertResponse.IsSuccess || insertResponse.Result <= 0)
+                    {
+                        Log.Error("Failed to create user: {Message}", insertResponse.Message);
+                        ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Failed to create user: {insertResponse.Message}");
+                        return BadRequest(apiResponse);
+                    }
+
+                    // Get the newly created user
+                    var newUserResponse = await _userService.GetById(insertResponse.Result);
+                    if (newUserResponse?.Result == null)
+                    {
+                        Log.Error("Failed to retrieve newly created user");
+                        ApiResponseHelper.SetFailedResponse(apiResponse, null, "User created but failed to retrieve user details");
+                        return BadRequest(apiResponse);
+                    }
+
+                    existingUser = newUserResponse.Result;
+                    Log.Information("New user created successfully. UserID: {UserId}", existingUser.UserID);
+
+                    // Create Doctor profile if user type is "Doctor" via HTTP API call
+                    if (existingUser.UserType != null && existingUser.UserType.Equals("Doctor", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            using var httpClient = new HttpClient();
+                            
+                            // Get the base URL from the current request
+                            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                            
+                            // First, check if doctor profile already exists for this user
+                            var checkEndpoint = $"/api/2025-02/get-doctor-by-user-id?doctorUserId={existingUser.UserID}";
+                            var checkRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}{checkEndpoint}");
+
+                            // Forward authorization header from current request if available
+                            if (Request.Headers.ContainsKey("Authorization"))
+                            {
+                                var authToken = Request.Headers["Authorization"].ToString();
+                                if (!string.IsNullOrEmpty(authToken))
+                                {
+                                    checkRequest.Headers.Add("Authorization", authToken);
+                                }
+                            }
+
+                            // Check if doctor exists
+                            var checkResponse = await httpClient.SendAsync(checkRequest);
+                            bool doctorExists = false;
+
+                            if (checkResponse.IsSuccessStatusCode)
+                            {
+                                var checkResponseContent = await checkResponse.Content.ReadAsStringAsync();
+                                var checkApiResponse = JsonSerializer.Deserialize<ApiResponse<object>>(checkResponseContent, new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+
+                                // If doctor exists and response is successful, skip insertion
+                                if (checkApiResponse?.IsSuccess == true && checkApiResponse.Results != null)
+                                {
+                                    doctorExists = true;
+                                    Log.Information("Doctor profile already exists for UserID: {UserId}. Skipping insertion.", existingUser.UserID);
+                                }
+                            }
+
+                            // Only create doctor profile if it doesn't exist
+                            if (!doctorExists)
+                            {
+                                var createEndpoint = "/api/2025-02/create-doctor";
+                                
+                                // Create doctor insert DTO
+                                var doctorInsertDto = new DoctorInsertRequestDto
+                                {
+                                    UserID = existingUser.UserID,
+                                    Specialization = null, // Can be updated later
+                                    LicenseNumber = null, // Can be updated later
+                                    DoctorReferenceID = 0, // Default value
+                                    HospitalAffiliation = null // Can be updated later
+                                };
+
+                                // Serialize the request body
+                                var jsonContent = JsonSerializer.Serialize(doctorInsertDto);
+                                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                                // Create the HTTP request
+                                var createHttpRequest = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}{createEndpoint}")
+                                {
+                                    Content = content
+                                };
+
+                                // Forward authorization header from current request if available
+                                if (Request.Headers.ContainsKey("Authorization"))
+                                {
+                                    var authToken = Request.Headers["Authorization"].ToString();
+                                    if (!string.IsNullOrEmpty(authToken))
+                                    {
+                                        createHttpRequest.Headers.Add("Authorization", authToken);
+                                    }
+                                }
+
+                                // Make the API call to create doctor
+                                var createResponse = await httpClient.SendAsync(createHttpRequest);
+                                
+                                if (createResponse.IsSuccessStatusCode)
+                                {
+                                    var createResponseContent = await createResponse.Content.ReadAsStringAsync();
+                                    var doctorApiResponse = JsonSerializer.Deserialize<ApiResponse<int>>(createResponseContent, new JsonSerializerOptions
+                                    {
+                                        PropertyNameCaseInsensitive = true
+                                    });
+
+                                    if (doctorApiResponse?.IsSuccess == true && doctorApiResponse.Results > 0)
+                                    {
+                                        Log.Information("Doctor profile created successfully for UserID: {UserId}, DoctorID: {DoctorId}", 
+                                            existingUser.UserID, doctorApiResponse.Results);
+                                    }
+                                    else
+                                    {
+                                        Log.Warning("Failed to create Doctor profile for UserID: {UserId}. Response: {Response}", 
+                                            existingUser.UserID, createResponseContent);
+                                    }
+                                }
+                                else
+                                {
+                                    var errorContent = await createResponse.Content.ReadAsStringAsync();
+                                    Log.Warning("Failed to create Doctor profile for UserID: {UserId}. Status: {Status}, Error: {Error}", 
+                                        existingUser.UserID, createResponse.StatusCode, errorContent);
+                                    // Don't fail the login if doctor profile creation fails
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Exception occurred while checking/creating Doctor profile for UserID: {UserId}", existingUser.UserID);
+                            // Don't fail the login if doctor profile creation fails
+                        }
+                    }
+                }
+                else
+                {
+                    Log.Information("Existing user found. UserID: {UserId}", existingUser.UserID);
+                }
+
+                // Get user permissions/roles
+                var permissions = await _authUserService.GetUserPermissions(existingUser.UserID);
+                var roles = permissions ?? new List<string>();
+
+                // Generate tokens
+                var accessToken = GenerateJwtToken(existingUser, roles);
+                var refreshToken = GenerateRefreshToken(existingUser);
+
+                // Build login response
+                loginResponse = new LoginResponseDto
+                {
+                    UserId = existingUser.UserID,
+                    UserName = existingUser.UserName ?? email,
+                    RoleName = roles,
+                    Success = true,
+                    Message = existingUserResponse?.Result == null ? "User created and login successful" : "Login successful",
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    LoginType = loginType,
+                    UserEmail = existingUser.Email ?? email
+                };
+
+                ApiResponseHelper.SetSuccessResponse(apiResponse, loginResponse, loginResponse.Message, StatusResponseMessage.success, StatusCodes.Status200OK);
+                Log.Information("Firebase login successful for user: {Email}", email);
+            }
+            catch (FirebaseAuthException ex)
+            {
+                Log.Error(ex, "Firebase authentication error");
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, "Invalid or expired Firebase token");
+                return Unauthorized(apiResponse);
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Error verifying Firebase token");
                 ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error verifying Firebase token: {ex.Message}");
             }
             return Ok(apiResponse);
+        }
+
+        private string HashPassword(string password)
+        {
+            // Simple hash for default password - in production, use BCrypt or similar
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(hashedBytes);
+            }
         }
 
         private string GenerateJwtToken(Entities.EntityClass.User user, List<string> roles)

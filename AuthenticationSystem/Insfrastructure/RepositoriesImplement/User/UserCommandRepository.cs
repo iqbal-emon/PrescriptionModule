@@ -1,4 +1,5 @@
 using AuthenticationSystem.Domain.Repositories.User;
+using AuthenticationSystem.Dtos.RequestDto.UserDto;
 using AuthenticationSystem.Utility;
 using DataAccess.DatabaseAccessLayer;
 using Entities.EntityClass;
@@ -78,6 +79,34 @@ namespace AuthenticationSystem.Insfrastructure.RepositoriesImplement.User
                     response.Result = result;
                     response.IsSuccess = true;
                     ResponseHelper.SetSuccessResponse(response, result, AuthResponseMessage.common_update_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
+
+        /// <summary>
+        /// Insert user using DTO that matches stored procedure parameters exactly
+        /// </summary>
+        public async Task<Response<int>> InsertWithDto(UserInsertStoredProcedureDto dto)
+        {
+            var response = new Response<int>();
+            try
+            {
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("User_Insert", dto, "@UserID");
+                if (result == 0)
+                {
+                    ResponseHelper.SetFailedResponse(response, result, AuthResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    response.Result = result;
+                    response.IsSuccess = true;
+                    ResponseHelper.SetSuccessResponse(response, result, AuthResponseMessage.common_insert_success_message, StatusResponseMessage.success, StatusCodes.Status201Created);
                 }
             }
             catch (Exception ex)

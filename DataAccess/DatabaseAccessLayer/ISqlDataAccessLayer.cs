@@ -30,5 +30,6 @@ namespace DataAccess.DatabaseAccessLayer
         Task<Response<T>> ExecuteSqlQueryWithModel<T>(string sqlQuery, T model, string connectionId = "Default");
         Task<Response<T>> ExecuteRawSqlQueryWithParameters<T>(string sqlQuery, T parameters, string connectionId = "Default");
         Task<int> SaveDataUsingProcedureReturnIdWithIntDataType<T>(string storedProcedure, T model);
+        Task<int> SaveDataUsingProcedureReturnIntIdWithCustomOutput<T>(string storedProcedure, T model, string outputParameterName = "@UserID");
     }
 }

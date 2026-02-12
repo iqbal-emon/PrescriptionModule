@@ -243,6 +243,27 @@ namespace AuthenticationSystem.Application.Services
             return response;
         }
 
+        public async Task<Response<int>> InsertWithStoredProcedureDto(UserInsertStoredProcedureDto dto)
+        {
+            var response = new Response<int>();
+            try
+            {
+                var insertResponse = await _userCommandRepository.InsertWithDto(dto);
+                response = insertResponse;
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while inserting the user.";
+                ResponseHelper.SetFailedResponse(response, response.Result, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred while inserting the user.";
+                ResponseHelper.SetFailedResponse(response, response.Result, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            return response;
+        }
+
         public async Task<Response<int>> Update(UserUpdateRequestDto userDto)
         {
             var response = new Response<int>();
