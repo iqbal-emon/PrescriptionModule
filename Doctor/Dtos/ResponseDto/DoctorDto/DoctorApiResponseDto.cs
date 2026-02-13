@@ -17,6 +17,23 @@ namespace Doctor.Dtos.ResponseDto.DoctorDto
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
-       
+        public int? DoctorReferenceID { get; set; }
+        public string Expertise { get; set; }
+        public int? ProfileStep { get; set; }
+        
+        // Doctor profile fields
+        public string BmdcRegNo { get; set; }
+        public DateTime? BmdcRegExpiryDate { get; set; }
+        public string IdentityNumber { get; set; }
+        public string City { get; set; }
+        public string Country { get; set; }
+        public string Address { get; set; }
+        public int? DoctorTitle { get; set; }
+        
+        // User table fields
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string MobileNo { get; set; }
+        public string ContactNo { get; set; }
     }
 }

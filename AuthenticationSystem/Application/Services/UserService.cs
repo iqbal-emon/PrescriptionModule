@@ -1,10 +1,6 @@
 ﻿using AuthenticationSystem.Domain.Repositories.User;
 using AuthenticationSystem.Dtos.RequestDto.UserDto;
-using Entities.EntityClass;
-using Microsoft.AspNetCore.Http;
 using SharedService.MapService;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using Utility.ApiResponse;
 using Utility.Response;
@@ -25,226 +21,226 @@ namespace AuthenticationSystem.Application.Services
             _mapperService = mapperService;
         }
 
-        public async Task<Response<List<User>>> GetAll()
+        public async Task<Response<List<Entities.EntityClass.User>>> GetAll()
         {
-            var response = new Response<List<User>>();
+            var response = new Response<List<Entities.EntityClass.User>>();
             try
             {
                 var users = await _userQueryRepository.GetAll();
                 if (users == null)
                 {
-                    ResponseHelper.SetFailedResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
+                    ResponseHelper.SetSuccessResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the users.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
 
-        public async Task<Response<User>> GetById(int id)
+        public async Task<Response<Entities.EntityClass.User>> GetById(int id)
         {
-            var response = new Response<User>();
+            var response = new Response<Entities.EntityClass.User>();
             try
             {
                 var user = await _userQueryRepository.GetById(id);
                 if (user == null)
                 {
-                    ResponseHelper.SetFailedResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
+                    ResponseHelper.SetSuccessResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the user.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
 
-        public async Task<Response<User>> GetByEmail(string email)
+        public async Task<Response<Entities.EntityClass.User>> GetByEmail(string email)
         {
-            var response = new Response<User>();
+            var response = new Response<Entities.EntityClass.User>();
             try
             {
                 var user = await _userQueryRepository.GetByEmail(email);
                 if (user == null)
                 {
-                    ResponseHelper.SetFailedResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
+                    ResponseHelper.SetSuccessResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the user.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
 
-        public async Task<Response<List<User>>> GetByTenantId(int tenantId)
+        public async Task<Response<List<Entities.EntityClass.User>>> GetByTenantId(int tenantId)
         {
-            var response = new Response<List<User>>();
+            var response = new Response<List<Entities.EntityClass.User>>();
             try
             {
                 var users = await _userQueryRepository.GetByTenantId(tenantId);
                 if (users == null)
                 {
-                    ResponseHelper.SetFailedResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
+                    ResponseHelper.SetSuccessResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the users.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
 
-        public async Task<Response<List<User>>> GetByUserType(string userType)
+        public async Task<Response<List<Entities.EntityClass.User>>> GetByUserType(string userType)
         {
-            var response = new Response<List<User>>();
+            var response = new Response<List<Entities.EntityClass.User>>();
             try
             {
                 var users = await _userQueryRepository.GetByUserType(userType);
                 if (users == null)
                 {
-                    ResponseHelper.SetFailedResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
+                    ResponseHelper.SetSuccessResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the users.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
 
-        public async Task<Response<User>> GetByUserName(string userName)
+        public async Task<Response<Entities.EntityClass.User>> GetByUserName(string userName)
         {
-            var response = new Response<User>();
+            var response = new Response<Entities.EntityClass.User>();
             try
             {
                 var user = await _userQueryRepository.GetByUserName(userName);
                 if (user == null)
                 {
-                    ResponseHelper.SetFailedResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
+                    ResponseHelper.SetSuccessResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the user.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
 
-        public async Task<Response<User>> GetByPhoneNo(string phoneNo)
+        public async Task<Response<Entities.EntityClass.User>> GetByPhoneNo(string phoneNo)
         {
-            var response = new Response<User>();
+            var response = new Response<Entities.EntityClass.User>();
             try
             {
                 var user = await _userQueryRepository.GetByPhoneNo(phoneNo);
                 if (user == null)
                 {
-                    ResponseHelper.SetFailedResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
+                    ResponseHelper.SetSuccessResponse<Entities.EntityClass.User>(response, user.Result, user.Message, StatusResponseMessage.success, user.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the user.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<Entities.EntityClass.User>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
 
-        public async Task<Response<List<User>>> GetByRoleId(int roleId)
+        public async Task<Response<List<Entities.EntityClass.User>>> GetByRoleId(int roleId)
         {
-            var response = new Response<List<User>>();
+            var response = new Response<List<Entities.EntityClass.User>>();
             try
             {
                 var users = await _userQueryRepository.GetByRoleId(roleId);
                 if (users == null)
                 {
-                    ResponseHelper.SetFailedResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse<List<User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
+                    ResponseHelper.SetSuccessResponse<List<Entities.EntityClass.User>>(response, users.Result, users.Message, StatusResponseMessage.success, users.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the users.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse<List<User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse<List<Entities.EntityClass.User>>(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
             }
             return response;
         }
@@ -254,7 +250,7 @@ namespace AuthenticationSystem.Application.Services
             var response = new Response<int>();
             try
             {
-                var userEntity = await _mapperService.MapSingle<UserInsertRequestDto, User>(userDto);
+                var userEntity = await _mapperService.MapSingle<UserInsertRequestDto, Entities.EntityClass.User>(userDto);
                 var insertResponse = await _userCommandRepository.Insert(userEntity);
                 response = insertResponse;
             }
@@ -297,7 +293,7 @@ namespace AuthenticationSystem.Application.Services
             var response = new Response<int>();
             try
             {
-                var userEntity = await _mapperService.MapSingle<UserUpdateRequestDto, User>(userDto);
+                var userEntity = await _mapperService.MapSingle<UserUpdateRequestDto, Entities.EntityClass.User>(userDto);
                 userEntity.UpdatedAt = DateTime.Now;
                 var updatedResponse = await _userCommandRepository.Update(userEntity);
                 response = updatedResponse;

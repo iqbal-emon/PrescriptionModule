@@ -15,6 +15,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Utility.ApiResponse;
 using Utility.Permission;
+using ApiCallService.BaseApiCallService;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RestSharp;
+using User.Dtos.ResponseDto.UserDto;
 
 namespace Doctor.Controllers
 {
@@ -25,14 +31,23 @@ namespace Doctor.Controllers
         private readonly SharedCommonService _sharedCommonService;
         private readonly MapperService _mapperService;
         private readonly DoctorService _doctorService;
+        private readonly IBaseRestClientApiService _baseRestClientApiService;
+        private readonly IConfiguration _configuration;
+        private string _apiBaseURL;
+        
         public DoctorController(
             SharedCommonService sharedCommonService,
             MapperService mapperService,
-            DoctorService doctorService)
+            DoctorService doctorService,
+            IBaseRestClientApiService baseRestClientApiService,
+            IConfiguration configuration)
         {
             _sharedCommonService = sharedCommonService;
             _mapperService = mapperService;
             _doctorService = doctorService;
+            _baseRestClientApiService = baseRestClientApiService;
+            _configuration = configuration;
+            _apiBaseURL = _configuration.GetSection("GeneralSettings:PrescriptionBaseURL").Value;
         }
 
         [Authorize(Policy = PermissionConstants.DoctorGetAll)]
@@ -67,12 +82,47 @@ namespace Doctor.Controllers
             try
             {
                 var doctor = await _doctorService.GetById(doctorId);
-                var mappedDoctor = await _mapperService.MapSingle<Entities.EntityClass.Doctor, DoctorApiResponseDto>(doctor.Result);
                 if (doctor.Result == null)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, DoctorApiConstantsResponseMessage.doctor_null_of_get_list);
                     return Ok(apiResponse);
                 }
+                
+                var mappedDoctor = await _mapperService.MapSingle<Entities.EntityClass.Doctor, DoctorApiResponseDto>(doctor.Result);
+                
+                // Fetch User data via HTTP API call if UserID exists
+                if (doctor.Result.UserID.HasValue && doctor.Result.UserID.Value > 0)
+                {
+                    try
+                    {
+                        var baseUrl = _apiBaseURL;
+                        var endPoint = $"api/2025-02/get-user-by-id?userId={doctor.Result.UserID.Value}";
+                        
+                        // Add Authorization header
+                        string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+                        var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+                        var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
+                        var userData = deSerializedJsonResult["results"]?.ToObject<UserApiResponseDto>();
+                        
+                        if (userData != null)
+                        {
+                            // Populate User fields in the response
+                            // Construct FullName from FirstName and LastName
+                            mappedDoctor.FullName = !string.IsNullOrEmpty(userData.FirstName) && !string.IsNullOrEmpty(userData.LastName)
+                                ? $"{userData.FirstName} {userData.LastName}".Trim()
+                                : userData.FirstName ?? userData.LastName ?? string.Empty;
+                            mappedDoctor.Email = userData.Email ?? string.Empty;
+                            mappedDoctor.MobileNo = userData.PhoneNumber ?? string.Empty;
+                            mappedDoctor.ContactNo = userData.PhoneNumber ?? string.Empty; // ContactNo not in UserApiResponseDto, use PhoneNumber
+                        }
+                    }
+                    catch (Exception userEx)
+                    {
+                        // Log error but don't fail the entire request if User API call fails
+                        Console.WriteLine($"Error fetching user data: {userEx.Message}");
+                    }
+                }
+                
                 apiResponse.Results = mappedDoctor;
                 ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DoctorApiConstantsResponseMessage.doctor_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
             }

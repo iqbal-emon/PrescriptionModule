@@ -38,7 +38,7 @@ namespace AuthenticationSystem.Controllers
             try
             {
                 var users = await _userService.GetAll();
-                var mappedUsers = await _mapperService.MapList<User, UserApiResponseDto>(users.Result);
+                var mappedUsers = await _mapperService.MapList<Entities.EntityClass.User, UserApiResponseDto>(users.Result);
                 if (users.Result == null || users.Result.Count == 0)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, AuthApiConstantsResponseMessage.user_null_of_get_list);
@@ -61,7 +61,7 @@ namespace AuthenticationSystem.Controllers
             try
             {
                 var user = await _userService.GetById(userId);
-                var mappedUser = await _mapperService.MapSingle<User, UserApiResponseDto>(user.Result);
+                var mappedUser = await _mapperService.MapSingle<Entities.EntityClass.User, UserApiResponseDto>(user.Result);
                 if (user.Result == null)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, AuthApiConstantsResponseMessage.user_null_of_get_list);
@@ -84,7 +84,7 @@ namespace AuthenticationSystem.Controllers
             try
             {
                 var user = await _userService.GetByUserName(userName);
-                var mappedUser = await _mapperService.MapSingle<User, UserApiResponseDto>(user.Result);
+                var mappedUser = await _mapperService.MapSingle<Entities.EntityClass.User, UserApiResponseDto>(user.Result);
                 if (user.Result == null)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, AuthApiConstantsResponseMessage.user_null_of_get_list);
@@ -107,7 +107,7 @@ namespace AuthenticationSystem.Controllers
             try
             {
                 var user = await _userService.GetByEmail(email);
-                var mappedUser = await _mapperService.MapSingle<User, UserApiResponseDto>(user.Result);
+                var mappedUser = await _mapperService.MapSingle<Entities.EntityClass.User, UserApiResponseDto>(user.Result);
                 if (user.Result == null)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, AuthApiConstantsResponseMessage.user_null_of_get_list);
@@ -130,7 +130,7 @@ namespace AuthenticationSystem.Controllers
             try
             {
                 var users = await _userService.GetByRoleId(roleId);
-                var mappedUsers = await _mapperService.MapList<User, UserApiResponseDto>(users.Result);
+                var mappedUsers = await _mapperService.MapList<Entities.EntityClass.User, UserApiResponseDto>(users.Result);
                 if (users.Result == null || users.Result.Count == 0)
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, AuthApiConstantsResponseMessage.user_null_of_get_list);

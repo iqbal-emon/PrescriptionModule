@@ -41,5 +41,24 @@ namespace Entities.EntityClass
 
         public int? ProfileStep { get; set; }
 
+        [MaxLength(50)]
+        public string? BmdcRegNo { get; set; }
+
+        public DateTime? BmdcRegExpiryDate { get; set; }
+
+        [MaxLength(50)]
+        public string? IdentityNumber { get; set; }
+
+        [MaxLength(100)]
+        public string? City { get; set; }
+
+        [MaxLength(100)]
+        public string? Country { get; set; }
+
+        [MaxLength(255)]
+        public string? Address { get; set; }
+
+        public int? DoctorTitle { get; set; }
+
     }
 }
