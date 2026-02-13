@@ -30,6 +30,7 @@ using SharedService.MapService;
 using Speciality.Application.Services;
 using Speciality.Domain.Repositories.Speciality;
 using Speciality.Insfracture.RepositoriesImplement.Speciality;
+using ApiCallService.BaseApiCallService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -107,6 +108,9 @@ namespace Doctor
             services.AddScoped<ISpecialityQueryRepository, SpecialityQueryRepository>();
             services.AddScoped<ISpecialityCommandRepository, SpecialityCommandRepository>();
             services.AddScoped<Speciality.Application.Services.SpecialityService>();
+
+            // API Call Service for cross-module communication
+            services.AddScoped<IBaseRestClientApiService, BaseRestClientApiService>();
         }
     }
 }

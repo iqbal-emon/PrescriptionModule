@@ -8,12 +8,19 @@ using Utility.Permission;
 using Utility.Response;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Doctor.Application.Services;
 using Doctor.Utility;
 using System.Runtime.InteropServices;
 using Doctor.Dtos.ResponseDto.DoctorDegreeDto;
 using Doctor.Dtos.RequestDto.DoctorDegreeDto;
+using ApiCallService.BaseApiCallService;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RestSharp;
+using Degree.Dtos.ResponseDto.DegreeDto;
 
 namespace Doctor.Controllers
 {
@@ -24,15 +31,23 @@ namespace Doctor.Controllers
         private readonly SharedCommonService _sharedCommonService;
         private readonly MapperService _mapperService;
         private readonly DoctorDegreeService _degreeService;
+        private readonly IBaseRestClientApiService _baseRestClientApiService;
+        private readonly IConfiguration _configuration;
+        private string _apiBaseURL;
 
         public DoctorDegreeController(
             SharedCommonService sharedCommonService,
             MapperService mapperService,
-            DoctorDegreeService degreeService)
+            DoctorDegreeService degreeService,
+            IBaseRestClientApiService baseRestClientApiService,
+            IConfiguration configuration)
         {
             _sharedCommonService = sharedCommonService;
             _mapperService = mapperService;
             _degreeService = degreeService;
+            _baseRestClientApiService = baseRestClientApiService;
+            _configuration = configuration;
+            _apiBaseURL = _configuration.GetSection("GeneralSettings:PrescriptionBaseURL").Value;
         }
 
         [Authorize(Policy = PermissionConstants.DegreeGetAll)]
@@ -173,6 +188,43 @@ namespace Doctor.Controllers
                 {
                     ApiResponseHelper.SetFailedResponse(apiResponse, null, DoctorDegreeApiConstantsResponseMessage.degree_null_of_get_list);
                     return Ok(apiResponse);
+                }
+
+                // Fetch all degrees to populate degree names via API call
+                var allDegrees = new List<DegreeApiResponseDto>();
+                try
+                {
+                    var baseUrl = _apiBaseURL;
+                    var endPoint = "api/2025-02/gets-all-degrees";
+                    
+                    // Add Authorization header
+                    string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+                    var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+                    var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
+                    var degreeApiResponse = deSerializedJsonResult?.ToObject<ApiResponse<List<DegreeApiResponseDto>>>();
+                    
+                    if (degreeApiResponse?.Results != null)
+                    {
+                        allDegrees = degreeApiResponse.Results;
+                    }
+                }
+                catch (Exception degreeEx)
+                {
+                    // Log error but don't fail the entire request if Degree API call fails
+                    Console.WriteLine($"Error fetching degree data: {degreeEx.Message}");
+                }
+
+                // Populate DegreeName for each doctor degree
+                foreach (var mappedDegree in mappedDegrees)
+                {
+                    if (mappedDegree.DegreeID > 0)
+                    {
+                        var degree = allDegrees.FirstOrDefault(d => d.DegreeID == mappedDegree.DegreeID);
+                        if (degree != null && !string.IsNullOrEmpty(degree.DegreeName))
+                        {
+                            mappedDegree.DegreeName = degree.DegreeName;
+                        }
+                    }
                 }
 
                 apiResponse.Results = mappedDegrees;

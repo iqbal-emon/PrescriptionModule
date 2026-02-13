@@ -7,6 +7,7 @@ namespace Doctor.Dtos.ResponseDto.DoctorDegreeDto
         public int DoctorDegreeID { get; set; }
         public int DoctorID { get; set; }
         public int DegreeID { get; set; }
+        public string? DegreeName { get; set; }
         public int PassingYear { get; set; }
         public string InstituteName { get; set; }
         public int? InstituteID { get; set; }

@@ -13,14 +13,14 @@ namespace Prescription.Dtos.RequestDto.DoctorDegreeDto
 
         public int PassingYear { get; set; }
 
-        public string InstituteName { get; set; } = string.Empty;
+        public string? InstituteName { get; set; }
 
         public int? InstituteID { get; set; }
 
-        public string Country { get; set; } = string.Empty;
+        public string? Country { get; set; }
 
         public int? CountryID { get; set; }
-        public string City { get; set; } = string.Empty;
+        public string? City { get; set; }
 
         public int? CityID { get; set; }
 
