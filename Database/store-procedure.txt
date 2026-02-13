@@ -3648,10 +3648,33 @@ CREATE PROCEDURE [dbo].[DoctorSpecialization_Insert]
     @SpecializationID INT = NULL,
     @ServiceDetails NVARCHAR(500) = NULL,
     @DocumentName NVARCHAR(200) = NULL,
+    @CreatedAt DATETIME = NULL,
+    @UpdatedAt DATETIME = NULL,
+    @IsDeleted BIT = NULL,
     @DoctorSpecializationID INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+    
+    -- Validate that DoctorID exists in Doctor table
+    IF NOT EXISTS (SELECT 1 FROM [dbo].[Doctor] WHERE [DoctorID] = @DoctorID AND ([IsDeleted] = 0 OR [IsDeleted] IS NULL))
+    BEGIN
+        RAISERROR('The specified DoctorID (%d) does not exist in the Doctor table or has been deleted.', 16, 1, @DoctorID);
+        SET @DoctorSpecializationID = 0;
+        RETURN;
+    END;
+    
+    -- Check for duplicate: DoctorID and SpecializationID combination already exists
+    IF EXISTS (SELECT 1 FROM [dbo].[DoctorSpecialization] 
+               WHERE [DoctorID] = @DoctorID 
+               AND ([SpecializationID] = @SpecializationID OR ([SpecializationID] IS NULL AND @SpecializationID IS NULL))
+               AND ([IsDeleted] = 0 OR [IsDeleted] IS NULL))
+    BEGIN
+        RAISERROR('A specialization record already exists for DoctorID (%d) with SpecializationID (%s). Duplicate entries are not allowed.', 16, 1, @DoctorID, ISNULL(CAST(@SpecializationID AS NVARCHAR(10)), 'NULL'));
+        SET @DoctorSpecializationID = 0;
+        RETURN;
+    END;
+    
     INSERT INTO [dbo].[DoctorSpecialization]
     (
         [DoctorID],
@@ -3670,9 +3693,9 @@ BEGIN
         @SpecializationID,
         @ServiceDetails,
         @DocumentName,
-        GETDATE(),
-        GETDATE(),
-        0
+        ISNULL(@CreatedAt, GETDATE()),
+        ISNULL(@UpdatedAt, GETDATE()),
+        ISNULL(@IsDeleted, 0)
     );
     SET @DoctorSpecializationID = SCOPE_IDENTITY();
 END
