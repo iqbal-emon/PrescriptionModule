@@ -51,6 +51,7 @@ GO
 CREATE TABLE Doctors (
     DoctorID INT PRIMARY KEY IDENTITY(1,1),
     UserID INT NOT NULL FOREIGN KEY REFERENCES Users(UserID),
+    SpecialityID INT NULL FOREIGN KEY REFERENCES Speciality(SpecialityID),
     Specialization NVARCHAR(100),
     LicenseNumber NVARCHAR(50) UNIQUE,
     HospitalAffiliation NVARCHAR(100),

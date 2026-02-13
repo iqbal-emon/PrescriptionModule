@@ -49,7 +49,16 @@ namespace Specialization.Insfracture.RepositoriesImplement.Specialization
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Specialization_Insert", entity);
+                // Create parameter object with only the required fields for the stored procedure
+                var parameters = new
+                {
+                    SpecializationName = entity.SpecializationName,
+                    Description = entity.Description,
+                    SpecialityID = entity.SpecialityID,
+                    TenantID = entity.TenantID
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("Specialization_Insert", parameters, "@SpecializationID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, SpecializationResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -76,7 +85,16 @@ namespace Specialization.Insfracture.RepositoriesImplement.Specialization
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Specialization_Update", entity);
+                // Create parameter object with only the required fields for the stored procedure
+                var parameters = new
+                {
+                    SpecializationID = entity.SpecializationID,
+                    SpecializationName = entity.SpecializationName,
+                    Description = entity.Description,
+                    SpecialityID = entity.SpecialityID
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("Specialization_Update", parameters, "@UpdatedSpecializationID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, SpecializationResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

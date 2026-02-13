@@ -2014,6 +2014,7 @@ BEGIN
     SELECT 
         DoctorID,
         UserID,
+		SpecialityID,
 		ISNULL(Specialization, '') AS Specialization,
         ISNULL(LicenseNumber, '') AS LicenseNumber,
 		 ISNULL(HospitalAffiliation, '') AS HospitalAffiliation,
@@ -2042,6 +2043,7 @@ BEGIN
     SELECT 
         DoctorID,
         UserID,
+        SpecialityID,
         ISNULL(Specialization, '') AS Specialization,
         ISNULL(LicenseNumber, '') AS LicenseNumber,
 		 ISNULL(HospitalAffiliation, '') AS HospitalAffiliation,
@@ -2070,6 +2072,7 @@ BEGIN
     SELECT 
         DoctorID,
         UserID,
+        SpecialityID,
         ISNULL(Specialization, '') AS Specialization,
         ISNULL(LicenseNumber, '') AS LicenseNumber,
 		 ISNULL(HospitalAffiliation, '') AS HospitalAffiliation,
@@ -2098,6 +2101,7 @@ BEGIN
     SELECT 
         DoctorID,
         UserID,
+        SpecialityID,
         ISNULL(Specialization, '') AS Specialization,
         ISNULL(LicenseNumber, '') AS LicenseNumber,
 		 ISNULL(HospitalAffiliation, '') AS HospitalAffiliation,
@@ -2120,6 +2124,7 @@ GO
 CREATE PROCEDURE [dbo].[Doctor_Insert]
     @DoctorID INT,
     @UserID INT,
+    @SpecialityID INT = NULL,
     @Specialization NVARCHAR(100),
     @LicenseNumber NVARCHAR(50),
 	@DoctorReferenceID INT = NULL,
@@ -2135,6 +2140,7 @@ BEGIN
     
     INSERT INTO Doctors(
         UserID,
+		SpecialityID,
 		DoctorReferenceID,
         Specialization,
         LicenseNumber,
@@ -2147,6 +2153,7 @@ BEGIN
     )
     VALUES (
         @UserID,
+		@SpecialityID,
 		@DoctorReferenceID,
        ISNULL( @Specialization, ''),
 		ISNULL(@LicenseNumber, ''),
@@ -2171,6 +2178,7 @@ GO
 CREATE PROCEDURE [dbo].[Doctor_Update] 
     @DoctorID INT,
     @UserID INT = NULL,
+    @SpecialityID INT = NULL,
     @Specialization NVARCHAR(100) = NULL,
     @LicenseNumber NVARCHAR(50) = NULL,
 	@DoctorReferenceID INT=NULL,
@@ -2188,6 +2196,7 @@ BEGIN
     UPDATE Doctors
     SET 
         UserID = CASE WHEN @UserID > 0 THEN @UserID ELSE UserID END,
+		SpecialityID = CASE WHEN @SpecialityID > 0 THEN @SpecialityID ELSE SpecialityID END,
 		DoctorReferenceID = CASE WHEN @DoctorReferenceID > 0 THEN @DoctorReferenceID ELSE DoctorReferenceID END,
         Specialization = ISNULL(@Specialization, Specialization),
         LicenseNumber = ISNULL(@LicenseNumber, LicenseNumber),

@@ -509,6 +509,7 @@ BEGIN
     SELECT 
         d.DoctorID,
         d.UserID,
+        d.SpecialityID,
         d.Specialization,
         d.LicenseNumber,
         d.HospitalAffiliation,

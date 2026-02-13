@@ -10,6 +10,7 @@ namespace Doctor.Dtos.ResponseDto.DoctorDto
     {
         public int DoctorID { get; set; }
         public int UserID { get; set; }
+        public int? SpecialityID { get; set; }
         public string Specialization { get; set; }
         public string LicenseNumber { get; set; }
         public string HospitalAffiliation { get; set; }

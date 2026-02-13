@@ -12,6 +12,8 @@ namespace Prescription.Dtos.RequestDto.DoctorDto
         [Required(ErrorMessage = "User ID is required.")]
         public int? UserID { get; set; }
 
+        public int? SpecialityID { get; set; }
+
         [MaxLength(100, ErrorMessage = "Specialization cannot exceed 100 characters.")]
         public string? Specialization { get; set; }
 

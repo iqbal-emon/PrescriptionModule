@@ -16,6 +16,9 @@ namespace Entities.EntityClass
         [ForeignKey("User")]
         public int? UserID { get; set; }
 
+        [ForeignKey("Speciality")]
+        public int? SpecialityID { get; set; }
+
         [MaxLength(100)] // Max length for NVARCHAR(100)
         public string Specialization { get; set; }
 

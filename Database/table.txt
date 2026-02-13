@@ -429,6 +429,7 @@ GO
 CREATE TABLE [dbo].[Doctors](
 	[DoctorID] [int] IDENTITY(1,1) NOT NULL,
 	[UserID] [int] NULL,
+	[SpecialityID] [int] NULL,
 	[Specialization] [nvarchar](100) NULL,
 	[LicenseNumber] [nvarchar](50) NULL,
 	[HospitalAffiliation] [nvarchar](100) NULL,
@@ -2242,6 +2243,11 @@ ALTER TABLE [dbo].[DoctorSpecialization]  WITH CHECK ADD  CONSTRAINT [FK_DoctorS
 REFERENCES [dbo].[Doctor] ([DoctorID])
 GO
 ALTER TABLE [dbo].[DoctorSpecialization] CHECK CONSTRAINT [FK_DoctorSpecialization_Doctor]
+GO
+ALTER TABLE [dbo].[Doctors]  WITH CHECK ADD  CONSTRAINT [FK_Doctors_Speciality] FOREIGN KEY([SpecialityID])
+REFERENCES [dbo].[Speciality] ([SpecialityID])
+GO
+ALTER TABLE [dbo].[Doctors] CHECK CONSTRAINT [FK_Doctors_Speciality]
 GO
 ALTER TABLE [dbo].[MasterDoctor]  WITH CHECK ADD  CONSTRAINT [FK_MasterDoctor_Doctor] FOREIGN KEY([DoctorID])
 REFERENCES [dbo].[Doctor] ([DoctorID])

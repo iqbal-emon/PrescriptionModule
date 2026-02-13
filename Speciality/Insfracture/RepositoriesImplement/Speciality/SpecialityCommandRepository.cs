@@ -49,7 +49,15 @@ namespace Speciality.Insfracture.RepositoriesImplement.Speciality
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Speciality_Insert", entity);
+                // Create parameter object with only the required fields for the stored procedure
+                var parameters = new
+                {
+                    SpecialityName = entity.SpecialityName,
+                    Description = entity.Description,
+                    TenantID = entity.TenantID
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("Speciality_Insert", parameters, "@SpecialityID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, SpecialityResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -76,7 +84,16 @@ namespace Speciality.Insfracture.RepositoriesImplement.Speciality
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Speciality_Update", entity);
+                // Create parameter object with only the required fields for the stored procedure
+                var parameters = new
+                {
+                    SpecialityID = entity.SpecialityID,
+                    SpecialityName = entity.SpecialityName,
+                    Description = entity.Description,
+                    TenantID = entity.TenantID
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("Speciality_Update", parameters, "@UpdatedSpecialityID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, SpecialityResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
