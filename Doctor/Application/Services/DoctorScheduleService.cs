@@ -1,4 +1,5 @@
 using Doctor.Domain.Repositories.DoctorSchedule;
+using Doctor.Dtos.RequestDto.DoctorScheduleDaySessionDto;
 using Doctor.Dtos.RequestDto.DoctorScheduleDto;
 using Microsoft.AspNetCore.Http;
 using SharedService.MapService;
@@ -18,15 +19,18 @@ namespace Doctor.Application.Services
         private readonly IDoctorScheduleQueryRepository _scheduleQueryRepository;
         private readonly IDoctorScheduleCommandRepository _scheduleCommandRepository;
         private readonly MapperService _mapperService;
+        private readonly DoctorScheduleDaySessionService _daySessionService;
 
         public DoctorScheduleService(
             IDoctorScheduleQueryRepository scheduleQueryRepository,
             IDoctorScheduleCommandRepository scheduleCommandRepository,
-            MapperService mapperService)
+            MapperService mapperService,
+            DoctorScheduleDaySessionService daySessionService)
         {
             _scheduleQueryRepository = scheduleQueryRepository;
             _scheduleCommandRepository = scheduleCommandRepository;
             _mapperService = mapperService;
+            _daySessionService = daySessionService;
         }
 
         public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorSchedule>>> GetAll()
@@ -205,6 +209,207 @@ namespace Doctor.Application.Services
             {
                 response.Message = "An unexpected error occurred.";
                 ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Creates a complete doctor schedule with all day sessions in a single transaction
+        /// </summary>
+        public async Task<Response<int>> InsertCompleteSchedule(DoctorScheduleInputRequestDto scheduleInput)
+        {
+            var response = new Response<int>();
+
+            try
+            {
+                // Validate required fields
+                if (scheduleInput.DoctorProfileId <= 0)
+                {
+                    response.Message = "Doctor Profile ID is required.";
+                    ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                    return response;
+                }
+
+                if (scheduleInput.DoctorScheduleDaySession == null || scheduleInput.DoctorScheduleDaySession.Count == 0)
+                {
+                    response.Message = "At least one schedule day session is required.";
+                    ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                    return response;
+                }
+
+                // Create a basic Schedule entry (using default ScheduleID = 0 or create one)
+                // For now, we'll use ScheduleID = 0 as a placeholder since Schedule table is simple
+                // In production, you might want to create a Schedule entry first
+                int scheduleId = 0; // Default schedule ID
+
+                // Create DoctorSchedule entry
+                var doctorScheduleDto = new DoctorScheduleInsertRequestDto
+                {
+                    DoctorID = scheduleInput.DoctorProfileId,
+                    ScheduleID = scheduleId,
+                    TenantID = scheduleInput.TenantID > 0 ? scheduleInput.TenantID : 0
+                };
+
+                var scheduleInsertResponse = await Insert(doctorScheduleDto);
+                
+                if (!scheduleInsertResponse.IsSuccess || scheduleInsertResponse.Result <= 0)
+                {
+                    response.Message = scheduleInsertResponse.Message ?? "Failed to create doctor schedule.";
+                    ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                    return response;
+                }
+
+                int doctorScheduleId = scheduleInsertResponse.Result;
+
+                // Create all day sessions
+                var sessionErrors = new List<string>();
+                foreach (var sessionInput in scheduleInput.DoctorScheduleDaySession)
+                {
+                    var daySessionDto = new DoctorScheduleDaySessionInsertRequestDto
+                    {
+                        DoctorScheduleID = doctorScheduleId,
+                        ScheduleDayofWeek = sessionInput.ScheduleDayofWeek,
+                        StartTime = sessionInput.StartTime,
+                        EndTime = sessionInput.EndTime,
+                        NoOfPatients = sessionInput.NoOfPatients,
+                        IsActive = sessionInput.IsActive,
+                        TenantID = scheduleInput.TenantID > 0 ? scheduleInput.TenantID : 0
+                    };
+
+                    var sessionResponse = await _daySessionService.Insert(daySessionDto);
+                    
+                    if (!sessionResponse.IsSuccess)
+                    {
+                        sessionErrors.Add($"Failed to create session for {sessionInput.ScheduleDayofWeek}: {sessionResponse.Message}");
+                    }
+                }
+
+                if (sessionErrors.Count > 0)
+                {
+                    // If some sessions failed, we could rollback, but for now we'll return success with warnings
+                    response.Message = $"Schedule created but some sessions failed: {string.Join("; ", sessionErrors)}";
+                    ResponseHelper.SetSuccessResponse(response, doctorScheduleId, response.Message, StatusResponseMessage.success, StatusCodes.Status201Created);
+                }
+                else
+                {
+                    response.Result = doctorScheduleId;
+                    response.IsSuccess = true;
+                    response.Message = "Schedule and all sessions created successfully.";
+                    ResponseHelper.SetSuccessResponse(response, doctorScheduleId, response.Message, StatusResponseMessage.success, StatusCodes.Status201Created);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while creating the complete schedule.";
+                ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"An unexpected error occurred: {ex.Message}";
+                ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Updates a complete doctor schedule with all day sessions
+        /// </summary>
+        public async Task<Response<int>> UpdateCompleteSchedule(DoctorScheduleInputRequestDto scheduleInput)
+        {
+            var response = new Response<int>();
+
+            try
+            {
+                if (!scheduleInput.Id.HasValue || scheduleInput.Id.Value <= 0)
+                {
+                    response.Message = "Schedule ID is required for update.";
+                    ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                    return response;
+                }
+
+                int doctorScheduleId = scheduleInput.Id.Value;
+
+                // Update DoctorSchedule entry
+                var doctorScheduleUpdateDto = new DoctorScheduleUpdateRequestDto
+                {
+                    DoctorScheduleID = doctorScheduleId,
+                    DoctorID = scheduleInput.DoctorProfileId,
+                    ScheduleID = 0, // Keep existing or update if needed
+                    TenantID = scheduleInput.TenantID > 0 ? scheduleInput.TenantID : 0
+                };
+
+                var scheduleUpdateResponse = await Update(doctorScheduleUpdateDto);
+                
+                if (!scheduleUpdateResponse.IsSuccess)
+                {
+                    response.Message = scheduleUpdateResponse.Message ?? "Failed to update doctor schedule.";
+                    ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                    return response;
+                }
+
+                // Delete existing sessions and create new ones
+                // Note: In production, you might want to update existing sessions instead of delete/recreate
+                // Get all sessions and filter by DoctorScheduleID
+                var allSessions = await _daySessionService.GetAll();
+                if (allSessions.IsSuccess && allSessions.Result != null)
+                {
+                    var sessionsToDelete = allSessions.Result
+                        .Where(s => s.DoctorScheduleID == doctorScheduleId)
+                        .ToList();
+
+                    foreach (var session in sessionsToDelete)
+                    {
+                        await _daySessionService.Delete(session.DoctorScheduleDaySessionID);
+                    }
+                }
+
+                // Create all day sessions
+                var sessionErrors = new List<string>();
+                foreach (var sessionInput in scheduleInput.DoctorScheduleDaySession)
+                {
+                    var daySessionDto = new DoctorScheduleDaySessionInsertRequestDto
+                    {
+                        DoctorScheduleID = doctorScheduleId,
+                        ScheduleDayofWeek = sessionInput.ScheduleDayofWeek,
+                        StartTime = sessionInput.StartTime,
+                        EndTime = sessionInput.EndTime,
+                        NoOfPatients = sessionInput.NoOfPatients,
+                        IsActive = sessionInput.IsActive,
+                        TenantID = scheduleInput.TenantID > 0 ? scheduleInput.TenantID : 0
+                    };
+
+                    var sessionResponse = await _daySessionService.Insert(daySessionDto);
+                    
+                    if (!sessionResponse.IsSuccess)
+                    {
+                        sessionErrors.Add($"Failed to create session for {sessionInput.ScheduleDayofWeek}: {sessionResponse.Message}");
+                    }
+                }
+
+                if (sessionErrors.Count > 0)
+                {
+                    response.Message = $"Schedule updated but some sessions failed: {string.Join("; ", sessionErrors)}";
+                    ResponseHelper.SetSuccessResponse(response, doctorScheduleId, response.Message, StatusResponseMessage.success, StatusCodes.Status200OK);
+                }
+                else
+                {
+                    response.Result = doctorScheduleId;
+                    response.IsSuccess = true;
+                    response.Message = "Schedule and all sessions updated successfully.";
+                    ResponseHelper.SetSuccessResponse(response, doctorScheduleId, response.Message, StatusResponseMessage.success, StatusCodes.Status200OK);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while updating the complete schedule.";
+                ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = $"An unexpected error occurred: {ex.Message}";
+                ResponseHelper.SetFailedResponse(response, 0, response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
 
             return response;

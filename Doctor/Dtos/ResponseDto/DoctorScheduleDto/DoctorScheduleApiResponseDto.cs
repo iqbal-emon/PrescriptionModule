@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Doctor.Dtos.ResponseDto.DoctorScheduleDaySessionDto;
 
 namespace Doctor.Dtos.ResponseDto.DoctorScheduleDto
 {
@@ -11,6 +13,7 @@ namespace Doctor.Dtos.ResponseDto.DoctorScheduleDto
         public bool IsDeleted { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public List<DoctorScheduleDaySessionApiResponseDto> DoctorScheduleDaySession { get; set; } = new List<DoctorScheduleDaySessionApiResponseDto>();
     }
 }
 

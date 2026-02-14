@@ -10,6 +10,7 @@ namespace Doctor.Domain.Repositories.DoctorScheduleDaySession
 {
     public interface IDoctorScheduleDaySessionQueryRepository : IBaseCommonQueryMethodRepository<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession>
     {
+        Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession>>> GetByDoctorScheduleId(int doctorScheduleId);
     }
 }
 

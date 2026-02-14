@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Reflection.Metadata;
 using Utility;
 using Utility.Response;
@@ -713,8 +714,83 @@ namespace DataAccess.DatabaseAccessLayer
                 // Add parameters for all properties of the model, including nested ones
                 await AddParameters(parameters, model);
 
-                return await connection.ExecuteScalarAsync<int>(storedProcedure, parameters,
-                 commandType: CommandType.StoredProcedure);
+                // Find the ID property that should be the OUTPUT parameter
+                // Look for properties ending with "ID" that are of type int
+                var idProperty = typeof(T).GetProperties()
+                    .FirstOrDefault(p => p.Name.EndsWith("ID", StringComparison.OrdinalIgnoreCase) 
+                        && (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
+
+                string outputParameterName = null;
+                bool hasOutputParameter = false;
+
+                if (idProperty != null)
+                {
+                    outputParameterName = idProperty.Name;
+                    // Add as OUTPUT parameter with @ prefix for SQL Server
+                    // Note: Adding with same name will overwrite if it was already added as input parameter
+                    parameters.Add($"@{outputParameterName}", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                    hasOutputParameter = true;
+                }
+                else
+                {
+                    // Fallback: try common OUTPUT parameter names
+                    var commonNames = new[] { "id", "Id", "ID", "UserID" };
+                    foreach (var name in commonNames)
+                    {
+                        if (parameters.ParameterNames.Contains(name))
+                        {
+                            outputParameterName = name;
+                            // Add as OUTPUT parameter - will overwrite if already exists
+                            parameters.Add($"@{name}", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                            hasOutputParameter = true;
+                            break;
+                        }
+                    }
+                    // If no common name found, try adding "@id" as OUTPUT parameter
+                    if (!hasOutputParameter)
+                    {
+                        outputParameterName = "id";
+                        parameters.Add("@id", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                        hasOutputParameter = true;
+                    }
+                }
+
+                // Try OUTPUT parameter approach first
+                if (hasOutputParameter)
+                {
+                    try
+                    {
+                        // Execute the stored procedure
+                        await connection.ExecuteAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+
+                        // Retrieve the output parameter value
+                        int id = parameters.Get<int>($"@{outputParameterName}");
+                        // Return the value (even if 0, as it might be valid in some cases)
+                        return id;
+                    }
+                    catch (SqlException sqlEx)
+                    {
+                        // If the stored procedure doesn't have the OUTPUT parameter, 
+                        // SQL Server will throw an error. Fall back to ExecuteScalarAsync approach.
+                        // Check if error is related to parameter (common error codes: 201, 8144, 8145)
+                        if (sqlEx.Number == 201 || sqlEx.Number == 8144 || sqlEx.Number == 8145 || 
+                            sqlEx.Message.Contains("parameter") || sqlEx.Message.Contains("Parameter"))
+                        {
+                            // Recreate parameters without OUTPUT parameter and try ExecuteScalarAsync instead
+                            var parametersWithoutOutput = new DynamicParameters();
+                            await AddParameters(parametersWithoutOutput, model);
+                            var scalarResult = await connection.ExecuteScalarAsync<int>(storedProcedure, parametersWithoutOutput, commandType: CommandType.StoredProcedure);
+                            return scalarResult;
+                        }
+                        // Re-throw if it's a different SQL error
+                        throw;
+                    }
+                }
+
+                // If no OUTPUT parameter was added, use ExecuteScalarAsync (for SELECT statements)
+                // This handles cases like Doctor_Insert which uses SELECT SCOPE_IDENTITY() AS DoctorID
+                var result = await connection.ExecuteScalarAsync<int>(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+                return result;
             }
             catch (SqlException sqlEx)
             {

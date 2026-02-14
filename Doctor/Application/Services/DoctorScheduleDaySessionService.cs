@@ -147,6 +147,37 @@ namespace Doctor.Application.Services
         {
             return _daySessionCommandRepository.Delete(id);
         }
+
+        public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession>>> GetByDoctorScheduleId(int doctorScheduleId)
+        {
+            var response = new Response<List<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession>>();
+
+            try
+            {
+                var daySessions = await _daySessionQueryRepository.GetByDoctorScheduleId(doctorScheduleId);
+
+                if (daySessions == null)
+                {
+                    ResponseHelper.SetFailedResponse(response, daySessions.Result, daySessions.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                }
+                else
+                {
+                    ResponseHelper.SetSuccessResponse(response, daySessions.Result, daySessions.Message, StatusResponseMessage.success, daySessions.StatusCode);
+                }
+            }
+            catch (SqlException sqlEx)
+            {
+                response.Message = "A database error occurred while retrieving the DoctorScheduleDaySessions by schedule ID.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception ex)
+            {
+                response.Message = "An unexpected error occurred.";
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+            }
+
+            return response;
+        }
     }
 }
 

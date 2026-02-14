@@ -67,6 +67,27 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorScheduleDaySession
             }
             return response;
         }
+
+        public async Task<Response<List<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession>>> GetByDoctorScheduleId(int doctorScheduleId)
+        {
+            var response = new Response<List<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession>>();
+            try
+            {
+                var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession, dynamic>("DoctorScheduleDaySession_GetByDoctorScheduleId", new
+                {
+                    DoctorScheduleID = doctorScheduleId
+                });
+                response.Result = result.ToList();
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(response, result, DoctorScheduleDaySessionResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
+                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+            }
+            return response;
+        }
     }
 }
 
