@@ -1,7 +1,13 @@
 using AuthenticationSystem.Application.Services;
 using AuthenticationSystem.Dtos.RequestDto;
+using AuthenticationSystem.Dtos.RequestDto.UserDto;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
+using System;
+using System.Security.Cryptography;
+using System.Text;
 using Utility.ApiResponse;
 using Utility.Response;
 
@@ -60,33 +66,172 @@ namespace AuthenticationSystem.Controllers
             return Ok(apiResponse);
         }
 
+        // Test endpoint to verify routing is working
+        [HttpGet("test-route")]
+        [AllowAnonymous]
+        public ActionResult<string> TestRoute()
+        {
+            Log.Information("TestRoute endpoint hit - routing is working!");
+            return Ok("UserManageAccountsController routing is working!");
+        }
+
         [HttpPost("reset-password")]
+        [AllowAnonymous] // Temporarily allow anonymous to test if authorization is the issue
         public async Task<ActionResult<ApiResponse<bool>>> ResetPassword([FromBody] ResetPasswordRequestDto request)
         {
+            // Debug: Log that the endpoint was hit
+            System.Diagnostics.Debug.WriteLine("=== ResetPassword endpoint HIT! ===");
+            Console.WriteLine("=== ResetPassword endpoint HIT! ===");
+            Log.Information("ResetPassword endpoint called - Method: {Method}, Path: {Path}", 
+                HttpContext.Request.Method, HttpContext.Request.Path);
+            
             var apiResponse = new ApiResponse<bool>();
             try
             {
-                if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.NewPassword))
+                // Check ModelState for validation errors
+                if (!ModelState.IsValid)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, false, "UserName and NewPassword are required");
+                    var errors = ModelState
+                        .Where(x => x.Value.Errors.Count > 0)
+                        .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                        .ToList();
+                    
+                    Log.Warning("ModelState validation failed. Errors: {Errors}", 
+                        System.Text.Json.JsonSerializer.Serialize(errors));
+                    
+                    var errorMessage = string.Join(", ", errors.SelectMany(e => e.Errors));
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, 
+                        $"Validation failed: {errorMessage}");
+                    return BadRequest(apiResponse);
+                }
+                
+                // Log raw request info
+                Log.Information("Request Content-Type: {ContentType}, ContentLength: {ContentLength}", 
+                    HttpContext.Request.ContentType, HttpContext.Request.ContentLength);
+                
+                // Check if request is null (model binding failed)
+                if (request == null)
+                {
+                    // Try to read raw body to see what was sent
+                    HttpContext.Request.EnableBuffering();
+                    HttpContext.Request.Body.Position = 0;
+                    string rawBody = "";
+                    try
+                    {
+                        using (var reader = new System.IO.StreamReader(HttpContext.Request.Body, System.Text.Encoding.UTF8, leaveOpen: true))
+                        {
+                            rawBody = await reader.ReadToEndAsync();
+                            HttpContext.Request.Body.Position = 0;
+                        }
+                    }
+                    catch { }
+                    
+                    Log.Warning("ResetPassword: Request is null. Raw body: {RawBody}, Content-Type: {ContentType}", 
+                        rawBody, HttpContext.Request.ContentType);
+                    System.Diagnostics.Debug.WriteLine($"ERROR: Request is NULL. Raw body: {rawBody}");
+                    Console.WriteLine($"ERROR: Request is NULL. Raw body: {rawBody}");
+                    
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, 
+                        "Invalid request format - request body is required. Expected JSON format: { userId: string, newPassword: string }");
+                    return BadRequest(apiResponse);
+                }
+                
+                // Debug: Log the request
+                //System.Diagnostics.Debug.WriteLine($"ResetPassword request - UserName: '{request?.UserName}', UserId: '{request?.UserId}', NewPassword: {(request?.NewPassword != null ? "SET" : "NULL")}");
+                //Console.WriteLine($"ResetPassword request - UserName: '{request?.UserName}', UserId: '{request?.UserId}', NewPassword: {(request?.NewPassword != null ? "SET" : "NULL")}");
+                //Log.Information("ResetPassword request received - UserName: {UserName}, UserId: {UserId}, HasNewPassword: {HasNewPassword}", 
+                //    request?.UserName, request?.UserId, request?.NewPassword != null);
+                
+                // Support both UserName and UserId (from frontend)
+                Entities.EntityClass.User user = null;
+                
+                //if (!string.IsNullOrWhiteSpace(request.UserName))
+                //{
+                //    var userResponse = await _userService.GetByUserName(request.UserName);
+                //    if (userResponse?.Result == null)
+                //    {
+                //        ApiResponseHelper.SetFailedResponse(apiResponse, false, "User not found");
+                //        return Ok(apiResponse);
+                //    }
+                //    user = userResponse.Result;
+                //}
+                 if (!string.IsNullOrWhiteSpace(request.UserId))
+                {
+                    // Try to parse userId as int
+                    if (int.TryParse(request.UserId, out int userId))
+                    {
+                        var userResponse = await _userService.GetById(userId);
+                        if (userResponse?.Result == null)
+                        {
+                            ApiResponseHelper.SetFailedResponse(apiResponse, false, "User not found");
+                            return Ok(apiResponse);
+                        }
+                        user = userResponse.Result;
+                    }
+                    else
+                    {
+                        ApiResponseHelper.SetFailedResponse(apiResponse, false, "Invalid user ID format");
+                        return Ok(apiResponse);
+                    }
+                }
+                else
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, "UserName or UserId is required");
                     return Ok(apiResponse);
                 }
 
-                var userResponse = await _userService.GetByUserName(request.UserName);
-                if (userResponse?.Result == null)
+                // Handle both camelCase (from frontend) and PascalCase
+                string newPassword = request.NewPassword;
+                if (string.IsNullOrWhiteSpace(newPassword))
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, false, "User not found");
-                    return Ok(apiResponse);
+                    //Log.Warning("NewPassword is null or empty. UserId: {UserId}, UserName: {UserName}", 
+                    //    request.UserId, request.UserName);
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, 
+                        "NewPassword is required and cannot be empty");
+                    return BadRequest(apiResponse);
                 }
 
-                // TODO: Implement password reset logic
-                ApiResponseHelper.SetFailedResponse(apiResponse, false, "Password reset functionality not yet implemented");
+                // Hash the new password
+                var hashedPassword = HashPassword(newPassword);
+
+                // Update user password
+                var updateDto = new UserUpdateRequestDto
+                {
+                    Id = user.UserID,
+                    FullName = user.FullName,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    PasswordHash = hashedPassword,
+                    ContactNo = user.ContactNo,
+                    RoleId = user.RoleId,
+                    IsActive = user.IsActive
+                };
+
+                var updateResponse = await _userService.Update(updateDto);
+                if (updateResponse?.Result > 0)
+                {
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, true, "Password updated successfully", StatusResponseMessage.success, StatusCodes.Status200OK);
+                }
+                else
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, false, "Failed to update password");
+                }
             }
             catch (Exception ex)
             {
                 ApiResponseHelper.SetFailedResponse(apiResponse, false, $"Error resetting password: {ex.Message}");
             }
             return Ok(apiResponse);
+        }
+
+        private string HashPassword(string password)
+        {
+            // SHA256 hash (matches HashPassword method from AuthController)
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return Convert.ToBase64String(hashedBytes);
+            }
         }
 
         [HttpPost("save-otp-for-verify-user-later")]

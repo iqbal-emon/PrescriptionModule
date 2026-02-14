@@ -61,6 +61,7 @@ namespace AuthenticationSystem
 
             // Auth Services (for middleware)
             services.AddScoped<IUserService, AuthUserService>();
+            services.AddScoped<AuthUserService>(); // Direct registration for controllers
             services.AddScoped<IPermissionService, AuthPermissionService>();
 
             // Firebase Service

@@ -95,42 +95,42 @@ namespace AuthenticationSystem.Controllers
             return Ok(apiResponse);
         }
 
-        [HttpPost("reset-password")]
-        public async Task<ActionResult<ApiResponse<bool>>> ResetPassword([FromBody] ResetPasswordRequestDto request)
-        {
-            var apiResponse = new ApiResponse<bool>();
-            try
-            {
-                if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.NewPassword))
-                {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, false, "UserName and NewPassword are required");
-                    return Ok(apiResponse);
-                }
+        //[HttpPost("reset-password")]
+        //public async Task<ActionResult<ApiResponse<bool>>> ResetPassword([FromBody] ResetPasswordRequestDto request)
+        //{
+        //    var apiResponse = new ApiResponse<bool>();
+        //    try
+        //    {
+        //        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.NewPassword))
+        //        {
+        //            ApiResponseHelper.SetFailedResponse(apiResponse, false, "UserName and NewPassword are required");
+        //            return Ok(apiResponse);
+        //        }
 
-                var userResponse = await _userService.GetByUserName(request.UserName);
-                if (userResponse?.Result == null)
-                {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, false, "User not found");
-                    return Ok(apiResponse);
-                }
+        //        var userResponse = await _userService.GetByUserName(request.UserName);
+        //        if (userResponse?.Result == null)
+        //        {
+        //            ApiResponseHelper.SetFailedResponse(apiResponse, false, "User not found");
+        //            return Ok(apiResponse);
+        //        }
 
-                // TODO: Implement password reset logic
-                // This requires updating the user's password hash in the database
-                ApiResponseHelper.SetFailedResponse(apiResponse, false, "Password reset functionality not yet implemented");
-            }
-            catch (Exception ex)
-            {
-                ApiResponseHelper.SetFailedResponse(apiResponse, false, $"Error resetting password: {ex.Message}");
-            }
-            return Ok(apiResponse);
-        }
+        //        // TODO: Implement password reset logic
+        //        // This requires updating the user's password hash in the database
+        //        ApiResponseHelper.SetFailedResponse(apiResponse, false, "Password reset functionality not yet implemented");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ApiResponseHelper.SetFailedResponse(apiResponse, false, $"Error resetting password: {ex.Message}");
+        //    }
+        //    return Ok(apiResponse);
+        //}
 
-        [HttpPost("reset-password_App")]
-        public async Task<ActionResult<ApiResponse<bool>>> ResetPasswordApp([FromBody] ResetPasswordRequestDto request)
-        {
-            // Same as reset-password but for mobile app
-            return await ResetPassword(request);
-        }
+        //[HttpPost("reset-password_App")]
+        //public async Task<ActionResult<ApiResponse<bool>>> ResetPasswordApp([FromBody] ResetPasswordRequestDto request)
+        //{
+        //    // Same as reset-password but for mobile app
+        //    return await ResetPassword(request);
+        //}
 
         [HttpPost("signup-user")]
         public async Task<ActionResult<ApiResponse<SignUpResponseDto>>> SignupUser([FromQuery] string password, [FromQuery] string role, [FromBody] SignUpRequestDto request)
@@ -202,9 +202,10 @@ namespace AuthenticationSystem.Controllers
 
     public class ResetPasswordRequestDto
     {
-        public string UserName { get; set; }
+        //public string UserName { get; set; }
+        public string UserId { get; set; } // Support userId from frontend
         public string NewPassword { get; set; }
-        public string OldPassword { get; set; }
+        //public string OldPassword { get; set; }
     }
 
     public class SignUpRequestDto
