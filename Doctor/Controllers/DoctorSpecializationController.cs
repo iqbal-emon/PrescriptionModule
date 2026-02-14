@@ -166,15 +166,20 @@ namespace Doctor.Controllers
             try
             {
                 var specializationList = await _specializationService.GetByDoctorId(doctorId);
-                var mappedSpecializations = await _mapperService.MapList<Entities.EntityClass.DoctorEntity.DoctorSpecialization, DoctorSpecializationApiResponseDto>(specializationList.Result);
 
-                if (specializationList.Result == null || specializationList.Result.Count == 0)
+                // Check for null or empty BEFORE calling mapper
+                if (specializationList == null || specializationList.Result == null || specializationList.Result.Count == 0)
                 {
-                    ApiResponseHelper.SetFailedResponse(apiResponse, null, DoctorSpecializationApiConstantsResponseMessage.specialization_null_of_get_list);
+                    // Return success response with empty list instead of failed response
+                    apiResponse.Results = new List<DoctorSpecializationApiResponseDto>();
+                    ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DoctorSpecializationApiConstantsResponseMessage.specialization_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
                     return Ok(apiResponse);
                 }
 
-                apiResponse.Results = mappedSpecializations;
+                // Only call mapper if we have data
+                var mappedSpecializations = await _mapperService.MapList<Entities.EntityClass.DoctorEntity.DoctorSpecialization, DoctorSpecializationApiResponseDto>(specializationList.Result);
+
+                apiResponse.Results = mappedSpecializations ?? new List<DoctorSpecializationApiResponseDto>();
                 ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DoctorSpecializationApiConstantsResponseMessage.specialization_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception)

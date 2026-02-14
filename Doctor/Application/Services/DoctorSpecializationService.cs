@@ -39,22 +39,24 @@ namespace Doctor.Application.Services
 
                 if (specializations == null)
                 {
-                    ResponseHelper.SetFailedResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), "Failed to retrieve specializations", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
+                    // Ensure Result is never null - use empty list if null
+                    var result = specializations.Result ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                    ResponseHelper.SetSuccessResponse(response, result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the DoctorSpecializations.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
 
             return response;
@@ -158,22 +160,24 @@ namespace Doctor.Application.Services
 
                 if (specializations == null)
                 {
-                    ResponseHelper.SetFailedResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), "Failed to retrieve specializations", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
+                    // Ensure Result is never null - use empty list if null
+                    var result = specializations.Result ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                    ResponseHelper.SetSuccessResponse(response, result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the DoctorSpecializations by doctor ID.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
 
             return response;
@@ -189,22 +193,24 @@ namespace Doctor.Application.Services
 
                 if (specializations == null)
                 {
-                    ResponseHelper.SetFailedResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), "Failed to retrieve specializations", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
+                    // Ensure Result is never null - use empty list if null
+                    var result = specializations.Result ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                    ResponseHelper.SetSuccessResponse(response, result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the DoctorSpecializations by speciality ID.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
 
             return response;
@@ -220,22 +226,24 @@ namespace Doctor.Application.Services
 
                 if (specializations == null)
                 {
-                    ResponseHelper.SetFailedResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, StatusCodes.Status400BadRequest);
+                    ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), "Failed to retrieve specializations", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
                 }
                 else
                 {
-                    ResponseHelper.SetSuccessResponse(response, specializations.Result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
+                    // Ensure Result is never null - use empty list if null
+                    var result = specializations.Result ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                    ResponseHelper.SetSuccessResponse(response, result, specializations.Message, StatusResponseMessage.success, specializations.StatusCode);
                 }
             }
             catch (SqlException sqlEx)
             {
                 response.Message = "A database error occurred while retrieving the DoctorSpecializations by doctor and speciality ID.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
             catch (Exception ex)
             {
                 response.Message = "An unexpected error occurred.";
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.success, StatusCodes.Status500InternalServerError);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
             }
 
             return response;

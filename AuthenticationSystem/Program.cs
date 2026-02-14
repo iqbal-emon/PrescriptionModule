@@ -5,6 +5,7 @@ using AuthenticationSystem.Application.Services;
 using DIService.SharedDependcyService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -72,6 +73,16 @@ try
     {
         options.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 
+        // Map IFormFile to file type for Swagger
+        options.MapType<IFormFile>(() => new OpenApiSchema
+        {
+            Type = "string",
+            Format = "binary"
+        });
+
+        // Add custom operation filter for file uploads
+        options.OperationFilter<AuthenticationSystem.Swagger.FileUploadOperationFilter>();
+
         // Add JWT authentication to Swagger
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
@@ -98,11 +109,9 @@ try
                 new List<string>()
             }
         });
-    });
 
-    builder.Services.AddSwaggerGen(c =>
-    {
-        c.CustomSchemaIds(type => type.FullName);
+        // Custom schema IDs to avoid conflicts
+        options.CustomSchemaIds(type => type.FullName);
     });
     
     // Configure CORS
@@ -178,6 +187,19 @@ try
         FileProvider = new PhysicalFileProvider(pdfPath),
         RequestPath = "/Prescriptions",
         EnableDirectoryBrowsing = false
+    });
+
+    // Serve uploaded files (including digital signatures)
+    var uploadsPath = builder.Configuration.GetSection("GeneralSettings:FileUploadPath").Value ?? "wwwroot/uploads";
+    var fullUploadsPath = Path.IsPathRooted(uploadsPath) ? uploadsPath : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
+    if (!Directory.Exists(fullUploadsPath))
+    {
+        Directory.CreateDirectory(fullUploadsPath);
+    }
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(fullUploadsPath),
+        RequestPath = "/uploads"
     });
 
     // Apply CORS globally

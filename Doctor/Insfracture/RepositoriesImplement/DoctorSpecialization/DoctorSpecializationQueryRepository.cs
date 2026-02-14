@@ -35,14 +35,16 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
                 var result = await _dataAccess.LoadDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSpecialization, dynamic>("DoctorSpecialization_GetAll", new
                 {
                 });
-                response.Result = result.ToList();
+                // Ensure result is never null - use empty list if null
+                var resultList = result?.ToList() ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                response.Result = resultList;
                 response.IsSuccess = true;
-                ResponseHelper.SetSuccessResponse(response, result, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ResponseHelper.SetSuccessResponse(response, resultList, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
                 response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
             }
             return response;
         }
@@ -77,14 +79,16 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
                 {
                     DoctorID = doctorId
                 });
-                response.Result = result.ToList();
+                // Ensure result is never null - use empty list if null
+                var resultList = result?.ToList() ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                response.Result = resultList;
                 response.IsSuccess = true;
-                ResponseHelper.SetSuccessResponse(response, result, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ResponseHelper.SetSuccessResponse(response, resultList, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
                 response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
             }
             return response;
         }
@@ -98,14 +102,16 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
                 {
                     SpecialityID = specialityId
                 });
-                response.Result = result.ToList();
+                // Ensure result is never null - use empty list if null
+                var resultList = result?.ToList() ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                response.Result = resultList;
                 response.IsSuccess = true;
-                ResponseHelper.SetSuccessResponse(response, result, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ResponseHelper.SetSuccessResponse(response, resultList, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
                 response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
             }
             return response;
         }
@@ -120,14 +126,16 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
                     DoctorID = doctorId,
                     SpecialityID = specialityId
                 });
-                response.Result = result.ToList();
+                // Ensure result is never null - use empty list if null
+                var resultList = result?.ToList() ?? new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>();
+                response.Result = resultList;
                 response.IsSuccess = true;
-                ResponseHelper.SetSuccessResponse(response, result, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+                ResponseHelper.SetSuccessResponse(response, resultList, DoctorSpecializationResponseMessage.common_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {
                 response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
-                ResponseHelper.SetFailedResponse(response, null, response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                ResponseHelper.SetFailedResponse(response, new List<Entities.EntityClass.DoctorEntity.DoctorSpecialization>(), response.Message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
             }
             return response;
         }

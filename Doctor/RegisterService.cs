@@ -12,6 +12,8 @@ using Doctor.Domain.Repositories.DoctorSchedule;
 using Doctor.Insfracture.RepositoriesImplement.DoctorSchedule;
 using Doctor.Domain.Repositories.DoctorSpecialization;
 using Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization;
+using Doctor.Domain.Repositories.DigitalSignature;
+using Doctor.Insfracture.RepositoriesImplement.DigitalSignature;
 using Doctor.Domain.Repositories.DoctorScheduleDaySession;
 using Doctor.Insfracture.RepositoriesImplement.DoctorScheduleDaySession;
 using Doctor.Domain.Repositories.DoctorScheduledDayOff;
@@ -78,6 +80,11 @@ namespace Doctor
             services.AddScoped<IDoctorSpecializationQueryRepository, DoctorSpecializationQueryRepository>();
             services.AddScoped<IDoctorSpecializationCommandRepository, DoctorSpecializationCommandRepository>();
             services.AddScoped<DoctorSpecializationService>();
+
+            // DigitalSignature Services
+            services.AddScoped<IDigitalSignatureQueryRepository, DigitalSignatureQueryRepository>();
+            services.AddScoped<IDigitalSignatureCommandRepository, DigitalSignatureCommandRepository>();
+            services.AddScoped<DigitalSignatureService>();
 
             // DoctorScheduleDaySession Services
             services.AddScoped<IDoctorScheduleDaySessionQueryRepository, DoctorScheduleDaySessionQueryRepository>();
