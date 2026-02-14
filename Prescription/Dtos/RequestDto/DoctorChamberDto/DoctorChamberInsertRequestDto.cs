@@ -11,10 +11,10 @@ namespace Prescription.Dtos.RequestDto.DoctorChamberDto
         public string? ChamberName { get; set; } = string.Empty;
         public string? Address { get; set; } = string.Empty;
 
-        public string Country { get; set; } = string.Empty;
+        public string? Country { get; set; }
 
         public int? CountryID { get; set; }
-        public string? City { get; set; } = string.Empty;
+        public string? City { get; set; }
 
         public int? CityID { get; set; }
 

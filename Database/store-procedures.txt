@@ -2707,7 +2707,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-Create PROCEDURE [dbo].[DoctorChamber_Insert]
+ALTER PROCEDURE [dbo].[DoctorChamber_Insert]
     @ChamberID INT,
     @TenantID INT,
     @DoctorID INT,
@@ -2720,6 +2720,9 @@ Create PROCEDURE [dbo].[DoctorChamber_Insert]
     @ZipCode NVARCHAR(20) = NULL,
     @ZipCodeID INT = NULL,
     @IsVisibleOnPrescription BIT = 1,
+    @ChamberReferenceId INT = NULL,
+    @DistrictId INT = NULL,
+    @DivisionId INT = NULL,
     @CreatedAt DATETIME = NULL,
     @UpdatedAt DATETIME = NULL,
     @IsDeleted BIT = 0
@@ -2739,6 +2742,9 @@ BEGIN
         ZipCode,
         ZipCodeID,
         IsVisibleOnPrescription,
+        ChamberReferenceId,
+        DistrictId,
+        DivisionId,
         CreatedAt,
         UpdatedAt,
         IsDeleted
@@ -2755,6 +2761,9 @@ BEGIN
         ISNULL(@ZipCode, ''),
         @ZipCodeID,
         @IsVisibleOnPrescription,
+        @ChamberReferenceId,
+        @DistrictId,
+        @DivisionId,
         GETUTCDATE(),
         GETUTCDATE(),
         @IsDeleted

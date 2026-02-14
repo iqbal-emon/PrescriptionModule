@@ -12,13 +12,11 @@ namespace Doctor.Dtos.RequestDto.DoctorChamberDto
         public string ChamberName { get; set; } = string.Empty;
         public string? Address { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Country is required.")]
-        public string Country { get; set; } = string.Empty;
+        public string? Country { get; set; }
 
         public int? CountryID { get; set; }
 
-        [Required(ErrorMessage = "City is required.")]
-        public string City { get; set; } = string.Empty;
+        public string? City { get; set; }
         public bool IsVisibleOnPrescription { get; set; }
         public int? CityID { get; set; }
 

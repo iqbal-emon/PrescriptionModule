@@ -258,12 +258,15 @@ namespace Doctor.Controllers
 
         [Authorize(Policy = PermissionConstants.DegreeGetAll)]
         [HttpGet("get-doctor-chamber-list-by-doctor-id")]
-        public async Task<ActionResult<ApiResponse<List<DoctorChamberApiResponseDto>>>> GetDoctorChamberListByDoctorId(int doctorId)
+        [HttpGet("doctor-chamber/doctor-chamber-list-by-doctor-id/{doctorProfileId}")]
+        public async Task<ActionResult<ApiResponse<List<DoctorChamberApiResponseDto>>>> GetDoctorChamberListByDoctorId([FromQuery(Name = "doctorId")] int? doctorId, [FromRoute(Name = "doctorProfileId")] int? doctorProfileId)
         {
             var apiResponse = new ApiResponse<List<DoctorChamberApiResponseDto>>();
             try
             {
-                var chamberList = await _chamberService.GetByDoctorId(doctorId);
+                // Use doctorProfileId from route if available, otherwise use doctorId from query
+                int idToUse = doctorProfileId ?? doctorId ?? 0;
+                var chamberList = await _chamberService.GetByDoctorId(idToUse);
                 var mappedChambers = await _mapperService.MapList<Entities.EntityClass.DoctorEntity.DoctorChamber, DoctorChamberApiResponseDto>(chamberList.Result);
 
                 if (chamberList.Result == null || chamberList.Result.Count == 0)
@@ -312,12 +315,12 @@ namespace Doctor.Controllers
             return await GetDoctorChamberById(id);
         }
 
-        [HttpGet("doctor-chamber/doctor-chamber-list-by-doctor-id/{doctorProfileId}")]
-        [Authorize(Policy = PermissionConstants.DegreeGetAll)]
-        public async Task<ActionResult<ApiResponse<List<DoctorChamberApiResponseDto>>>> GetChambersByDoctorIdMainApi(int doctorProfileId)
-        {
-            return await GetDoctorChamberListByDoctorId(doctorProfileId);
-        }
+        //[HttpGet("doctor-chamber/doctor-chamber-list-by-doctor-idss/{doctorProfileId}")]
+        //[Authorize(Policy = PermissionConstants.DegreeGetAll)]
+        //public async Task<ActionResult<ApiResponse<List<DoctorChamberApiResponseDto>>>> GetChambersByDoctorIdMainApi(int doctorProfileId)
+        //{
+        //    return await GetDoctorChamberListByDoctorId(doctorProfileId);
+        //}
     }
 }
 
