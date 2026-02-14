@@ -21,6 +21,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using User.Dtos.ResponseDto.UserDto;
+using User.Dtos.RequestDto.UserDto;
 
 namespace Doctor.Controllers
 {
@@ -203,9 +204,80 @@ namespace Doctor.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    // First, update the doctor
                     var response = await _doctorService.Update(request);
                     if (response.IsSuccess)
                     {
+                        // If doctor update succeeded and UserID exists, also update User data
+                        if (request.UserID.HasValue && request.UserID.Value > 0)
+                        {
+                            try
+                            {
+                                // Get the doctor to verify UserID
+                                var doctor = await _doctorService.GetById(request.DoctorID);
+                                if (doctor.Result != null && doctor.Result.UserID.HasValue && doctor.Result.UserID.Value > 0)
+                                {
+                                    // Prepare User update request
+                                    var userUpdateRequest = new UserUpdateRequestDto
+                                    {
+                                        UserId = doctor.Result.UserID.Value
+                                    };
+
+                                    // Map FullName to FirstName and LastName
+                                    if (!string.IsNullOrWhiteSpace(request.FullName))
+                                    {
+                                        var nameParts = request.FullName.Trim().Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                                        userUpdateRequest.FirstName = nameParts.Length > 0 ? nameParts[0] : request.FullName;
+                                        userUpdateRequest.LastName = nameParts.Length > 1 ? nameParts[1] : string.Empty;
+                                    }
+
+                                    // Map Email
+                                    if (!string.IsNullOrWhiteSpace(request.Email))
+                                    {
+                                        userUpdateRequest.Email = request.Email;
+                                    }
+
+                                    // Map PhoneNumber (prioritize PhoneNumber, then MobileNo, then ContactNo)
+                                    var phoneNumber = !string.IsNullOrWhiteSpace(request.PhoneNumber)
+                                        ? request.PhoneNumber
+                                        : (!string.IsNullOrWhiteSpace(request.MobileNo)
+                                            ? request.MobileNo
+                                            : request.ContactNo);
+
+                                    if (!string.IsNullOrWhiteSpace(phoneNumber))
+                                    {
+                                        userUpdateRequest.PhoneNumber = phoneNumber;
+                                    }
+
+                                    // Call User API to update user data
+                                    var baseUrl = _apiBaseURL;
+                                    var endPoint = "api/2025-02/update-user";
+                                    string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
+                                    
+                                    var userResponseJson = await _baseRestClientApiService.MakeApiCall(
+                                        baseUrl, endPoint, Method.Put, userUpdateRequest, token, 3, 1000);
+                                    
+                                    var userDeSerializedResult = JsonConvert.DeserializeObject<JObject>(userResponseJson.Content);
+                                    var userUpdateResult = userDeSerializedResult["results"]?.Value<int>() ?? 0;
+                                    
+                                    if (userUpdateResult > 0)
+                                    {
+                                        Console.WriteLine($"DoctorController - Successfully updated User data for UserID: {userUpdateRequest.UserId}");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"DoctorController - Warning: User update returned 0 for UserID: {userUpdateRequest.UserId}");
+                                    }
+                                }
+                            }
+                            catch (Exception userEx)
+                            {
+                                // Log error but don't fail the doctor update if User update fails
+                                Console.WriteLine($"DoctorController - Error updating User data: {userEx.Message}");
+                                // Continue - doctor update was successful
+                            }
+                        }
+
                         ApiResponseHelper.SetSuccessResponse(apiResponse, response.Result, DoctorApiConstantsResponseMessage.doctor_update_success_message);
                         return Ok(apiResponse);
                     }
