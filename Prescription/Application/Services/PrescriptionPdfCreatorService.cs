@@ -41,7 +41,7 @@ namespace Prescription.Application.Services
                 var endPoint = "api/2025-02/create-pdf";
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
-                var responseJson = await _baseRestClientApiService.MakeApiCall(baseUrl, endPoint, Method.Post, requestModel, token, 3, 1000);
+                var responseJson = await _baseRestClientApiService.MakeApiCall(baseUrl, endPoint, Method.Post, requestModel, null, 3, 1000);
                 var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
                 //int results = deSerializedJsonResult["results"]?.Value<int>() ?? 0;
                 var results = deSerializedJsonResult["results"];
@@ -75,7 +75,7 @@ namespace Prescription.Application.Services
                 var endPoint = "api/2025-02/create-prescription-pdf";
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
-                var responseJson = await _baseRestClientApiService.MakeApiCall(baseUrl, endPoint, Method.Post, requestModel, token, 3, 1000);
+                var responseJson = await _baseRestClientApiService.MakeApiCall(baseUrl, endPoint, Method.Post, requestModel, null, 3, 1000);
                 var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
                 //int results = deSerializedJsonResult["results"]?.Value<int>() ?? 0;
                 var results = deSerializedJsonResult["results"];
@@ -109,7 +109,7 @@ namespace Prescription.Application.Services
                 var endPoint = "api/2025-02/send-sms";
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
-                var responseJson = await _baseRestClientApiService.MakeApiCall(baseUrl, endPoint, Method.Post, requestModel, token, 3, 1000);
+                var responseJson = await _baseRestClientApiService.MakeApiCall(baseUrl, endPoint, Method.Post, requestModel, null, 3, 1000);
                 var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
                 //int results = deSerializedJsonResult["results"]?.Value<int>() ?? 0;
                 var results = deSerializedJsonResult["results"];

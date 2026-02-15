@@ -2015,7 +2015,7 @@ namespace Prescription.Controllers
                 var endPoint = $"api/2025-02/get-pdf-prescriptions-by-doctor-prehand-id?doctorId={doctorId}";
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
                 
-                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, null, 3, 1000);
                 var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
                 var pdfs = deSerializedJsonResult["results"]?.ToObject<List<object>>();
 
