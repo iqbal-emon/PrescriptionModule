@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Diagononosis.Utility;
+using Diagonosis.DatabaseModels;
 using Diagonosis.Domain.Repositories.Diagonosis;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
@@ -29,10 +30,17 @@ namespace Diagonosis.Insfracture.RepositoriesImplement.Diagnonosis
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Diagonosis, dynamic>("Diagnosis_DeleteById", new
+                // Create database model matching stored procedure parameters
+                // Note: SP uses @DiagnosisId (camelCase), not @DiagonosisID
+                var deleteModel = new DiagonosisDeleteModel
                 {
-                    DiagnosisID = id
-                });
+                    DiagnosisId = id
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<DiagonosisDeleteModel, DiagonosisDeleteModel>(
+                    "Diagonosis_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, DiagononosisResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -50,7 +58,21 @@ namespace Diagonosis.Insfracture.RepositoriesImplement.Diagnonosis
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Diagonosis_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new DiagonosisInsertModel
+                {
+                    DiagonosisID = 0, // SP accepts but doesn't use (auto-generated)
+                    Name = entity.Name,
+                    Description = entity.Description,
+                    Code = entity.Code,
+                    IsActive = entity.IsActive,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DiagonosisInsertModel>(
+                    "Diagonosis_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DiagononosisResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -77,7 +99,21 @@ namespace Diagonosis.Insfracture.RepositoriesImplement.Diagnonosis
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Diagonosis_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new DiagonosisUpdateModel
+                {
+                    DiagonosisID = entity.DiagonosisID,
+                    Name = entity.Name,
+                    Description = entity.Description,
+                    Code = entity.Code,
+                    IsActive = entity.IsActive,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DiagonosisUpdateModel>(
+                    "Diagonosis_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DiagononosisResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

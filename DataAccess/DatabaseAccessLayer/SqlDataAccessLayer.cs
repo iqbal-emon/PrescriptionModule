@@ -714,221 +714,9 @@ namespace DataAccess.DatabaseAccessLayer
 
                 // Add parameters for all properties of the model, including nested ones
                 await AddParameters(parameters, model);
-                
-                // Log parameters being sent (for debugging)
-                Console.WriteLine("═══════════════════════════════════════════════════════════");
-                Console.WriteLine($"🔍 SaveDataUsingProcedureReturnIdWithIntDataType - {storedProcedure}");
-                Console.WriteLine("═══════════════════════════════════════════════════════════");
-                Console.WriteLine($"📋 Parameter Names ({parameters.ParameterNames.Count()}): {string.Join(", ", parameters.ParameterNames)}");
-                foreach (var paramName in parameters.ParameterNames)
-                {
-                    var paramValue = parameters.Get<object>(paramName);
-                    Console.WriteLine($"   @{paramName}: {paramValue} (Type: {paramValue?.GetType().Name ?? "null"})");
-                }
-                Console.WriteLine("═══════════════════════════════════════════════════════════");
 
-                // Find the ID property that should be the OUTPUT parameter
-                // Exclude properties that are clearly input parameters (like DoctorProfileId, SessionId, ScheduleId, etc.)
-                // Only treat properties as OUTPUT if they represent the generated entity ID (like Id, AppointmentId, etc.)
-                var excludedNames = new[] { "DoctorProfileId", "SessionId", "ScheduleId", "PatientId", "UserId", 
-                                           "SpecialityId", "ChamberId", "TenantId", "ReferenceId", "ReferenceUserId" };
-                
-                var idProperty = typeof(T).GetProperties()
-                    .FirstOrDefault(p => 
-                        (p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) || 
-                         p.Name.Equals("ID", StringComparison.OrdinalIgnoreCase) ||
-                         (p.Name.EndsWith("ID", StringComparison.OrdinalIgnoreCase) && 
-                          !excludedNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase))) 
-                        && (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
-
-                string outputParameterName = null;
-                bool hasOutputParameter = false;
-
-                if (idProperty != null)
-                {
-                    outputParameterName = idProperty.Name;
-                    // Add as OUTPUT parameter with @ prefix for SQL Server
-                    // Note: Adding with same name will overwrite if it was already added as input parameter
-                    parameters.Add($"@{outputParameterName}", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                    hasOutputParameter = true;
-                }
-                else
-                {
-                    // Fallback: try common OUTPUT parameter names
-                    var commonNames = new[] { "id", "Id", "ID", "UserID" };
-                    foreach (var name in commonNames)
-                    {
-                        if (parameters.ParameterNames.Contains(name))
-                        {
-                            outputParameterName = name;
-                            // Add as OUTPUT parameter - will overwrite if already exists
-                            parameters.Add($"@{name}", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                            hasOutputParameter = true;
-                            break;
-                        }
-                    }
-                    // If no common name found, try adding "@id" as OUTPUT parameter
-                    if (!hasOutputParameter)
-                    {
-                        outputParameterName = "id";
-                        parameters.Add("@id", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                        hasOutputParameter = true;
-                    }
-                }
-
-                // Try OUTPUT parameter approach first
-                if (hasOutputParameter)
-                {
-                    try
-                    {
-                        // Execute the stored procedure
-                        await connection.ExecuteAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
-
-                        // Retrieve the output parameter value
-                        int id = parameters.Get<int>($"@{outputParameterName}");
-                        // Return the value (even if 0, as it might be valid in some cases)
-                        return id;
-                    }
-                    catch (SqlException sqlEx)
-                    {
-                        // If the stored procedure doesn't have the OUTPUT parameter, 
-                        // SQL Server will throw an error. Fall back to ExecuteScalarAsync approach.
-                        // Check if error is related to parameter (common error codes: 201, 8144, 8145)
-                        if (sqlEx.Number == 201 || sqlEx.Number == 8144 || sqlEx.Number == 8145 || 
-                            sqlEx.Message.Contains("parameter") || sqlEx.Message.Contains("Parameter"))
-                        {
-                            // Recreate parameters without OUTPUT parameter and try ExecuteScalarAsync instead
-                            var parametersWithoutOutput = new DynamicParameters();
-                            await AddParameters(parametersWithoutOutput, model);
-                            var scalarResult = await connection.ExecuteScalarAsync<int>(storedProcedure, parametersWithoutOutput, commandType: CommandType.StoredProcedure);
-                            return scalarResult;
-                        }
-                        // Re-throw if it's a different SQL error
-                        throw;
-                    }
-                }
-
-                // If no OUTPUT parameter was added, use QueryFirstOrDefaultAsync (for SELECT statements)
-                // This handles cases like Appointment_Insert which uses SELECT @SerialNo AS SerialNo
-                // or Doctor_Insert which uses SELECT SCOPE_IDENTITY() AS DoctorID
-                
-                // For stored procedures that return a single value via SELECT, use QueryFirstOrDefaultAsync
-                // to handle both success (returns value) and error (returns error info) cases
-                var resultSet = await connection.QueryFirstOrDefaultAsync<dynamic>(
-                    storedProcedure, 
-                    parameters, 
-                    commandType: CommandType.StoredProcedure
-                );
-                
-                if (resultSet == null)
-                {
-                    Console.WriteLine("⚠️ Stored procedure returned null result");
-                    return 0;
-                }
-                
-                // Convert to dictionary for easier access
-                var resultDict = (IDictionary<string, object>)resultSet;
-                
-                // Log all keys and values for debugging
-                Console.WriteLine("═══════════════════════════════════════════════════════════");
-                Console.WriteLine("🔍 Stored Procedure Result Analysis");
-                Console.WriteLine("═══════════════════════════════════════════════════════════");
-                Console.WriteLine($"📋 Result Keys: {string.Join(", ", resultDict.Keys)}");
-                foreach (var kvp in resultDict)
-                {
-                    Console.WriteLine($"   {kvp.Key}: {kvp.Value} (Type: {kvp.Value?.GetType().Name ?? "null"})");
-                }
-                Console.WriteLine("═══════════════════════════════════════════════════════════");
-                
-                // Check if result contains error information (from CATCH block)
-                if (resultDict.ContainsKey("ErrorNumber") || resultDict.ContainsKey("ErrorMessage"))
-                {
-                    var errorNumber = resultDict.ContainsKey("ErrorNumber") ? resultDict["ErrorNumber"] : null;
-                    var errorMessage = resultDict.ContainsKey("ErrorMessage") ? resultDict["ErrorMessage"] : "Unknown error";
-                    
-                    Console.WriteLine("❌ Stored procedure returned ERROR:");
-                    Console.WriteLine($"   Error Number: {errorNumber}");
-                    Console.WriteLine($"   Error Message: {errorMessage}");
-                    Console.WriteLine("═══════════════════════════════════════════════════════════");
-                    
-                    throw new Exception($"Stored procedure error {errorNumber}: {errorMessage}");
-                }
-                
-                // Try to get the value - check common return column names
-                if (resultDict.ContainsKey("SerialNo"))
-                {
-                    var serialNo = Convert.ToInt32(resultDict["SerialNo"]);
-                    Console.WriteLine($"✅ Successfully extracted SerialNo: {serialNo}");
-                    return serialNo;
-                }
-                else if (resultDict.ContainsKey("SerialNO"))
-                {
-                    var serialNo = Convert.ToInt32(resultDict["SerialNO"]);
-                    Console.WriteLine($"✅ Successfully extracted SerialNO: {serialNo}");
-                    return serialNo;
-                }
-                else if (resultDict.ContainsKey("Id"))
-                {
-                    var id = Convert.ToInt32(resultDict["Id"]);
-                    Console.WriteLine($"✅ Successfully extracted Id: {id}");
-                    return id;
-                }
-                else if (resultDict.ContainsKey("ID"))
-                {
-                    var id = Convert.ToInt32(resultDict["ID"]);
-                    Console.WriteLine($"✅ Successfully extracted ID: {id}");
-                    return id;
-                }
-                else
-                {
-                    // Fallback: get first property value
-                    var firstValue = resultDict.Values.FirstOrDefault();
-                    Console.WriteLine($"⚠️ No recognized column found (expected SerialNo, Id, or ID)");
-                    Console.WriteLine($"⚠️ First value in result: {firstValue}");
-                    
-                    if (firstValue != null && int.TryParse(firstValue.ToString(), out int intValue))
-                    {
-                        // Check if this looks like an error number
-                        // SQL Server system errors: 1-49999
-                        // User-defined errors: 50000+
-                        // Common constraint errors: 515, 547, etc.
-                        if (intValue >= 50000 || (intValue >= 1 && intValue <= 49999 && intValue != 0))
-                        {
-                            Console.WriteLine($"❌ Value {intValue} looks like a SQL error number!");
-                            Console.WriteLine($"❌ This suggests the stored procedure failed but didn't return ErrorNumber/ErrorMessage keys");
-                            Console.WriteLine($"❌ Result structure: {string.Join(", ", resultDict.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
-                            
-                            // Try to get error message from result if available
-                            string errorMsg = "Unknown database error";
-                            if (resultDict.ContainsKey("ErrorMessage"))
-                            {
-                                errorMsg = resultDict["ErrorMessage"]?.ToString() ?? errorMsg;
-                            }
-                            else if (resultDict.Values.Count > 1)
-                            {
-                                // Maybe error message is in second value
-                                var secondValue = resultDict.Values.Skip(1).FirstOrDefault();
-                                if (secondValue != null)
-                                {
-                                    errorMsg = secondValue.ToString();
-                                }
-                            }
-                            
-                            throw new Exception($"Stored procedure returned error number {intValue}. {errorMsg}");
-                        }
-                        
-                        // If it's a small positive number, it might be a valid SerialNo
-                        // But we should log a warning
-                        if (intValue > 0 && intValue < 1000)
-                        {
-                            Console.WriteLine($"⚠️ Returning value {intValue} as SerialNo (but column name not recognized)");
-                        }
-                        
-                        return intValue;
-                    }
-                    Console.WriteLine("❌ Could not extract integer value from result");
-                    return 0;
-                }
+                return await connection.ExecuteScalarAsync<int>(storedProcedure, parameters,
+                 commandType: CommandType.StoredProcedure);
             }
             catch (SqlException sqlEx)
             {
@@ -941,6 +729,244 @@ namespace DataAccess.DatabaseAccessLayer
                 throw;
             }
         }
+
+        //public async Task<int> SaveDataUsingProcedureReturnIdWithIntDataType<T>(string storedProcedure, T model)
+        //{
+        //    using IDbConnection connection = new SqlConnection(_connectionString);
+
+        //    try
+        //    {
+        //        var parameters = new DynamicParameters();
+
+        //        // Add parameters for all properties of the model, including nested ones
+        //        await AddParameters(parameters, model);
+
+        //        // Log parameters being sent (for debugging)
+        //        Console.WriteLine("═══════════════════════════════════════════════════════════");
+        //        Console.WriteLine($"🔍 SaveDataUsingProcedureReturnIdWithIntDataType - {storedProcedure}");
+        //        Console.WriteLine("═══════════════════════════════════════════════════════════");
+        //        Console.WriteLine($"📋 Parameter Names ({parameters.ParameterNames.Count()}): {string.Join(", ", parameters.ParameterNames)}");
+        //        foreach (var paramName in parameters.ParameterNames)
+        //        {
+        //            var paramValue = parameters.Get<object>(paramName);
+        //            Console.WriteLine($"   @{paramName}: {paramValue} (Type: {paramValue?.GetType().Name ?? "null"})");
+        //        }
+        //        Console.WriteLine("═══════════════════════════════════════════════════════════");
+
+        //        // Find the ID property that should be the OUTPUT parameter
+        //        // Exclude properties that are clearly input parameters (like DoctorProfileId, SessionId, ScheduleId, etc.)
+        //        // Only treat properties as OUTPUT if they represent the generated entity ID (like Id, AppointmentId, etc.)
+        //        var excludedNames = new[] { "DoctorProfileId", "SessionId", "ScheduleId", "PatientId", "UserId", 
+        //                                   "SpecialityId", "ChamberId", "TenantId", "ReferenceId", "ReferenceUserId" };
+
+        //        var idProperty = typeof(T).GetProperties()
+        //            .FirstOrDefault(p => 
+        //                (p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) || 
+        //                 p.Name.Equals("ID", StringComparison.OrdinalIgnoreCase) ||
+        //                 (p.Name.EndsWith("ID", StringComparison.OrdinalIgnoreCase) && 
+        //                  !excludedNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase))) 
+        //                && (p.PropertyType == typeof(int) || p.PropertyType == typeof(int?)));
+
+        //        string outputParameterName = null;
+        //        bool hasOutputParameter = false;
+
+        //        if (idProperty != null)
+        //        {
+        //            outputParameterName = idProperty.Name;
+        //            // Add as OUTPUT parameter with @ prefix for SQL Server
+        //            // Note: Adding with same name will overwrite if it was already added as input parameter
+        //            parameters.Add($"@{outputParameterName}", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        //            hasOutputParameter = true;
+        //        }
+        //        else
+        //        {
+        //            // Fallback: try common OUTPUT parameter names
+        //            var commonNames = new[] { "id", "Id", "ID", "UserID" };
+        //            foreach (var name in commonNames)
+        //            {
+        //                if (parameters.ParameterNames.Contains(name))
+        //                {
+        //                    outputParameterName = name;
+        //                    // Add as OUTPUT parameter - will overwrite if already exists
+        //                    parameters.Add($"@{name}", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        //                    hasOutputParameter = true;
+        //                    break;
+        //                }
+        //            }
+        //            // If no common name found, try adding "@id" as OUTPUT parameter
+        //            if (!hasOutputParameter)
+        //            {
+        //                outputParameterName = "id";
+        //                parameters.Add("@id", dbType: DbType.Int32, direction: ParameterDirection.Output);
+        //                hasOutputParameter = true;
+        //            }
+        //        }
+
+        //        // Try OUTPUT parameter approach first
+        //        if (hasOutputParameter)
+        //        {
+        //            try
+        //            {
+        //                // Execute the stored procedure
+        //                await connection.ExecuteAsync(storedProcedure, parameters, commandType: CommandType.StoredProcedure);
+
+        //                // Retrieve the output parameter value
+        //                int id = parameters.Get<int>($"@{outputParameterName}");
+        //                // Return the value (even if 0, as it might be valid in some cases)
+        //                return id;
+        //            }
+        //            catch (SqlException sqlEx)
+        //            {
+        //                // If the stored procedure doesn't have the OUTPUT parameter, 
+        //                // SQL Server will throw an error. Fall back to ExecuteScalarAsync approach.
+        //                // Check if error is related to parameter (common error codes: 201, 8144, 8145)
+        //                if (sqlEx.Number == 201 || sqlEx.Number == 8144 || sqlEx.Number == 8145 || 
+        //                    sqlEx.Message.Contains("parameter") || sqlEx.Message.Contains("Parameter"))
+        //                {
+        //                    // Recreate parameters without OUTPUT parameter and try ExecuteScalarAsync instead
+        //                    var parametersWithoutOutput = new DynamicParameters();
+        //                    await AddParameters(parametersWithoutOutput, model);
+        //                    var scalarResult = await connection.ExecuteScalarAsync<int>(storedProcedure, parametersWithoutOutput, commandType: CommandType.StoredProcedure);
+        //                    return scalarResult;
+        //                }
+        //                // Re-throw if it's a different SQL error
+        //                throw;
+        //            }
+        //        }
+
+        //        // If no OUTPUT parameter was added, use QueryFirstOrDefaultAsync (for SELECT statements)
+        //        // This handles cases like Appointment_Insert which uses SELECT @SerialNo AS SerialNo
+        //        // or Doctor_Insert which uses SELECT SCOPE_IDENTITY() AS DoctorID
+
+        //        // For stored procedures that return a single value via SELECT, use QueryFirstOrDefaultAsync
+        //        // to handle both success (returns value) and error (returns error info) cases
+        //        var resultSet = await connection.QueryFirstOrDefaultAsync<dynamic>(
+        //            storedProcedure, 
+        //            parameters, 
+        //            commandType: CommandType.StoredProcedure
+        //        );
+
+        //        if (resultSet == null)
+        //        {
+        //            Console.WriteLine("⚠️ Stored procedure returned null result");
+        //            return 0;
+        //        }
+
+        //        // Convert to dictionary for easier access
+        //        var resultDict = (IDictionary<string, object>)resultSet;
+
+        //        // Log all keys and values for debugging
+        //        Console.WriteLine("═══════════════════════════════════════════════════════════");
+        //        Console.WriteLine("🔍 Stored Procedure Result Analysis");
+        //        Console.WriteLine("═══════════════════════════════════════════════════════════");
+        //        Console.WriteLine($"📋 Result Keys: {string.Join(", ", resultDict.Keys)}");
+        //        foreach (var kvp in resultDict)
+        //        {
+        //            Console.WriteLine($"   {kvp.Key}: {kvp.Value} (Type: {kvp.Value?.GetType().Name ?? "null"})");
+        //        }
+        //        Console.WriteLine("═══════════════════════════════════════════════════════════");
+
+        //        // Check if result contains error information (from CATCH block)
+        //        if (resultDict.ContainsKey("ErrorNumber") || resultDict.ContainsKey("ErrorMessage"))
+        //        {
+        //            var errorNumber = resultDict.ContainsKey("ErrorNumber") ? resultDict["ErrorNumber"] : null;
+        //            var errorMessage = resultDict.ContainsKey("ErrorMessage") ? resultDict["ErrorMessage"] : "Unknown error";
+
+        //            Console.WriteLine("❌ Stored procedure returned ERROR:");
+        //            Console.WriteLine($"   Error Number: {errorNumber}");
+        //            Console.WriteLine($"   Error Message: {errorMessage}");
+        //            Console.WriteLine("═══════════════════════════════════════════════════════════");
+
+        //            throw new Exception($"Stored procedure error {errorNumber}: {errorMessage}");
+        //        }
+
+        //        // Try to get the value - check common return column names
+        //        if (resultDict.ContainsKey("SerialNo"))
+        //        {
+        //            var serialNo = Convert.ToInt32(resultDict["SerialNo"]);
+        //            Console.WriteLine($"✅ Successfully extracted SerialNo: {serialNo}");
+        //            return serialNo;
+        //        }
+        //        else if (resultDict.ContainsKey("SerialNO"))
+        //        {
+        //            var serialNo = Convert.ToInt32(resultDict["SerialNO"]);
+        //            Console.WriteLine($"✅ Successfully extracted SerialNO: {serialNo}");
+        //            return serialNo;
+        //        }
+        //        else if (resultDict.ContainsKey("Id"))
+        //        {
+        //            var id = Convert.ToInt32(resultDict["Id"]);
+        //            Console.WriteLine($"✅ Successfully extracted Id: {id}");
+        //            return id;
+        //        }
+        //        else if (resultDict.ContainsKey("ID"))
+        //        {
+        //            var id = Convert.ToInt32(resultDict["ID"]);
+        //            Console.WriteLine($"✅ Successfully extracted ID: {id}");
+        //            return id;
+        //        }
+        //        else
+        //        {
+        //            // Fallback: get first property value
+        //            var firstValue = resultDict.Values.FirstOrDefault();
+        //            Console.WriteLine($"⚠️ No recognized column found (expected SerialNo, Id, or ID)");
+        //            Console.WriteLine($"⚠️ First value in result: {firstValue}");
+
+        //            if (firstValue != null && int.TryParse(firstValue.ToString(), out int intValue))
+        //            {
+        //                // Check if this looks like an error number
+        //                // SQL Server system errors: 1-49999
+        //                // User-defined errors: 50000+
+        //                // Common constraint errors: 515, 547, etc.
+        //                if (intValue >= 50000 || (intValue >= 1 && intValue <= 49999 && intValue != 0))
+        //                {
+        //                    Console.WriteLine($"❌ Value {intValue} looks like a SQL error number!");
+        //                    Console.WriteLine($"❌ This suggests the stored procedure failed but didn't return ErrorNumber/ErrorMessage keys");
+        //                    Console.WriteLine($"❌ Result structure: {string.Join(", ", resultDict.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
+
+        //                    // Try to get error message from result if available
+        //                    string errorMsg = "Unknown database error";
+        //                    if (resultDict.ContainsKey("ErrorMessage"))
+        //                    {
+        //                        errorMsg = resultDict["ErrorMessage"]?.ToString() ?? errorMsg;
+        //                    }
+        //                    else if (resultDict.Values.Count > 1)
+        //                    {
+        //                        // Maybe error message is in second value
+        //                        var secondValue = resultDict.Values.Skip(1).FirstOrDefault();
+        //                        if (secondValue != null)
+        //                        {
+        //                            errorMsg = secondValue.ToString();
+        //                        }
+        //                    }
+
+        //                    throw new Exception($"Stored procedure returned error number {intValue}. {errorMsg}");
+        //                }
+
+        //                // If it's a small positive number, it might be a valid SerialNo
+        //                // But we should log a warning
+        //                if (intValue > 0 && intValue < 1000)
+        //                {
+        //                    Console.WriteLine($"⚠️ Returning value {intValue} as SerialNo (but column name not recognized)");
+        //                }
+
+        //                return intValue;
+        //            }
+        //            Console.WriteLine("❌ Could not extract integer value from result");
+        //            return 0;
+        //        }
+        //    }
+        //    catch (SqlException sqlEx)
+        //    {
+        //        Console.WriteLine($"SQL Exception: {sqlEx.Message}");
+        //        throw;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Exception: {ex.Message}");
+        //        throw;
+        //    }
+        //}
 
         /// <summary>
         /// Data insert and return INT Id with custom output parameter name

@@ -7,6 +7,7 @@ using Utility.Response;
 using Utility.SqlErrorMessgae;
 using Doctor.Domain.Repositories.DoctorExpertise;
 using Doctor.Utility;
+using Doctor.DatabaseModels;
 
 namespace Doctor.Insfracture.RepositoriesImplement.DoctorExpertise
 {
@@ -24,10 +25,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorExpertise
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorExpertise, dynamic>("DoctorExpertise_DeleteById", new
+                var deleteModel = new DoctorExpertiseDeleteModel
                 {
                     DoctorExpertiseID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorExpertise, DoctorExpertiseDeleteModel>("DoctorExpertise_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorExpertiseResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -44,7 +46,19 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorExpertise
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorExpertise_Insert", entity);
+                var insertModel = new DoctorExpertiseInsertModel
+                {
+                    DoctorExpertiseID = entity.DoctorExpertiseID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    ExpertiseID = entity.ExpertiseID,
+                    ExperienceYears = entity.ExperienceYears,
+                    Certification = entity.Certification,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorExpertiseInsertModel>("DoctorExpertise_Insert", insertModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorExpertiseResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -70,7 +84,19 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorExpertise
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorExpertise_Update", entity);
+                var updateModel = new DoctorExpertiseUpdateModel
+                {
+                    DoctorExpertiseID = entity.DoctorExpertiseID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    ExpertiseID = entity.ExpertiseID,
+                    ExperienceYears = entity.ExperienceYears,
+                    Certification = entity.Certification,
+                    IsDeleted = entity.IsDeleted,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorExpertiseUpdateModel>("DoctorExpertise_Update", updateModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorExpertiseResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

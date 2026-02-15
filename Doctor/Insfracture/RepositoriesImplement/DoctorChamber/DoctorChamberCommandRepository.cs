@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.DoctorChamber;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorChamber
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorChamber, dynamic>("DoctorChamber_DeleteById", new
+                var deleteModel = new DoctorChamberDeleteModel
                 {
                     ChamberID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorChamber, DoctorChamberDeleteModel>("DoctorChamber_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorChamberResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,28 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorChamber
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorChamber_Insert", entity);
+                var insertModel = new DoctorChamberInsertModel
+                {
+                    ChamberID = entity.ChamberID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    ChamberName = entity.ChamberName,
+                    Address = entity.Address,
+                    Country = entity.Country,
+                    CountryID = entity.CountryID,
+                    City = entity.City,
+                    CityID = entity.CityID,
+                    ZipCode = entity.ZipCode,
+                    ZipCodeID = entity.ZipCodeID,
+                    IsVisibleOnPrescription = entity.IsVisibleOnPrescription,
+                    ChamberReferenceId = entity.ChamberReferenceId,
+                    DistrictId = entity.DistrictId,
+                    DivisionId = entity.DivisionId,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorChamberInsertModel>("DoctorChamber_Insert", insertModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorChamberResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +94,25 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorChamber
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorChamber_Update", entity);
+                var updateModel = new DoctorChamberUpdateModel
+                {
+                    ChamberID = entity.ChamberID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    ChamberName = entity.ChamberName,
+                    Address = entity.Address,
+                    Country = entity.Country,
+                    CountryID = entity.CountryID,
+                    City = entity.City,
+                    CityID = entity.CityID,
+                    ZipCode = entity.ZipCode,
+                    ZipCodeID = entity.ZipCodeID,
+                    IsVisibleOnPrescription = entity.IsVisibleOnPrescription,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted,
+                    CreatedAt = entity.CreatedAt
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorChamberUpdateModel>("DoctorChamber_Update", updateModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorChamberResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

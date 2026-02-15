@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using Prescription.DatabaseModels;
 using Prescription.Domain.Repositories.PrescriptionInvestigation;
 using Prescription.Utility;
 using Utility.ApiResponse;
@@ -22,10 +23,16 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionInvestigati
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.PatientEntity.PrescriptionInvestigation, dynamic>("PrescriptionInvestigation_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new PrescriptionInvestigationDeleteModel
                 {
                     PrescriptionInvestigationID = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PrescriptionInvestigationDeleteModel, PrescriptionInvestigationDeleteModel>(
+                    "PrescriptionInvestigation_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, PrescriptionInvestigationResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -43,7 +50,21 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionInvestigati
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PatientEntity.PrescriptionInvestigation>("PrescriptionInvestigation_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new PrescriptionInvestigationInsertModel
+                {
+                    PrescriptionInvestigationID = 0, // SP accepts but doesn't use (auto-generated)
+                    InvestigationID = entity.InvestigationID,
+                    PrescriptionID = entity.PrescriptionID,
+                    Description = entity.Description,
+                    IsActive = entity.IsActive,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionInvestigationInsertModel>(
+                    "PrescriptionInvestigation_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, PrescriptionInvestigationResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -70,7 +91,21 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionInvestigati
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PatientEntity.PrescriptionInvestigation>("PrescriptionInvestigation_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new PrescriptionInvestigationUpdateModel
+                {
+                    PrescriptionInvestigationId = entity.PrescriptionInvestigationID,
+                    InvestigationID = entity.InvestigationID,
+                    PrescriptionID = entity.PrescriptionID > 0 ? entity.PrescriptionID : null,
+                    Description = entity.Description,
+                    IsActive = entity.IsActive,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionInvestigationUpdateModel>(
+                    "PrescriptionInvestigation_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, PrescriptionInvestigationResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

@@ -35,6 +35,7 @@ namespace Medication.DatabaseModels
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
+        public int MedicationId { get; set; } // OUTPUT parameter
     }
 
     /// <summary>
@@ -58,6 +59,7 @@ namespace Medication.DatabaseModels
         public string? Strength { get; set; }
         public string? Indication { get; set; }
         public bool IsActive { get; set; } = true;
+        public int UpdatedId { get; set; } // OUTPUT parameter
     }
 }
 

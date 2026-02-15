@@ -51,6 +51,33 @@ try
 {
     Log.Information("Starting PrescriptionModule AuthenticationSystem application");
 
+    // Add assembly resolution handler to help resolve plugin dependencies
+    AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+    {
+        var assemblyName = new System.Reflection.AssemblyName(args.Name);
+        var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        
+        // Try to load from base directory
+        var assemblyPath = Path.Combine(baseDirectory, $"{assemblyName.Name}.dll");
+        if (File.Exists(assemblyPath))
+        {
+            return System.Reflection.Assembly.LoadFrom(assemblyPath);
+        }
+        
+        // Try to load from plugins directory
+        var pluginsPath = Path.Combine(baseDirectory, "Plugins");
+        if (Directory.Exists(pluginsPath))
+        {
+            assemblyPath = Path.Combine(pluginsPath, $"{assemblyName.Name}.dll");
+            if (File.Exists(assemblyPath))
+            {
+                return System.Reflection.Assembly.LoadFrom(assemblyPath);
+            }
+        }
+        
+        return null;
+    };
+
     var builder = WebApplication.CreateBuilder(args);
     
     // Use Serilog for logging

@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.DoctorFeesSetup;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorFeesSetup
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorFeesSetup, dynamic>("DoctorFeesSetup_DeleteById", new
+                var deleteModel = new DoctorFeesSetupDeleteModel
                 {
                     DoctorFeesSetupID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorFeesSetup, DoctorFeesSetupDeleteModel>("DoctorFeesSetup_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorFeesSetupResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,22 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorFeesSetup
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorFeesSetup_Insert", entity);
+                var insertModel = new DoctorFeesSetupInsertModel
+                {
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    AppointmentType = entity.AppointmentType,
+                    CurrentFee = entity.CurrentFee,
+                    PreviousFee = entity.PreviousFee,
+                    FeeAppliedFrom = entity.FeeAppliedFrom,
+                    FollowUpPeriod = entity.FollowUpPeriod,
+                    ReportShowPeriod = entity.ReportShowPeriod,
+                    Discount = entity.Discount,
+                    DiscountAppliedFrom = entity.DiscountAppliedFrom,
+                    DiscountPeriod = entity.DiscountPeriod,
+                    TotalFee = entity.TotalFee,
+                    IsActive = entity.IsActive
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorFeesSetup_Insert", insertModel, "@DoctorFeesSetupID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorFeesSetupResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +88,23 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorFeesSetup
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorFeesSetup_Update", entity);
+                var updateModel = new DoctorFeesSetupUpdateModel
+                {
+                    DoctorFeesSetupID = entity.DoctorFeesSetupID,
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    AppointmentType = entity.AppointmentType,
+                    CurrentFee = entity.CurrentFee,
+                    PreviousFee = entity.PreviousFee,
+                    FeeAppliedFrom = entity.FeeAppliedFrom,
+                    FollowUpPeriod = entity.FollowUpPeriod,
+                    ReportShowPeriod = entity.ReportShowPeriod,
+                    Discount = entity.Discount,
+                    DiscountAppliedFrom = entity.DiscountAppliedFrom,
+                    DiscountPeriod = entity.DiscountPeriod,
+                    TotalFee = entity.TotalFee,
+                    IsActive = entity.IsActive
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorFeesSetup_Update", updateModel, "@UpdatedId");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorFeesSetupResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

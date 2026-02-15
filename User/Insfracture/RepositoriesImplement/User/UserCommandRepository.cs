@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using User.DatabaseModels;
 using User.Domain.Repositories.User;
 using User.Utility;
 using Utility.ApiResponse;
@@ -24,10 +25,16 @@ namespace User.Infrastructure.RepositoriesImplement.User
 
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.User, dynamic>("User_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new UserDeleteModel
                 {
-                    UserId = id
-                });
+                    UserID = id
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<UserDeleteModel, UserDeleteModel>(
+                    "User_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, UserResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -47,7 +54,31 @@ namespace User.Infrastructure.RepositoriesImplement.User
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.User>("User_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new UserInsertModel
+                {
+                    TenantID = entity.TenantID,
+                    FirstName = entity.FirstName,
+                    LastName = entity.LastName,
+                    FullName = entity.FullName,
+                    UserName = entity.UserName,
+                    Email = entity.Email,
+                    PasswordHash = entity.PasswordHash,
+                    UserType = entity.UserType,
+                    PhoneNumber = entity.PhoneNumber,
+                    ContactNo = entity.ContactNo,
+                    RoleId = entity.RoleId,
+                    IsActive = entity.IsActive,
+                    IsDeleted = entity.IsDeleted,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    ReferenceUserId = entity.ReferenceUserId
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<UserInsertModel>(
+                    "User_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, UserResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -75,7 +106,30 @@ namespace User.Infrastructure.RepositoriesImplement.User
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.User>("User_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new UserUpdateModel
+                {
+                    UserID = entity.UserID,
+                    TenantID = entity.TenantID,
+                    FirstName = entity.FirstName,
+                    LastName = entity.LastName,
+                    FullName = entity.FullName,
+                    UserName = entity.UserName,
+                    Email = entity.Email,
+                    PasswordHash = entity.PasswordHash,
+                    UserType = entity.UserType,
+                    PhoneNumber = entity.PhoneNumber,
+                    ContactNo = entity.ContactNo,
+                    RoleId = entity.RoleId,
+                    IsActive = entity.IsActive,
+                    IsDeleted = entity.IsDeleted,
+                    ReferenceUserId = entity.ReferenceUserId
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<UserUpdateModel>(
+                    "User_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, UserResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

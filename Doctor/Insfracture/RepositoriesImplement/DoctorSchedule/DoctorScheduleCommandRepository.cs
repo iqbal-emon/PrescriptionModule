@@ -1,5 +1,6 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSchedule
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSchedule, dynamic>("DoctorSchedule_DeleteById", new
+                var deleteModel = new DoctorScheduleDeleteModel
                 {
                     DoctorScheduleID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSchedule, DoctorScheduleDeleteModel>("DoctorSchedule_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorScheduleResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,17 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSchedule
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorSchedule_Insert", entity);
+                var insertModel = new DoctorScheduleInsertModel
+                {
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    ScheduleID = entity.ScheduleID,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorScheduleInsertModel>("DoctorSchedule_Insert", insertModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorScheduleResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +83,17 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSchedule
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorSchedule_Update", entity);
+                var updateModel = new DoctorScheduleUpdateModel
+                {
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    ScheduleID = entity.ScheduleID,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted,
+                    CreatedAt = entity.CreatedAt
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorScheduleUpdateModel>("DoctorSchedule_Update", updateModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorScheduleResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.DoctorScheduleDaySession;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorScheduleDaySession
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession, dynamic>("DoctorScheduleDaySession_DeleteById", new
+                var deleteModel = new DoctorScheduleDaySessionDeleteModel
                 {
                     DoctorScheduleDaySessionID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession, DoctorScheduleDaySessionDeleteModel>("DoctorScheduleDaySession_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorScheduleDaySessionResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,19 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorScheduleDaySession
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorScheduleDaySession_Insert", entity);
+                var insertModel = new DoctorScheduleDaySessionInsertModel
+                {
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    ScheduleDayofWeek = entity.ScheduleDayofWeek,
+                    StartTime = entity.StartTime,
+                    EndTime = entity.EndTime,
+                    NoOfPatients = entity.NoOfPatients,
+                    IsActive = entity.IsActive,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorScheduleDaySession_Insert", insertModel, "@DoctorScheduleDaySessionID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorScheduleDaySessionResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +85,20 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorScheduleDaySession
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorScheduleDaySession_Update", entity);
+                var updateModel = new DoctorScheduleDaySessionUpdateModel
+                {
+                    DoctorScheduleDaySessionID = entity.DoctorScheduleDaySessionID,
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    ScheduleDayofWeek = entity.ScheduleDayofWeek,
+                    StartTime = entity.StartTime,
+                    EndTime = entity.EndTime,
+                    NoOfPatients = entity.NoOfPatients,
+                    IsActive = entity.IsActive,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorScheduleDaySession_Update", updateModel, "@UpdatedId");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorScheduleDaySessionResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

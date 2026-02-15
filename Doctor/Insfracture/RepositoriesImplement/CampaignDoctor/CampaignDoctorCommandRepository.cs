@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.CampaignDoctor;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.CampaignDoctor
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.CampaignDoctor, dynamic>("CampaignDoctor_DeleteById", new
+                var deleteModel = new CampaignDoctorDeleteModel
                 {
                     CampaignDoctorID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.CampaignDoctor, CampaignDoctorDeleteModel>("CampaignDoctor_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, CampaignDoctorResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,12 @@ namespace Doctor.Insfracture.RepositoriesImplement.CampaignDoctor
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("CampaignDoctor_Insert", entity);
+                var insertModel = new CampaignDoctorInsertModel
+                {
+                    DoctorID = entity.DoctorID,
+                    CampaignID = entity.CampaignID
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("CampaignDoctor_Insert", insertModel, "@CampaignDoctorID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, CampaignDoctorResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +78,13 @@ namespace Doctor.Insfracture.RepositoriesImplement.CampaignDoctor
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("CampaignDoctor_Update", entity);
+                var updateModel = new CampaignDoctorUpdateModel
+                {
+                    CampaignDoctorID = entity.CampaignDoctorID,
+                    DoctorID = entity.DoctorID,
+                    CampaignID = entity.CampaignID
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("CampaignDoctor_Update", updateModel, "@UpdatedId");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, CampaignDoctorResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

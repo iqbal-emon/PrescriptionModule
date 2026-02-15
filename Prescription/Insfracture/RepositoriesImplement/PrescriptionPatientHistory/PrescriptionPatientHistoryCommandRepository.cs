@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using Prescription.DatabaseModels;
 using Prescription.Domain.Repositories.PrescriptionPatientHistory;
 using Prescription.Utility;
 using Utility.ApiResponse;
@@ -24,10 +25,16 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionPatientHist
 
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.PrescriptionPatientHistory, dynamic>("PrescriptionPatientHistory_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new PrescriptionPatientHistoryDeleteModel
                 {
                     PrescriptionPatientHistoryID = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PrescriptionPatientHistoryDeleteModel, PrescriptionPatientHistoryDeleteModel>(
+                    "PrescriptionPatientHistory_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, PrescriptionPatientHistoryResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -47,7 +54,23 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionPatientHist
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionPatientHistory>("PrescriptionPatientHistory_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new PrescriptionPatientHistoryInsertModel
+                {
+                    PrescriptionPatientHistoryID = 0, // SP accepts but doesn't use (auto-generated)
+                    CommonHistoryID = entity.CommonHistoryID,
+                    PrescriptionID = entity.PrescriptionID,
+                    Description = entity.Description,
+                    PresentHistory = entity.PresentHistory,
+                    PastHistory = entity.PastHistory,
+                    IsActive = entity.IsActive,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionPatientHistoryInsertModel>(
+                    "PrescriptionPatientHistory_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, PrescriptionPatientHistoryResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -75,7 +98,21 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionPatientHist
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionPatientHistory>("PrescriptionPatientHistory_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new PrescriptionPatientHistoryUpdateModel
+                {
+                    PrescriptionPatientHistoryID = entity.PrescriptionPatientHistoryID,
+                    CommonHistoryID = entity.CommonHistoryID > 0 ? entity.CommonHistoryID : null,
+                    PrescriptionID = entity.PrescriptionID > 0 ? entity.PrescriptionID : null,
+                    Description = entity.Description,
+                    IsActive = entity.IsActive,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionPatientHistoryUpdateModel>(
+                    "PrescriptionPatientHistory_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, PrescriptionPatientHistoryResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

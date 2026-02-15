@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Doctor.Domain.Repositories.Doctor;
+using Doctor.DatabaseModels;
 using Doctor.Utility;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -26,10 +27,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.Doctor
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, dynamic>("Doctor_DeleteById", new
+                var deleteModel = new DoctorDeleteModel
                 {
                     DoctorID = doctorId
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Doctor, DoctorDeleteModel>("Doctor_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -46,7 +48,29 @@ namespace Doctor.Insfracture.RepositoriesImplement.Doctor
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Doctor>("Doctor_Insert", entity);
+                var insertModel = new DoctorInsertModel
+                {
+                    UserID = entity.UserID,
+                    DoctorID = entity.DoctorID,
+                    SpecialityID = entity.SpecialityID,
+                    Specialization = entity.Specialization,
+                    LicenseNumber = entity.LicenseNumber,
+                    DoctorReferenceID = entity.DoctorReferenceID,
+                    HospitalAffiliation = entity.HospitalAffiliation,
+                    Expertise = entity.Expertise,
+                    ProfileStep = entity.ProfileStep,
+                    BmdcRegNo = entity.BmdcRegNo,
+                    BmdcRegExpiryDate = entity.BmdcRegExpiryDate,
+                    IdentityNumber = entity.IdentityNumber,
+                    City = entity.City,
+                    Country = entity.Country,
+                    Address = entity.Address,
+                    DoctorTitle = entity.DoctorTitle,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorInsertModel>("Doctor_Insert", insertModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +95,29 @@ namespace Doctor.Insfracture.RepositoriesImplement.Doctor
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Doctor>("Doctor_Update", entity);
+                var updateModel = new DoctorUpdateModel
+                {
+                    DoctorID = entity.DoctorID,
+                    UserID = entity.UserID,
+                    SpecialityID = entity.SpecialityID,
+                    Specialization = entity.Specialization,
+                    LicenseNumber = entity.LicenseNumber,
+                    DoctorReferenceID = entity.DoctorReferenceID,
+                    HospitalAffiliation = entity.HospitalAffiliation,
+                    Expertise = entity.Expertise,
+                    ProfileStep = entity.ProfileStep,
+                    BmdcRegNo = entity.BmdcRegNo,
+                    BmdcRegExpiryDate = entity.BmdcRegExpiryDate,
+                    IdentityNumber = entity.IdentityNumber,
+                    City = entity.City,
+                    Country = entity.Country,
+                    Address = entity.Address,
+                    DoctorTitle = entity.DoctorTitle,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted,
+                    CreatedAt = entity.CreatedAt
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorUpdateModel>("Doctor_Update", updateModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

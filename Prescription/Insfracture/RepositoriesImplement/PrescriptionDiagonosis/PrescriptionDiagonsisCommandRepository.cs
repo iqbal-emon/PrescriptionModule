@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using Prescription.DatabaseModels;
 using Prescription.Domain.Repositories.PrescriptionDiagonosis;
 using Prescription.Utility;
 using Utility.ApiResponse;
@@ -21,10 +22,16 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionDiagonosis
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.PrescriptionDiagnosis, dynamic>("PrescriptionDiagonosis_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new PrescriptionDiagonsisDeleteModel
                 {
                     DiagnosisId = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PrescriptionDiagonsisDeleteModel, PrescriptionDiagonsisDeleteModel>(
+                    "PrescriptionDiagonosis_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, PrescriptionExaminationResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -42,7 +49,22 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionDiagonosis
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionDiagnosis>("PrescriptionDiagnoses_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new PrescriptionDiagonsisInsertModel
+                {
+                    PrescriptionDiagnosisId = 0, // SP accepts but doesn't use (auto-generated)
+                    PrescriptionId = entity.PrescriptionId,
+                    DiagnosisID = entity.DiagnosisId,
+                    Notes = entity.Notes,
+                    PastDiagnosis = entity.PastDiagnosis,
+                    PresentDiagnosis = entity.PresentDiagnosis,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionDiagonsisInsertModel>(
+                    "PrescriptionDiagnoses_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -70,7 +92,20 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionDiagonosis
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionDiagnosis>("PrescriptionDiagnoses_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new PrescriptionDiagonsisUpdateModel
+                {
+                    PrescriptionDiagnosisId = entity.PrescriptionDiagnosisId,
+                    PrescriptionId = entity.PrescriptionId > 0 ? entity.PrescriptionId : null,
+                    DiagnosisId = entity.DiagnosisId > 0 ? entity.DiagnosisId : null,
+                    Notes = entity.Notes,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionDiagonsisUpdateModel>(
+                    "PrescriptionDiagnoses_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
 

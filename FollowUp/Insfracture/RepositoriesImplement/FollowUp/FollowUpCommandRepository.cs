@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Utility.ApiResponse;
 using Utility.Response;
 using Utility.SqlErrorMessgae;
+using FollowUp.DatabaseModels;
 using FollowUp.Domain.Repositories.FollowUp;
 using FollowUp.Utility;
 
@@ -23,10 +24,16 @@ namespace FollowUp.Insfracture.RepositoriesImplement.FollowUp
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.FollowUp, dynamic>("FollowUp_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new FollowUpDeleteModel
                 {
                     FollowUpId = followUpId
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<FollowUpDeleteModel, FollowUpDeleteModel>(
+                    "FollowUp_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, FollowUpResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +52,18 @@ namespace FollowUp.Insfracture.RepositoriesImplement.FollowUp
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.FollowUp>("FollowUp_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new FollowUpInsertModel
+                {
+                    TenantId = entity.TenantId,
+                    Name = entity.Name,
+                    Description = entity.Description
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<FollowUpInsertModel>(
+                    "FollowUp_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -75,7 +93,19 @@ namespace FollowUp.Insfracture.RepositoriesImplement.FollowUp
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.FollowUp>("FollowUp_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new FollowUpUpdateModel
+                {
+                    FollowUpId = entity.FollowUpId,
+                    TenantId = entity.TenantId,
+                    Name = entity.Name,
+                    Description = entity.Description
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<FollowUpUpdateModel>(
+                    "FollowUp_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
 

@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using Symptoms.DatabaseModels;
 using Symptoms.Utility;
 using symtoms.Domain.Repositories.Systom;
 using Utility.ApiResponse;
@@ -24,10 +25,16 @@ namespace Symptoms.Infrastructure.RepositoriesImplement.Symptom
 
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Symptom, dynamic>("Symptom_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new SymptomDeleteModel
                 {
-                    SymptomId = id
-                });
+                    SymptomID = id
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<SymptomDeleteModel, SymptomDeleteModel>(
+                    "Symptom_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, SymptomResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -47,7 +54,18 @@ namespace Symptoms.Infrastructure.RepositoriesImplement.Symptom
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Symptom>("Symptom_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new SymptomInsertModel
+                {
+                    TenantID = entity.TenantID,
+                    SymptomName = entity.SymptomName,
+                    Description = entity.Description
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<SymptomInsertModel>(
+                    "Symptom_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -78,7 +96,19 @@ namespace Symptoms.Infrastructure.RepositoriesImplement.Symptom
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Symptom>("Symptom_Update", entity); 
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new SymptomUpdateModel
+                {
+                    SymptomID = entity.SymptomID,
+                    TenantID = entity.TenantID,
+                    SymptomName = entity.SymptomName,
+                    Description = entity.Description
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<SymptomUpdateModel>(
+                    "Symptom_Update", 
+                    updateModel
+                ); 
                 if (result == 0)
                 {
 

@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using Prescription.DatabaseModels;
 using Prescription.Domain.Repositories.PrescriptionFollowUp;
 using Prescription.Utility;
 using Utility.ApiResponse;
@@ -20,10 +21,16 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptioinFollowUp
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.PrescriptionFollowUp, dynamic>("PrescriptionFollowUp_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new PrescriptionFollowUpDeleteModel
                 {
-                    PrescriptionFollowUpId = id
-                });
+                    PrescriptionFollowUpID = id
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PrescriptionFollowUpDeleteModel, PrescriptionFollowUpDeleteModel>(
+                    "PrescriptionFollowUp_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, PrescriptionFollowUpResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -41,7 +48,21 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptioinFollowUp
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionFollowUp>("PrescriptionFollowUp_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new PrescriptionFollowUpInsertModel
+                {
+                    PrescriptionFollowUpID = 0, // SP accepts but doesn't use (auto-generated)
+                    PrescriptionID = entity.PrescriptionID,
+                    FollowUpID = entity.FollowUpID,
+                    Description = entity.Description,
+                    IsActive = entity.IsActive,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionFollowUpInsertModel>(
+                    "PrescriptionFollowUp_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, PrescriptionFollowUpResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -68,7 +89,21 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptioinFollowUp
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionFollowUp>("PrescriptionFollowUp_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new PrescriptionFollowUpUpdateModel
+                {
+                    PrescriptionFollowUpId = entity.PrescriptionFollowUpID,
+                    followUpId = entity.FollowUpID,
+                    PrescriptionId = entity.PrescriptionID > 0 ? entity.PrescriptionID : null,
+                    Description = entity.Description,
+                    IsActive = entity.IsActive,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionFollowUpUpdateModel>(
+                    "PrescriptionFollowUp_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, PrescriptionFollowUpResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

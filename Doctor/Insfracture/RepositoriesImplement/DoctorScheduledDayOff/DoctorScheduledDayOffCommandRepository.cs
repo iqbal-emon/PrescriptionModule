@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.DoctorScheduledDayOff;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorScheduledDayOff
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorScheduledDayOff, dynamic>("DoctorScheduledDayOff_DeleteById", new
+                var deleteModel = new DoctorScheduledDayOffDeleteModel
                 {
                     DoctorScheduledDayOffID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorScheduledDayOff, DoctorScheduledDayOffDeleteModel>("DoctorScheduledDayOff_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorScheduledDayOffResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,13 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorScheduledDayOff
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorScheduledDayOff_Insert", entity);
+                var insertModel = new DoctorScheduledDayOffInsertModel
+                {
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    OffDay = entity.OffDay,
+                    IsActive = entity.IsActive
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorScheduledDayOff_Insert", insertModel, "@DoctorScheduledDayOffID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorScheduledDayOffResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +79,14 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorScheduledDayOff
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorScheduledDayOff_Update", entity);
+                var updateModel = new DoctorScheduledDayOffUpdateModel
+                {
+                    DoctorScheduledDayOffID = entity.DoctorScheduledDayOffID,
+                    DoctorScheduleID = entity.DoctorScheduleID,
+                    OffDay = entity.OffDay,
+                    IsActive = entity.IsActive
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorScheduledDayOff_Update", updateModel, "@UpdatedId");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorScheduledDayOffResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

@@ -1,4 +1,5 @@
-﻿using Advice.Domain.Repositories.Advice;
+﻿using Advice.DatabaseModels;
+using Advice.Domain.Repositories.Advice;
 using Advice.Utility;
 using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
@@ -29,10 +30,16 @@ namespace Advice.Insfracture.RepositoriesImplement.Advice
 
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.CommonAdvice, dynamic>("CommonAdvices_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new CommonAdviceDeleteModel
                 {
                     CommonAdviceID = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<CommonAdviceDeleteModel, CommonAdviceDeleteModel>(
+                    "CommonAdvices_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, AdviceResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -52,7 +59,20 @@ namespace Advice.Insfracture.RepositoriesImplement.Advice
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.CommonAdvice>("CommonAdvices_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new CommonAdviceInsertModel
+                {
+                    Advice = entity.Advice,
+                    Type = entity.Type,
+                    IsActive = entity.IsActive,
+                    Description = entity.Description,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<CommonAdviceInsertModel>(
+                    "CommonAdvices_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, AdviceResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -80,7 +100,19 @@ namespace Advice.Insfracture.RepositoriesImplement.Advice
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.CommonAdvice>("CommonAdvices_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new CommonAdviceUpdateModel
+                {
+                    CommonAdviceID = entity.CommonAdviceID,
+                    Advice = entity.Advice,
+                    Type = entity.Type,
+                    IsActive = entity.IsActive
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<CommonAdviceUpdateModel>(
+                    "CommonAdvices_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, AdviceResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

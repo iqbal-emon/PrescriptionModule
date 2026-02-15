@@ -1,4 +1,5 @@
 ﻿using DataAccess.DatabaseAccessLayer;
+using Investigation.DatabaseModels;
 using Investigation.Domain.Repositories.Investigation;
 using Investigation.Utility;
 using Microsoft.AspNetCore.Http;
@@ -25,10 +26,16 @@ namespace Investigation.Insfracture.RepositoriesImplement.Investigation
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Investigation, dynamic>("Investigation_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new InvestigationDeleteModel
                 {
                     InvestigationID = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<InvestigationDeleteModel, InvestigationDeleteModel>(
+                    "Investigation_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, InvestigationResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -46,7 +53,20 @@ namespace Investigation.Insfracture.RepositoriesImplement.Investigation
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Investigation>("Investigations_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new InvestigationInsertModel
+                {
+                    InvestigationID = 0, // SP accepts but doesn't use (auto-generated)
+                    Name = entity.Name,
+                    Description = entity.Description,
+                    Code = entity.Code,
+                    // CreatedAt, UpdatedAt, IsDeleted, IsActive are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<InvestigationInsertModel>(
+                    "Investigations_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, InvestigationResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -73,7 +93,21 @@ namespace Investigation.Insfracture.RepositoriesImplement.Investigation
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Investigation>("Investigations_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new InvestigationUpdateModel
+                {
+                    InvestigationID = entity.InvestigationID,
+                    Name = entity.Name,
+                    Description = entity.Description,
+                    Code = entity.Code,
+                    IsActive = entity.IsActive,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<InvestigationUpdateModel>(
+                    "Investigations_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, InvestigationResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

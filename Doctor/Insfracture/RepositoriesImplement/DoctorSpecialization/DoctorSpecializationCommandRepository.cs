@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.DoctorSpecialization;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSpecialization, dynamic>("DoctorSpecialization_DeleteById", new
+                var deleteModel = new DoctorSpecializationDeleteModel
                 {
                     DoctorSpecializationID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorSpecialization, DoctorSpecializationDeleteModel>("DoctorSpecialization_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorSpecializationResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,18 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorSpecialization_Insert", entity);
+                var insertModel = new DoctorSpecializationInsertModel
+                {
+                    DoctorID = entity.DoctorID,
+                    SpecialityID = entity.SpecialityID,
+                    SpecializationID = entity.SpecializationID,
+                    ServiceDetails = entity.ServiceDetails,
+                    DocumentName = entity.DocumentName,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt,
+                    IsDeleted = entity.IsDeleted
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorSpecialization_Insert", insertModel, "@DoctorSpecializationID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorSpecializationResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +84,16 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorSpecialization
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorSpecialization_Update", entity);
+                var updateModel = new DoctorSpecializationUpdateModel
+                {
+                    DoctorSpecializationID = entity.DoctorSpecializationID,
+                    DoctorID = entity.DoctorID,
+                    SpecialityID = entity.SpecialityID,
+                    SpecializationID = entity.SpecializationID,
+                    ServiceDetails = entity.ServiceDetails,
+                    DocumentName = entity.DocumentName
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("DoctorSpecialization_Update", updateModel, "@UpdatedId");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorSpecializationResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

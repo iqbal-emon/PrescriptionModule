@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.DoctorDegree;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorDegree
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorDegree, dynamic>("DoctorDegree_DeleteById", new
+                var deleteModel = new DoctorDegreeDeleteModel
                 {
                     DoctorDegreeID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DoctorDegree, DoctorDegreeDeleteModel>("DoctorDegree_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, DoctorDegreeResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,26 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorDegree
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorDegree_Insert", entity);
+                var insertModel = new DoctorDegreeInsertModel
+                {
+                    DoctorDegreeID = entity.DoctorDegreeID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    DegreeID = entity.DegreeID,
+                    PassingYear = entity.PassingYear,
+                    InstituteName = entity.InstituteName,
+                    InstituteID = entity.InstituteID,
+                    Country = entity.Country,
+                    CountryID = entity.CountryID,
+                    City = entity.City,
+                    CityID = entity.CityID,
+                    ZipCode = entity.ZipCode,
+                    ZipCodeID = entity.ZipCodeID,
+                    IsDeleted = entity.IsDeleted,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorDegreeInsertModel>("DoctorDegree_Insert", insertModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DoctorDegreeResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +92,26 @@ namespace Doctor.Insfracture.RepositoriesImplement.DoctorDegree
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DoctorDegree_Update", entity);
+                var updateModel = new DoctorDegreeUpdateModel
+                {
+                    DoctorDegreeID = entity.DoctorDegreeID,
+                    TenantID = entity.TenantID,
+                    DoctorID = entity.DoctorID,
+                    DegreeID = entity.DegreeID,
+                    PassingYear = entity.PassingYear,
+                    InstituteName = entity.InstituteName,
+                    InstituteID = entity.InstituteID,
+                    Country = entity.Country,
+                    CountryID = entity.CountryID,
+                    City = entity.City,
+                    CityID = entity.CityID,
+                    ZipCode = entity.ZipCode,
+                    ZipCodeID = entity.ZipCodeID,
+                    IsDeleted = entity.IsDeleted,
+                    CreatedAt = entity.CreatedAt,
+                    UpdatedAt = entity.UpdatedAt
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DoctorDegreeUpdateModel>("DoctorDegree_Update", updateModel);
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DoctorDegreeResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

@@ -1,4 +1,5 @@
 ﻿using DataAccess.DatabaseAccessLayer;
+using Degree.DatabaseModels;
 using Degree.Domain.Repositories.Degree;
 using Degree.Utility;
 using Entities.EntityClass;
@@ -29,10 +30,16 @@ namespace Degree.Insfracture.RepositoriesImplement.Degree
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Diagonosis, dynamic>("Degree_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new DegreeDeleteModel
                 {
                     DegreeID = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<DegreeDeleteModel, DegreeDeleteModel>(
+                    "Degree_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, DegreeResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -50,7 +57,21 @@ namespace Degree.Insfracture.RepositoriesImplement.Degree
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Degree_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new DegreeInsertModel
+                {
+                    DegreeID = 0, // SP accepts but doesn't use (auto-generated)
+                    TenantId = entity.TenantID,
+                    DegreeName = entity.DegreeName,
+                    Duration = entity.Duration,
+                    DurationType = entity.DurationType,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DegreeInsertModel>(
+                    "Degree_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DegreeResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -77,7 +98,21 @@ namespace Degree.Insfracture.RepositoriesImplement.Degree
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("Degree_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new DegreeUpdateModel
+                {
+                    DegreeID = entity.DegreeID,
+                    TenantId = entity.TenantID > 0 ? entity.TenantID : null,
+                    DegreeName = entity.DegreeName,
+                    Duration = entity.Duration,
+                    DurationType = entity.DurationType,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DegreeUpdateModel>(
+                    "Degree_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DegreeResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

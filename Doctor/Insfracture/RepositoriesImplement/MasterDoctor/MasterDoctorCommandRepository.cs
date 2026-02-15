@@ -1,6 +1,7 @@
 using DataAccess.DatabaseAccessLayer;
 using Doctor.Utility;
 using Doctor.Domain.Repositories.MasterDoctor;
+using Doctor.DatabaseModels;
 using Entities.EntityClass;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -25,10 +26,11 @@ namespace Doctor.Insfracture.RepositoriesImplement.MasterDoctor
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.MasterDoctor, dynamic>("MasterDoctor_DeleteById", new
+                var deleteModel = new MasterDoctorDeleteModel
                 {
                     MasterDoctorID = id
-                });
+                };
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.MasterDoctor, MasterDoctorDeleteModel>("MasterDoctor_DeleteById", deleteModel);
 
                 ResponseHelper.SetSuccessResponse(response, true, MasterDoctorResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +47,12 @@ namespace Doctor.Insfracture.RepositoriesImplement.MasterDoctor
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("MasterDoctor_Insert", entity);
+                var insertModel = new MasterDoctorInsertModel
+                {
+                    DoctorID = entity.DoctorID,
+                    AgentMasterID = entity.AgentMasterID
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("MasterDoctor_Insert", insertModel, "@MasterDoctorID");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, MasterDoctorResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +78,13 @@ namespace Doctor.Insfracture.RepositoriesImplement.MasterDoctor
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("MasterDoctor_Update", entity);
+                var updateModel = new MasterDoctorUpdateModel
+                {
+                    MasterDoctorID = entity.MasterDoctorID,
+                    DoctorID = entity.DoctorID,
+                    AgentMasterID = entity.AgentMasterID
+                };
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIntIdWithCustomOutput("MasterDoctor_Update", updateModel, "@UpdatedId");
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, MasterDoctorResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using Prescription.DatabaseModels;
 using Prescription.Domain.Repositories.PrescriptionItem;
 using Prescription.Utility;
 using Utility.ApiResponse;
@@ -20,10 +21,16 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionItem
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.PrescriptionEntity.PrescriptionItem, dynamic>("PrescriptionItem_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new PrescriptionItemDeleteModel
                 {
                     PrescriptionItemId = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PrescriptionItemDeleteModel, PrescriptionItemDeleteModel>(
+                    "PrescriptionItem_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, PrescriptionItemResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -41,7 +48,25 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionItem
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionItem>("PrescriptionItem_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new PrescriptionItemInsertModel
+                {
+                    PrescriptionItemId = 0, // SP accepts but doesn't use (auto-generated)
+                    PrescriptionId = entity.PrescriptionId,
+                    MedicationId = entity.MedicationId,
+                    Dosage = entity.Dosage,
+                    Quantity = entity.Quantity,
+                    Duration = entity.Duration,
+                    Timing = entity.Timing,
+                    Instructions = entity.Instructions,
+                    MealTime = entity.MealTime,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionItemInsertModel>(
+                    "PrescriptionItem_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -71,7 +96,25 @@ namespace Prescription.Insfracture.RepositoriesImplement.PrescriptionItem
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.PrescriptionEntity.PrescriptionItem>("PrescriptionItem_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new PrescriptionItemUpdateModel
+                {
+                    PrescriptionItemId = entity.PrescriptionItemId,
+                    PrescriptionId = entity.PrescriptionId > 0 ? entity.PrescriptionId : null,
+                    MedicationId = entity.MedicationId > 0 ? entity.MedicationId : null,
+                    Dosage = entity.Dosage,
+                    Duration = entity.Duration,
+                    Timing = entity.Timing,
+                    MealTime = entity.MealTime,
+                    Quantity = entity.Quantity,
+                    Instructions = entity.Instructions,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PrescriptionItemUpdateModel>(
+                    "PrescriptionItem_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
 

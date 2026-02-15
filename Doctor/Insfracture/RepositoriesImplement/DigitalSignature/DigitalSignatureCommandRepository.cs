@@ -1,4 +1,5 @@
 using DataAccess.DatabaseAccessLayer;
+using Doctor.DatabaseModels;
 using Doctor.Domain.Repositories.DigitalSignature;
 using Doctor.Utility;
 using Entities.EntityClass;
@@ -25,10 +26,16 @@ namespace Doctor.Insfracture.RepositoriesImplement.DigitalSignature
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.DoctorEntity.DigitalSignature, dynamic>("DigitalSignature_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new DigitalSignatureDeleteModel
                 {
                     DigitalSignatureID = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<DigitalSignatureDeleteModel, DigitalSignatureDeleteModel>(
+                    "DigitalSignature_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, DigitalSignatureResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -45,7 +52,27 @@ namespace Doctor.Insfracture.RepositoriesImplement.DigitalSignature
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DigitalSignature_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new DigitalSignatureInsertModel
+                {
+                    DigitalSignatureID = 0, // SP accepts but doesn't use (auto-generated)
+                    DoctorID = entity.DoctorID,
+                    FileName = entity.FileName,
+                    OriginalFileName = entity.OriginalFileName,
+                    FilePath = entity.FilePath,
+                    FileSize = entity.FileSize,
+                    MimeType = entity.MimeType,
+                    IsActive = entity.IsActive,
+                    TenantID = entity.TenantID,
+                    CreatedBy = entity.CreatedBy,
+                    UpdatedBy = entity.UpdatedBy,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DigitalSignatureInsertModel>(
+                    "DigitalSignature_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, 0, DigitalSignatureResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -71,7 +98,28 @@ namespace Doctor.Insfracture.RepositoriesImplement.DigitalSignature
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType("DigitalSignature_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new DigitalSignatureUpdateModel
+                {
+                    DigitalSignatureID = entity.DigitalSignatureID,
+                    DoctorID = entity.DoctorID > 0 ? entity.DoctorID : null,
+                    FileName = entity.FileName,
+                    OriginalFileName = entity.OriginalFileName,
+                    FilePath = entity.FilePath,
+                    FileSize = entity.FileSize,
+                    MimeType = entity.MimeType,
+                    IsActive = entity.IsActive,
+                    TenantID = entity.TenantID > 0 ? entity.TenantID : null,
+                    CreatedBy = entity.CreatedBy,
+                    UpdatedBy = entity.UpdatedBy,
+                    IsDeleted = entity.IsDeleted,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<DigitalSignatureUpdateModel>(
+                    "DigitalSignature_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, DigitalSignatureResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);

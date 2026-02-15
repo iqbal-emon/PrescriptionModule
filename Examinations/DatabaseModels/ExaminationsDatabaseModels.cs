@@ -40,6 +40,7 @@ namespace Examinations.DatabaseModels
     /// Parameters: @ExaminationId INT, @TenantId INT = NULL, @PatientId INT = NULL, @DoctorId INT = NULL,
     /// @ExaminationDate DATETIME = NULL, @Findings NVARCHAR(4000) = NULL, @Notes NVARCHAR(255) = NULL,
     /// @UpdatedAt DATETIME = NULL, @IsDeleted BIT = NULL, @CreatedAt DATETIME = NULL
+    /// Note: SP uses camelCase (ExaminationId, TenantId, PatientId, DoctorId) unlike Insert/Delete which use all caps
     /// </summary>
     public class ExaminationsUpdateModel
     {

@@ -1,4 +1,5 @@
-﻿using CommonHistory.Domain.Repositories.CommonHistory;
+﻿using CommonHistory.DatabaseModels;
+using CommonHistory.Domain.Repositories.CommonHistory;
 using CommonHistory.Utility;
 using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
@@ -29,10 +30,16 @@ namespace CommonHistory.Insfracture.CommonHistory
 
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.CommonHistory, dynamic>("CommonHistory_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new CommonHistoryDeleteModel
                 {
                     CommonHistoryId = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<CommonHistoryDeleteModel, CommonHistoryDeleteModel>(
+                    "CommonHistory_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, CommonHistoryResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -52,7 +59,18 @@ namespace CommonHistory.Insfracture.CommonHistory
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.CommonHistory>("CommonHistory_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new CommonHistoryInsertModel
+                {
+                    Name = entity.Name,
+                    Description = entity.Description,
+                    IsActive = entity.IsActive
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<CommonHistoryInsertModel>(
+                    "CommonHistory_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, CommonHistoryResponseMessage.common_inserted_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
@@ -80,7 +98,19 @@ namespace CommonHistory.Insfracture.CommonHistory
 
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.CommonHistory>("CommonHistory_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new CommonHistoryUpdateModel
+                {
+                    CommonHistoryId = entity.CommonHistoryId,
+                    Name = entity.Name,
+                    Description = entity.Description,
+                    IsActive = entity.IsActive
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<CommonHistoryUpdateModel>(
+                    "CommonHistory_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
                     ResponseHelper.SetFailedResponse(response, result, CommonHistoryResponseMessage.common_update_failed_message, StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
