@@ -167,6 +167,43 @@ namespace Doctor.Controllers
             // Redirect to GetAllDoctorScheduleDaySessions method
             return await GetAllDoctorScheduleDaySessions();
         }
+
+        [HttpGet("doctor-schedule-day-session/{sessionId}/session")]
+        [Authorize(Policy = PermissionConstants.DegreeGetId)]
+        public async Task<ActionResult<ApiResponse<DoctorScheduleDaySessionApiResponseDto>>> GetSessionByIdMainApi([FromRoute] int sessionId)
+        {
+            var apiResponse = new ApiResponse<DoctorScheduleDaySessionApiResponseDto>();
+            
+            try
+            {
+                // Validate sessionId
+                if (sessionId <= 0)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, "Invalid session ID. Session ID must be greater than 0.", StatusResponseMessage.failed, StatusCodes.Status400BadRequest);
+                    return BadRequest(apiResponse);
+                }
+
+                // Call service directly instead of redirecting to avoid potential binding issues
+                var daySession = await _daySessionService.GetById(sessionId);
+                
+                if (daySession == null || !daySession.IsSuccess || daySession.Result == null)
+                {
+                    ApiResponseHelper.SetFailedResponse(apiResponse, null, DoctorScheduleDaySessionApiConstantsResponseMessage.daysession_null_of_get_list, StatusResponseMessage.failed, StatusCodes.Status404NotFound);
+                    return NotFound(apiResponse);
+                }
+
+                var mappedDaySession = await _mapperService.MapSingle<Entities.EntityClass.DoctorEntity.DoctorScheduleDaySession, DoctorScheduleDaySessionApiResponseDto>(daySession.Result);
+                apiResponse.Results = mappedDaySession;
+                ApiResponseHelper.SetSuccessResponse(apiResponse, apiResponse.Results, DoctorScheduleDaySessionApiConstantsResponseMessage.daysession_get_all_success, StatusResponseMessage.success, StatusCodes.Status200OK);
+            }
+            catch (Exception ex)
+            {
+                ApiResponseHelper.SetFailedResponse(apiResponse, null, $"Error retrieving session: {ex.Message}", StatusResponseMessage.failed, StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, apiResponse);
+            }
+            
+            return Ok(apiResponse);
+        }
     }
 }
 

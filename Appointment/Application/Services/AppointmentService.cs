@@ -3,6 +3,8 @@ using Appointment.Domain.Repositories.Appointment;
 using Appointment.Dtos.RequestDto;
 using Appointment.Dtos.RequestDto.AppointmentDto;
 using Appointment.Dtos.ResponseDto.AppointmentDto;
+using Doctor.Dtos.ResponseDto.DoctorScheduleDaySessionDto;
+using Doctor.Dtos.ResponseDto.DoctorScheduleDto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -189,28 +191,103 @@ namespace Appointment.Application.Services
         public async Task<Response<SessionResponseDto>> GetBySessionId(int? sessionId)
         {
             var response = new Response<SessionResponseDto>();
+            
+            // Validate sessionId
+            if (!sessionId.HasValue || sessionId.Value <= 0)
+            {
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    "Invalid session ID provided.",
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status400BadRequest
+                );
+                return response;
+            }
+
             try
             {
                 var baseUrl = _apiBaseURL;
+                if (string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        "API base URL is not configured.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status500InternalServerError
+                    );
+                    return response;
+                }
+
                 var endPoint = $"api/2025-02/doctor-schedule-day-session/{sessionId}/session";
 
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
-                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
-                var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
-                var userData = deSerializedJsonResult.ToObject<SessionResponseDto>();
-
-                if (userData != null)
+                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, null, 3, 1000);
+                
+                if (responseJson == null || string.IsNullOrWhiteSpace(responseJson.Content))
                 {
-                    response.Result = userData;
-                    response.IsSuccess = true;
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        "Empty response received from session API.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status500InternalServerError
+                    );
+                    return response;
                 }
+
+                // Deserialize the API response wrapper
+                var apiResponseWrapper = JsonConvert.DeserializeObject<ApiResponse<DoctorScheduleDaySessionApiResponseDto>>(responseJson.Content);
+                
+                if (apiResponseWrapper == null || apiResponseWrapper.Results == null)
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        "Failed to deserialize session response or session not found.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status500InternalServerError
+                    );
+                    return response;
+                }
+
+                // Map DoctorScheduleDaySessionApiResponseDto to SessionResponseDto
+                var sessionData = apiResponseWrapper.Results;
+                var userData = new SessionResponseDto
+                {
+                    DoctorScheduleId = sessionData.DoctorScheduleID,
+                    DoctorScheduleName = null, // Not available in DoctorScheduleDaySessionApiResponseDto
+                    ScheduleDayofWeek = sessionData.ScheduleDayofWeek,
+                    StartTime = sessionData.StartTime,
+                    EndTime = sessionData.EndTime,
+                    NoOfPatients = sessionData.NoOfPatients,
+                    IsActive = sessionData.IsActive
+                };
+
+                response.Result = userData;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(
+                    response,
+                    userData,
+                    "Session retrieved successfully.",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
 
                 return response;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    $"Error retrieving session: {ex.Message}",
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+                return response;
             }
         }
 
@@ -218,28 +295,113 @@ namespace Appointment.Application.Services
         public async Task<Response<ScheduleResponseDto>> GetBySchedule(int? scheduleId)
         {
             var response = new Response<ScheduleResponseDto>();
+            
+            // Validate scheduleId
+            if (!scheduleId.HasValue || scheduleId.Value <= 0)
+            {
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    "Invalid schedule ID provided.",
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status400BadRequest
+                );
+                return response;
+            }
+
             try
             {
                 var baseUrl = _apiBaseURL;
+                if (string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        "API base URL is not configured.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status500InternalServerError
+                    );
+                    return response;
+                }
+
                 var endPoint = $"api/2025-02/doctor-schedule/{scheduleId}";
 
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
                 var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
-                var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
-                var userData = deSerializedJsonResult.ToObject<ScheduleResponseDto>();
-
-                if (userData != null)
+                
+                if (responseJson == null || string.IsNullOrWhiteSpace(responseJson.Content))
                 {
-                    response.Result = userData;
-                    response.IsSuccess = true;
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        "Empty response received from schedule API.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status500InternalServerError
+                    );
+                    return response;
                 }
+
+                // Deserialize the API response wrapper
+                var apiResponseWrapper = JsonConvert.DeserializeObject<ApiResponse<DoctorScheduleApiResponseDto>>(responseJson.Content);
+                
+                if (apiResponseWrapper == null || apiResponseWrapper.Results == null)
+                {
+                    ResponseHelper.SetFailedResponse(
+                        response,
+                        null,
+                        "Failed to deserialize schedule response or schedule not found.",
+                        StatusResponseMessage.failed,
+                        StatusCodes.Status500InternalServerError
+                    );
+                    return response;
+                }
+
+                // Map DoctorScheduleApiResponseDto to ScheduleResponseDto
+                // Note: DoctorScheduleApiResponseDto has limited properties, so we map what's available
+                var scheduleData = apiResponseWrapper.Results;
+                var userData = new ScheduleResponseDto
+                {
+                    DoctorProfileId = scheduleData.DoctorID,
+                    DoctorName = null, // Not available in DoctorScheduleApiResponseDto
+                    ScheduleTypeName = null, // Not available in DoctorScheduleApiResponseDto
+                    ConsultancyTypeName = null, // Not available in DoctorScheduleApiResponseDto
+                    DoctorChamberId = null, // Not available in DoctorScheduleApiResponseDto
+                    Chamber = null, // Not available in DoctorScheduleApiResponseDto
+                    IsActive = !scheduleData.IsDeleted, // Use IsDeleted as inverse of IsActive
+                    Status = null, // Not available in DoctorScheduleApiResponseDto
+                    OffDayFrom = null, // Not available in DoctorScheduleApiResponseDto
+                    DayTextFrom = null, // Not available in DoctorScheduleApiResponseDto
+                    OffDayTo = null, // Not available in DoctorScheduleApiResponseDto
+                    DayTextTo = null, // Not available in DoctorScheduleApiResponseDto
+                    Remarks = null, // Not available in DoctorScheduleApiResponseDto
+                    ScheduleName = null, // Not available in DoctorScheduleApiResponseDto
+                    ResponseSuccess = apiResponseWrapper.IsSuccess,
+                    ResponseMessage = apiResponseWrapper.Message
+                };
+
+                response.Result = userData;
+                response.IsSuccess = true;
+                ResponseHelper.SetSuccessResponse(
+                    response,
+                    userData,
+                    "Schedule retrieved successfully.",
+                    StatusResponseMessage.success,
+                    StatusCodes.Status200OK
+                );
 
                 return response;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                ResponseHelper.SetFailedResponse(
+                    response,
+                    null,
+                    $"Error retrieving schedule: {ex.Message}",
+                    StatusResponseMessage.failed,
+                    StatusCodes.Status500InternalServerError
+                );
+                return response;
             }
         }
 

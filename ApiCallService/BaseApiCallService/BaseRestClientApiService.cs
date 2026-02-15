@@ -36,10 +36,10 @@ namespace ApiCallService.BaseApiCallService
             var clientRest = new RestClient(options);
             var request = new RestRequest { Method = method };
 
-            //if (!string.IsNullOrEmpty(authToken))
-            //{
-            //    request.AddHeader("Authorization", $"bearer {authToken}");
-            //}
+            if (!string.IsNullOrEmpty(authToken))
+            {
+                request.AddHeader("Authorization", $"bearer {authToken}");
+            }
 
             if (model != null)
             {

@@ -66,13 +66,37 @@ namespace Appointment.Infrastructure.RepositoriesImplement
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<AppointmentInsertRequestDto>(
+                Console.WriteLine("═══════════════════════════════════════════════════════════");
+                Console.WriteLine("📋 AppointmentCommandRepository.Insert - Starting");
+                Console.WriteLine("═══════════════════════════════════════════════════════════");
+                Console.WriteLine($"📦 Appointment DTO: PatientName={appointmentDto.PatientName}, PhoneNumber={appointmentDto.PhoneNumber}, SessionId={appointmentDto.SessionId}, ScheduleId={appointmentDto.ScheduleId}, DoctorProfileId={appointmentDto.DoctorProfileId}, Age={appointmentDto.Age}, Gender={appointmentDto.Gender}, BloodGroup={appointmentDto.BloodGroup}, AppointmentDate={appointmentDto.AppointmentDate}");
+                
+                // Create anonymous object with exact parameter names matching stored procedure
+                // This ensures only the required parameters are sent with correct names
+                var procedureParams = new
+                {
+                    PatientName = appointmentDto.PatientName ?? string.Empty,
+                    PhoneNumber = appointmentDto.PhoneNumber ?? string.Empty,
+                    Gender = appointmentDto.Gender ?? string.Empty,
+                    BloodGroup = appointmentDto.BloodGroup ?? string.Empty,
+                    Age = appointmentDto.Age,
+                    SessionId = appointmentDto.SessionId,
+                    ScheduleId = appointmentDto.ScheduleId,
+                    DoctorProfileId = appointmentDto.DoctorProfileId,
+                    AppointmentDate = appointmentDto.AppointmentDate
+                };
+                
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType(
                     "Appointment_Insert",
-                    appointmentDto
+                    procedureParams
                 );
+
+                Console.WriteLine($"✅ Stored procedure returned result: {result}");
+                Console.WriteLine("═══════════════════════════════════════════════════════════");
 
                 if (result == 0)
                 {
+                    Console.WriteLine("⚠️ Result is 0 - treating as failure");
                     ResponseHelper.SetFailedResponse(
                         response,
                         result,
@@ -83,6 +107,7 @@ namespace Appointment.Infrastructure.RepositoriesImplement
                 }
                 else
                 {
+                    Console.WriteLine($"✅ Success - SerialNo: {result}");
                     response.Result = result;
                     response.IsSuccess = true;
                     ResponseHelper.SetSuccessResponse(
@@ -96,6 +121,18 @@ namespace Appointment.Infrastructure.RepositoriesImplement
             }
             catch (Exception ex)
             {
+                Console.WriteLine("═══════════════════════════════════════════════════════════");
+                Console.WriteLine("❌ AppointmentCommandRepository.Insert - Exception");
+                Console.WriteLine("═══════════════════════════════════════════════════════════");
+                Console.WriteLine($"❌ Exception Type: {ex.GetType().Name}");
+                Console.WriteLine($"❌ Exception Message: {ex.Message}");
+                Console.WriteLine($"❌ Stack Trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"❌ Inner Exception: {ex.InnerException.Message}");
+                }
+                Console.WriteLine("═══════════════════════════════════════════════════════════");
+                
                 response.Message = StandardDataAccessMessages.GetSqlErrorMessage(ex);
                 ResponseHelper.SetFailedResponse(
                     response,
