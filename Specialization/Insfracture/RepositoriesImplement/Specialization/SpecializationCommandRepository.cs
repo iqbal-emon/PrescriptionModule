@@ -1,4 +1,5 @@
 using DataAccess.DatabaseAccessLayer;
+using Specialization.DatabaseModels;
 using Specialization.Domain.Repositories.Specialization;
 using Specialization.Utility;
 using Entities.EntityClass;
@@ -28,10 +29,16 @@ namespace Specialization.Insfracture.RepositoriesImplement.Specialization
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Specialization, dynamic>("Specialization_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new SpecializationDeleteModel
                 {
                     SpecializationID = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<SpecializationDeleteModel, SpecializationDeleteModel>(
+                    "Specialization_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, SpecializationResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }

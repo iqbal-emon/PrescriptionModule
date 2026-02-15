@@ -1,4 +1,5 @@
 ﻿using DataAccess.DatabaseAccessLayer;
+using Languages.DatabaseModels;
 using Languages.Domain.Repositories.Languages;
 using Languages.Utility;
 using Microsoft.AspNetCore.Http;
@@ -20,10 +21,16 @@ namespace Languages.Insfracture.RepositoriesImplement.Languages
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Language, dynamic>("Languages_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new LanguagesDeleteModel
                 {
-                    LanguageId = id
-                });
+                    LanguageID = id
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<LanguagesDeleteModel, LanguagesDeleteModel>(
+                    "Languages_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, LanguagesResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -40,7 +47,19 @@ namespace Languages.Insfracture.RepositoriesImplement.Languages
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Language>("Languages_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new LanguagesInsertModel
+                {
+                    LanguageID = 0, // SP accepts but doesn't use (auto-generated)
+                    LanguageCode = entity.LanguageCode,
+                    LanguageName = entity.LanguageName,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<LanguagesInsertModel>(
+                    "Languages_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -68,7 +87,19 @@ namespace Languages.Insfracture.RepositoriesImplement.Languages
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Language>("Languages_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new LanguagesUpdateModel
+                {
+                    LanguageID = entity.LanguageID,
+                    LanguageCode = entity.LanguageCode,
+                    LanguageName = entity.LanguageName,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<LanguagesUpdateModel>(
+                    "Languages_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
 

@@ -1,4 +1,5 @@
-﻿using AdviceTranslations.Domain.Repositories.AdviceTranslations;
+﻿using AdviceTranslations.DatabaseModels;
+using AdviceTranslations.Domain.Repositories.AdviceTranslations;
 using AdviceTranslations.Utility;
 using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
@@ -22,10 +23,16 @@ namespace DoctorPrescription.Insfracture.RepositoriesImplement.AdviceTranslation
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.AdviceTranslation, dynamic>("AdviceTranslations_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new AdviceTranslationsDeleteModel
                 {
                     TranslationId = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<AdviceTranslationsDeleteModel, AdviceTranslationsDeleteModel>(
+                    "AdviceTranslations_DeleteById", 
+                    deleteModel
+                );
 
 
 
@@ -46,7 +53,20 @@ namespace DoctorPrescription.Insfracture.RepositoriesImplement.AdviceTranslation
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.AdviceTranslation>("AdviceTranslations_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new AdviceTranslationsInsertModel
+                {
+                    TranslationId = 0, // SP accepts but doesn't use (auto-generated)
+                    AdviceId = entity.AdviceID,
+                    LanguageId = entity.LanguageID,
+                    TranslatedAdvice = entity.TranslatedAdvice,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<AdviceTranslationsInsertModel>(
+                    "AdviceTranslations_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -74,7 +94,20 @@ namespace DoctorPrescription.Insfracture.RepositoriesImplement.AdviceTranslation
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.AdviceTranslation>("AdviceTranslations_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new AdviceTranslationsUpdateModel
+                {
+                    TranslationId = entity.TranslationID,
+                    AdviceId = entity.AdviceID > 0 ? entity.AdviceID : null,
+                    LanguageId = entity.LanguageID > 0 ? entity.LanguageID : null,
+                    TranslatedAdvice = entity.TranslatedAdvice,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<AdviceTranslationsUpdateModel>(
+                    "AdviceTranslations_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
 

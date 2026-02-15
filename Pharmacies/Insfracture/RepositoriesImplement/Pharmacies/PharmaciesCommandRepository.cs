@@ -1,5 +1,6 @@
 ﻿using DataAccess.DatabaseAccessLayer;
 using Microsoft.AspNetCore.Http;
+using Pharmacies.DatabaseModels;
 using Pharmacies.Utility;
 using Utility.ApiResponse;
 using Utility.Response;
@@ -24,10 +25,16 @@ namespace Pharmacies.Insfracture.RepositoriesImplement.Pharmacy
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Pharmacy, dynamic>("Pharmacy_DeleteById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new PharmacyDeleteModel
                 {
-                    PharmacyId = id
-                });
+                    PharmacyID = id
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<PharmacyDeleteModel, PharmacyDeleteModel>(
+                    "Pharmacy_DeleteById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, PharmaciesResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -44,7 +51,22 @@ namespace Pharmacies.Insfracture.RepositoriesImplement.Pharmacy
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Pharmacy>("Pharmacy_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new PharmacyInsertModel
+                {
+                    PharmacyID = 0, // SP accepts but doesn't use (auto-generated)
+                    TenantId = entity.TenantId,
+                    PharmacyName = entity.PharmacyName,
+                    Address = entity.Address,
+                    PhoneNumber = entity.PhoneNumber,
+                    Email = entity.Email,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PharmacyInsertModel>(
+                    "Pharmacy_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -72,7 +94,22 @@ namespace Pharmacies.Insfracture.RepositoriesImplement.Pharmacy
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Pharmacy>("Pharmacy_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new PharmacyUpdateModel
+                {
+                    PharmacyID = entity.PharmacyId,
+                    TenantId = entity.TenantId > 0 ? entity.TenantId : null,
+                    PharmacyName = entity.PharmacyName,
+                    Address = entity.Address,
+                    PhoneNumber = entity.PhoneNumber,
+                    Email = entity.Email,
+                    // UpdatedAt is optional - SP uses GETUTCDATE()
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<PharmacyUpdateModel>(
+                    "Pharmacy_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
 

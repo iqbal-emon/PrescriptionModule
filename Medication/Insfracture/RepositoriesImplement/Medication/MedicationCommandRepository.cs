@@ -1,4 +1,5 @@
 ﻿using DataAccess.DatabaseAccessLayer;
+using Medication.DatabaseModels;
 using Medication.Domain.Repositories.Medication;
 using Medication.Utility;
 using Microsoft.AspNetCore.Http;
@@ -20,10 +21,16 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.MedicineEntity.Medication, dynamic>("Medication_DeledeById", new
+                // Create database model matching stored procedure parameters
+                var deleteModel = new MedicationDeleteModel
                 {
                     MedicationId = id
-                });
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<MedicationDeleteModel, MedicationDeleteModel>(
+                    "Medication_DeledeById", 
+                    deleteModel
+                );
 
                 ResponseHelper.SetSuccessResponse(response, true, MedicationResponseMessage.common_delete_success_message, StatusResponseMessage.success, StatusCodes.Status200OK);
             }
@@ -41,7 +48,27 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.MedicineEntity.Medication>("Medication_Insert", entity);
+                // Map entity to database model matching stored procedure parameters
+                var insertModel = new MedicationInsertModel
+                {
+                    TenantId = entity.TenantId,
+                    MedicationBrandId = entity.MedicationBrandId,
+                    GenericName = entity.GenericName,
+                    DAR = entity.DAR,
+                    MedicationName = entity.MedicationName,
+                    Description = entity.Description,
+                    Manufacturer = entity.Manufacturer,
+                    DosageForm = entity.DosageForm,
+                    Strength = entity.Strength,
+                    Indication = entity.Indication,
+                    IsActive = entity.IsActive,
+                    // CreatedAt, UpdatedAt, IsDeleted are optional - SP handles them
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<MedicationInsertModel>(
+                    "Medication_Insert", 
+                    insertModel
+                );
                 if (result == 0)
                 {
 
@@ -71,7 +98,27 @@ namespace Medication.Insfracture.RepositoriesImplement.Medication
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.MedicineEntity.Medication>("Medication_Update", entity);
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new MedicationUpdateModel
+                {
+                    MedicationId = entity.MedicationId,
+                    TenantId = entity.TenantId,
+                    MedicationBrandId = entity.MedicationBrandId,
+                    GenericName = entity.GenericName,
+                    DAR = entity.DAR,
+                    MedicationName = entity.MedicationName,
+                    Description = entity.Description,
+                    Manufacturer = entity.Manufacturer,
+                    DosageForm = entity.DosageForm,
+                    Strength = entity.Strength,
+                    Indication = entity.Indication,
+                    IsActive = entity.IsActive
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<MedicationUpdateModel>(
+                    "Medication_Update", 
+                    updateModel
+                );
                 if (result == 0)
                 {
 

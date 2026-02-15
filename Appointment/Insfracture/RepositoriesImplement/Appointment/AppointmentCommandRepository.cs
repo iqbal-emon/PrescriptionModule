@@ -1,4 +1,5 @@
-﻿using Appointment.Domain.Repositories.Appointment;
+﻿using Appointment.DatabaseModels;
+using Appointment.Domain.Repositories.Appointment;
 using Appointment.Dtos.RequestDto.AppointmentDto;
 using Appointment.Utility;
 using DataAccess.DatabaseAccessLayer;
@@ -27,9 +28,15 @@ namespace Appointment.Infrastructure.RepositoriesImplement
             var response = new Response<bool>();
             try
             {
-                var result = await _dataAccess.LoadSingleDataUsingProcedure<Entities.EntityClass.Appointment, dynamic>(
+                // Create database model matching stored procedure parameters
+                var deleteModel = new AppointmentDeleteModel
+                {
+                    AppointmentId = id
+                };
+
+                var result = await _dataAccess.LoadSingleDataUsingProcedure<AppointmentDeleteModel, AppointmentDeleteModel>(
                     "Appointment_DeleteById",
-                    new { AppointmentId = id }
+                    deleteModel
                 );
 
                 ResponseHelper.SetSuccessResponse(
@@ -151,9 +158,20 @@ namespace Appointment.Infrastructure.RepositoriesImplement
             var response = new Response<int>();
             try
             {
-                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<Entities.EntityClass.Appointment>(
+                // Map entity to database model matching stored procedure parameters
+                var updateModel = new AppointmentUpdateModel
+                {
+                    Id = entity.Id,
+                    SessionId = entity.SessionId,
+                    ScheduleId = entity.ScheduleId,
+                    PatientId = entity.PatientId,
+                    AppointmentDate = entity.AppointmentDate,
+                    DoctorProfileId = entity.DoctorProfileId
+                };
+
+                var result = await _dataAccess.SaveDataUsingProcedureReturnIdWithIntDataType<AppointmentUpdateModel>(
                     "Appointment_Update",
-                    entity
+                    updateModel
                 );
 
                 if (result == 0)
