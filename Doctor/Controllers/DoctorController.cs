@@ -101,7 +101,7 @@ namespace Doctor.Controllers
                         
                         // Add Authorization header
                         string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
-                        var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+                        var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, null, 3, 1000);
                         var deSerializedJsonResult = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
                         var userData = deSerializedJsonResult["results"]?.ToObject<UserApiResponseDto>();
                         
@@ -255,7 +255,7 @@ namespace Doctor.Controllers
                                     string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
                                     
                                     var userResponseJson = await _baseRestClientApiService.MakeApiCall(
-                                        baseUrl, endPoint, Method.Put, userUpdateRequest, token, 3, 1000);
+                                        baseUrl, endPoint, Method.Put, userUpdateRequest, null, 3, 1000);
                                     
                                     var userDeSerializedResult = JsonConvert.DeserializeObject<JObject>(userResponseJson.Content);
                                     var userUpdateResult = userDeSerializedResult["results"]?.Value<int>() ?? 0;

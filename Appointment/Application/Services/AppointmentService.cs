@@ -328,7 +328,7 @@ namespace Appointment.Application.Services
 
                 // Add Authorization header
                 string token = _configuration.GetSection("GeneralSettings:ApiAuthorizationToken").Value;
-                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, token, 3, 1000);
+                var responseJson = await _baseRestClientApiService.MakeApiCall<JObject>(baseUrl, endPoint, Method.Get, null, null, 3, 1000);
                 
                 if (responseJson == null || string.IsNullOrWhiteSpace(responseJson.Content))
                 {
