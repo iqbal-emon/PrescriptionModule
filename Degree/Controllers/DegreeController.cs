@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +23,12 @@ namespace Degree.Controllers
     {
         private readonly SharedCommonService _sharedCommonService;
         private readonly MapperService _mapperService;
-        private readonly Degreervice _degreeService;
+        private readonly DegreeService _degreeService;
 
         public DegreeController(
             SharedCommonService sharedCommonService,
             MapperService mapperService,
-            Degreervice degreeService)
+            DegreeService degreeService)
         {
             _sharedCommonService = sharedCommonService;
             _mapperService = mapperService;

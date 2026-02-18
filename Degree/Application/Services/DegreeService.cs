@@ -1,4 +1,4 @@
-﻿using Degree.Domain.Repositories.Degree;
+using Degree.Domain.Repositories.Degree;
 using Degree.Dtos.RequestDto.DegreeDto;
 using Microsoft.AspNetCore.Http;
 using SharedService.MapService;
@@ -13,13 +13,13 @@ using Utility.Response;
 
 namespace Degree.Application.Services
 {
-    public class Degreervice
+    public class DegreeService
     {
         private readonly IDegreeQueryRepository _degreeQueryRepository;
         private readonly IDegreeCommandRepository _degreeCommandRepository;
         private readonly MapperService _mapperService;
 
-        public Degreervice(
+        public DegreeService(
             IDegreeQueryRepository degreeQueryRepository,
             IDegreeCommandRepository degreeCommandRepository,
             MapperService mapperService)

@@ -1,4 +1,4 @@
-﻿using DataAccess.DatabaseAccessLayer;
+using DataAccess.DatabaseAccessLayer;
 using Degree.Application.Services;
 using Degree.Domain.Repositories.Degree;
 using Degree.Insfracture.RepositoriesImplement.Degree;
@@ -20,7 +20,7 @@ namespace Degree
             services.AddScoped<IDegreeCommandRepository, DegreeCommandRepository>();
             services.AddScoped<ISqlDataAccessLayer, SqlDataAccessLayer>();
             services.AddScoped<MapperService>();
-            services.AddScoped<Degreervice>();
+            services.AddScoped<DegreeService>();
 
         }
 
