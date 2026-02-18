@@ -16,26 +16,31 @@ namespace AuthenticationSystem.Application.PluginLoaderService
         /// </summary>
         private static List<Assembly>? _loadedPluginAssemblies;
 
-        public static void LoadPlugins(IServiceCollection services, string pluginsPath)
+        /// <param name="pluginBasePath">App output directory (e.g. bin/Debug/net8.0) where project-reference DLLs like Degree, Doctor are copied.</param>
+        /// <param name="pluginsSubfolder">Optional Plugins subfolder; can be same as pluginBasePath for single-path.</param>
+        public static void LoadPlugins(IServiceCollection services, string pluginBasePath, string? pluginsSubfolder = null)
         {
             var processedAssemblies = new HashSet<Assembly>();
+            var pluginAssemblies = new List<Assembly>();
+            var entryAssembly = Assembly.GetEntryAssembly();
+            var entryName = entryAssembly?.GetName().Name ?? "AuthenticationSystem";
 
-            // 1. Load from Plugins folder if it exists and has DLLs
-            if (Directory.Exists(pluginsPath))
+            if (string.IsNullOrEmpty(pluginsSubfolder))
+                pluginsSubfolder = Path.Combine(pluginBasePath, "Plugins");
+
+            // 1. Load from Plugins subfolder if it exists and has DLLs
+            if (Directory.Exists(pluginsSubfolder))
             {
-                var resolver = new AssemblyDependencyResolver(pluginsPath);
+                var resolver = new AssemblyDependencyResolver(pluginsSubfolder);
                 var assemblyPath = resolver.ResolveAssemblyToPath(new AssemblyName("HtmlAgilityPack"));
                 if (assemblyPath != null)
-                {
                     AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
-                }
 
-                var dllFiles = Directory.GetFiles(pluginsPath, "*.dll", SearchOption.AllDirectories)
+                var dllFiles = Directory.GetFiles(pluginsSubfolder, "*.dll", SearchOption.AllDirectories)
                     .GroupBy(Path.GetFileNameWithoutExtension)
                     .Select(g => g.OrderByDescending(File.GetCreationTime).First())
                     .ToList();
 
-                var pluginAssemblies = new List<Assembly>();
                 foreach (var dll in dllFiles)
                 {
                     try
@@ -48,23 +53,44 @@ namespace AuthenticationSystem.Application.PluginLoaderService
                         Console.WriteLine($"Skipping already loaded assembly: {dll}. Error: {ex.Message}");
                     }
                 }
-
-                _loadedPluginAssemblies = pluginAssemblies;
-
-                foreach (var assembly in pluginAssemblies)
-                {
-                    RegisterPluginServices(services, assembly, processedAssemblies);
-                }
             }
             else
             {
-                Directory.CreateDirectory(pluginsPath);
-                _loadedPluginAssemblies = new List<Assembly>();
+                Directory.CreateDirectory(pluginsSubfolder);
             }
 
-            // 2. Also run RegisterServices for already-loaded assemblies (e.g. project references like Doctor, Degree).
-            // Controllers are discovered from them but we only register services from the Plugins folder otherwise.
-            var entryAssembly = Assembly.GetEntryAssembly();
+            // 2. Load from app output directory (Degree.dll, Doctor.dll from project references)
+            if (Directory.Exists(pluginBasePath))
+            {
+                var baseDlls = Directory.GetFiles(pluginBasePath, "*.dll", SearchOption.TopDirectoryOnly)
+                    .GroupBy(Path.GetFileNameWithoutExtension)
+                    .Select(g => g.First())
+                    .Where(f => !string.Equals(Path.GetFileNameWithoutExtension(f), entryName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var dll in baseDlls)
+                {
+                    var name = Path.GetFileNameWithoutExtension(dll);
+                    if (pluginAssemblies.Any(a => string.Equals(a.GetName().Name, name, StringComparison.OrdinalIgnoreCase)))
+                        continue;
+                    try
+                    {
+                        var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
+                        pluginAssemblies.Add(assembly);
+                    }
+                    catch (FileLoadException ex)
+                    {
+                        Console.WriteLine($"Skipping already loaded assembly: {dll}. Error: {ex.Message}");
+                    }
+                }
+            }
+
+            _loadedPluginAssemblies = pluginAssemblies;
+
+            foreach (var assembly in pluginAssemblies)
+                RegisterPluginServices(services, assembly, processedAssemblies);
+
+            // 3. Any already-loaded assemblies that implement IPlugin (e.g. loaded as dependencies)
             foreach (var assembly in AssemblyLoadContext.Default.Assemblies)
             {
                 if (assembly == entryAssembly || processedAssemblies.Contains(assembly))
@@ -75,10 +101,7 @@ namespace AuthenticationSystem.Application.PluginLoaderService
                 {
                     RegisterPluginServices(services, assembly, processedAssemblies);
                 }
-                catch (ReflectionTypeLoadException)
-                {
-                    // Skip assemblies that fail to load types
-                }
+                catch (ReflectionTypeLoadException) { }
             }
         }
 

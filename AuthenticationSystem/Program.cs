@@ -171,14 +171,17 @@ try
     IConfigurationSection pluginPaths = builder.Configuration.GetSection("PluginPaths:PluginDirectoryPath");
     var pluginBasePath = pluginPaths.Value;
 
-    // Use fallback if plugin path is empty
+    // Use fallback if plugin path is empty: use directory of the running app so project-reference DLLs (Degree, Doctor) are found
     if (string.IsNullOrWhiteSpace(pluginBasePath))
     {
-        pluginBasePath = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0");
+        var entryDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly()?.Location);
+        pluginBasePath = !string.IsNullOrEmpty(entryDir) ? entryDir : Path.Combine(Directory.GetCurrentDirectory(), "bin", "Debug", "net8.0");
     }
+    var pluginsSubfolder = Path.Combine(pluginBasePath, "Plugins");
 
-    PluginLoader.LoadPlugins(builder.Services, Path.Combine(pluginBasePath, "Plugins"));
-    PluginLoader.LoadPlugin(builder.Services, Path.Combine(pluginBasePath, "Plugins"));
+    // Load from both app output dir (Degree.dll, Doctor.dll from project refs) and Plugins subfolder
+    PluginLoader.LoadPlugins(builder.Services, pluginBasePath, pluginsSubfolder);
+    PluginLoader.LoadPlugin(builder.Services, pluginsSubfolder);
 
     var app = builder.Build();
 

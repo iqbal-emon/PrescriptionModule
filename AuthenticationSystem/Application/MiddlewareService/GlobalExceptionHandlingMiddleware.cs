@@ -114,13 +114,30 @@ namespace AuthenticationSystem.Application.MiddlewareService
                     break;
 
                 case InvalidOperationException invOpEx:
-                    errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
-                    errorResponse.Message = invOpEx.Message;
-                    errorResponse.Error = "INVALID_OPERATION";
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    _logger.LogWarning(exception, 
-                        "{ErrorMessage}, RequestBody: {RequestBody}, StackTrace: {StackTrace}",
-                        errorLogMessage, requestBody ?? "N/A", exception.StackTrace ?? "N/A");
+                    // DI/service resolution failures are server config errors, not client errors
+                    var isServiceResolution = invOpEx.Message.Contains("Unable to resolve service", StringComparison.OrdinalIgnoreCase);
+                    if (isServiceResolution)
+                    {
+                        errorResponse.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        errorResponse.Message = _environment.IsDevelopment()
+                            ? invOpEx.Message
+                            : "A required service is not configured. Please contact support.";
+                        errorResponse.Error = "SERVICE_RESOLUTION_FAILED";
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        _logger.LogError(exception,
+                            "{ErrorMessage}, RequestBody: {RequestBody}, StackTrace: {StackTrace}",
+                            errorLogMessage, requestBody ?? "N/A", exception.StackTrace ?? "N/A");
+                    }
+                    else
+                    {
+                        errorResponse.StatusCode = (int)HttpStatusCode.BadRequest;
+                        errorResponse.Message = invOpEx.Message;
+                        errorResponse.Error = "INVALID_OPERATION";
+                        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        _logger.LogWarning(exception,
+                            "{ErrorMessage}, RequestBody: {RequestBody}, StackTrace: {StackTrace}",
+                            errorLogMessage, requestBody ?? "N/A", exception.StackTrace ?? "N/A");
+                    }
                     break;
 
                 case SqlException sqlEx:
@@ -131,18 +148,18 @@ namespace AuthenticationSystem.Application.MiddlewareService
                     
                     // Get first error details if available
                     var firstError = sqlEx.Errors.Count > 0 ? sqlEx.Errors[0] : null;
-                    //var databaseName = firstError?.Database ?? "N/A";
+                    var databaseName = firstError?.Database ?? "N/A";
                     var serverName = firstError?.Server ?? "N/A";
                     var procedureName = firstError?.Procedure ?? "N/A";
                     var lineNumber = firstError?.LineNumber ?? sqlEx.LineNumber;
-                    
+
                     // Log SQL errors with full details
-                    _logger.LogError(exception, 
+                    _logger.LogError(exception,
                         "{ErrorMessage}, SQL Error Number: {ErrorNumber}, SQL State: {State}, " +
                         "SQL Server: {Server}, Database: {Database}, Procedure: {Procedure}, " +
                         "LineNumber: {LineNumber}, RequestBody: {RequestBody}, StackTrace: {StackTrace}",
-                        errorLogMessage, sqlEx.Number, sqlEx.State, serverName, 
-                        //databaseName, procedureName, lineNumber,
+                        errorLogMessage, sqlEx.Number, sqlEx.State, serverName,
+                        databaseName, procedureName, lineNumber,
                         requestBody ?? "N/A", exception.StackTrace ?? "N/A");
                     break;
 
