@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	  <BaseOutputPath>D:\soowgood\Prescripto\PrescriptionModule\AuthenticationSystem\bin\Debug\net8.0\Plugins</BaseOutputPath>
+	  <BaseOutputPath>D:\Prescriptoo\AuthenticationSystem\bin\Debug\net8.0\Plugins</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
